@@ -23,36 +23,31 @@
         </el-date-picker>
       </div>
       <div class="query-item">
-        <label>产品名称：</label>
+        <label>批次ID：</label>
         <el-input
-          v-model="queryForm.productName"
-          placeholder="产品名称"
+          v-model="queryForm.batchId"
+          placeholder="批次ID"
           style="width: 200px"
           clearable
         ></el-input>
       </div>
       <div class="query-item">
-        <label>托盘号：</label>
+        <label>物料编码：</label>
         <el-input
-          v-model="queryForm.trayCode"
-          placeholder="托盘号"
+          v-model="queryForm.productCode"
+          placeholder="物料编码"
           style="width: 200px"
           clearable
         ></el-input>
       </div>
       <div class="query-item">
-        <label>托盘状态：</label>
-        <el-select
-          v-model="queryForm.trayStatus"
-          placeholder="全部"
-          style="width: 150px"
+        <label>生产订单号：</label>
+        <el-input
+          v-model="queryForm.orderId"
+          placeholder="生产订单号"
+          style="width: 200px"
           clearable
-        >
-          <el-option label="执行中" value="1"></el-option>
-          <el-option label="已组批" value="2"></el-option>
-          <el-option label="已称重" value="3"></el-option>
-          <el-option label="已下货" value="4"></el-option>
-        </el-select>
+        ></el-input>
       </div>
       <div class="query-item">
         <el-button type="primary" @click="handleSearch" :loading="loading">
@@ -146,13 +141,13 @@
         <el-table-column
           prop="productCode"
           label="物料编码"
-          width="120"
+          width="150"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
           prop="orderId"
           label="生产订单号"
-          width="140"
+          width="160"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
@@ -233,7 +228,7 @@
         size="small"
       >
         <el-form-item label="托盘号">
-          <el-input v-model="editForm.trayCode" disabled></el-input>
+          <el-input v-model="editForm.trayCode" clearable></el-input>
         </el-form-item>
         <el-form-item label="产品名称">
           <el-input v-model="editForm.productName" clearable></el-input>
@@ -250,8 +245,6 @@
             placeholder="请选择"
             style="width: 100%"
           >
-            <el-option label="执行中" value="1"></el-option>
-            <el-option label="已组批" value="2"></el-option>
             <el-option label="已称重" value="3"></el-option>
             <el-option label="已下货" value="4"></el-option>
           </el-select>
@@ -307,9 +300,9 @@ import HttpUtil from '@/utils/HttpUtil';
 
 const emptyQueryForm = () => ({
   productionDate: '',
-  productName: '',
-  trayCode: '',
-  trayStatus: ''
+  batchId: '',
+  productCode: '',
+  orderId: ''
 });
 
 const emptyEditForm = () => ({
@@ -412,6 +405,7 @@ export default {
       try {
         const payload = {
           id: this.editForm.id,
+          trayCode: this.editForm.trayCode,
           productName: this.editForm.productName,
           spec: this.editForm.spec,
           batchId: this.editForm.batchId,
