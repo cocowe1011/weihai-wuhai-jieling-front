@@ -1474,9 +1474,17 @@ export default {
             .join(' ');
 
           this.addLog(
-            `${label} UDI扫码成功，生产线 ${productionLineCode}，产品 ${
+            `${label} UDI扫码成功 | 托盘号: ${
+              this.weighTrayCode || '-'
+            } | UDI: ${cleanUdi} | 重量: ${this.weighTrayWeight || 0} | 数量: ${
+              this.weighTrayQuantity || 0
+            } | 生产线: ${productionLineCode} | 产品: ${
               udiData.productName || ''
-            } ${udiData.specMode || ''}`
+            } ${udiData.specMode || ''} | 批号: ${
+              udiData.produceBatchNo || ''
+            } | 分录ID: ${udiData.erpId ?? '-'} | 分录行号: ${
+              udiData.erpSeq ?? '-'
+            } | 订单号: ${udiData.orderNo || ''}`
           );
 
           // 发送PLC提取成功信号
@@ -1644,7 +1652,17 @@ export default {
         });
         if (updateRes && updateRes.data === 1) {
           this.addLog(
-            `${label} ${trayCode}：已更新为已下货，完成时间 ${finishTime}，来源 ${source}`
+            `${label} ${trayCode}：已更新为已下货 | 托盘号: ${trayCode} | UDI: ${
+              record.udiCode || '-'
+            } | 重量: ${record.weight ?? '-'} | 数量: ${
+              record.batchNum ?? '-'
+            } | 产品: ${record.productName || ''} ${
+              record.spec || ''
+            } | 批号: ${record.batchId || ''} | 分录ID: ${
+              record.fseqId ?? '-'
+            } | 分录行号: ${record.fentryId ?? '-'} | 订单号: ${
+              record.orderId || ''
+            } | 来源: ${source} | 完成时间: ${finishTime}`
           );
 
           // 1. 先写入下线线体号到PLC

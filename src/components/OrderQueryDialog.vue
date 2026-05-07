@@ -296,6 +296,7 @@
 </template>
 
 <script>
+import { ipcRenderer } from 'electron';
 import HttpUtil from '@/utils/HttpUtil';
 
 const emptyQueryForm = () => ({
@@ -343,6 +344,7 @@ export default {
       },
       editDialogVisible: false,
       editForm: emptyEditForm(),
+      editBeforeSnapshot: null,
       editSaving: false
     };
   },
@@ -391,12 +393,71 @@ export default {
             : '',
         udiCode: row.udiCode || ''
       };
+      this.editBeforeSnapshot = {
+        trayCode: row.trayCode || '',
+        productName: row.productName || '',
+        spec: row.spec || '',
+        batchId: row.batchId || '',
+        trayStatus:
+          row.trayStatus != null && row.trayStatus !== ''
+            ? String(row.trayStatus)
+            : '',
+        weight: row.weight != null ? String(row.weight) : '',
+        batchNum: row.batchNum != null ? String(row.batchNum) : '',
+        source: row.source || '',
+        productCode: row.productCode || '',
+        orderId: row.orderId || '',
+        fseqId: row.fseqId || '',
+        fentryId: row.fentryId || '',
+        unloadPort:
+          row.unloadPort != null && row.unloadPort !== ''
+            ? String(row.unloadPort)
+            : '',
+        udiCode: row.udiCode || ''
+      };
       this.editDialogVisible = true;
     },
     resetEditForm() {
       this.editForm = emptyEditForm();
+      this.editBeforeSnapshot = null;
       if (this.$refs.editFormRef) {
         this.$refs.editFormRef.clearValidate();
+      }
+    },
+    formatOrderEditLocalLog(before, afterPayload) {
+      const keys = [
+        'trayCode',
+        'productName',
+        'spec',
+        'batchId',
+        'trayStatus',
+        'weight',
+        'batchNum',
+        'source',
+        'productCode',
+        'orderId',
+        'fseqId',
+        'fentryId',
+        'unloadPort',
+        'udiCode'
+      ];
+      const norm = (v) => (v == null || v === '' ? '' : String(v));
+      const parts = [];
+      keys.forEach((k) => {
+        const bv = before ? norm(before[k]) : '';
+        const av = norm(afterPayload[k]);
+        if (bv !== av) {
+          parts.push(`${k}:${bv || '(空)'}→${av || '(空)'}`);
+        }
+      });
+      const changeText = parts.length > 0 ? parts.join('; ') : '(无字段变更)';
+      return `[订单修改] id=${afterPayload.id} ${changeText}`;
+    },
+    emitLocalOrderLog(line) {
+      try {
+        ipcRenderer.send('writeLogToLocal', line);
+      } catch (e) {
+        console.error('写入本地订单日志失败:', e);
       }
     },
     async submitEdit() {
@@ -422,6 +483,9 @@ export default {
         };
         const res = await HttpUtil.post('/order_info/update', payload);
         if (res && res.data === 1) {
+          this.emitLocalOrderLog(
+            this.formatOrderEditLocalLog(this.editBeforeSnapshot, payload)
+          );
           this.$message.success('保存成功');
           this.editDialogVisible = false;
           this.handleSearch();
