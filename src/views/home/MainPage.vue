@@ -1405,8 +1405,52 @@ export default {
         this.reReadWeighOrderLoading = false;
       }
     },
+    async checkPendingWeighedTray(trayCode) {
+      const label = '称重位托盘码';
+      try {
+        const res = await HttpUtil.post('/order_info/selectByList', {
+          trayCode,
+          trayStatus: '3',
+          invalidFlag: '0'
+        });
+        const list = res.data || [];
+        if (list.length === 0) return;
+
+        // 按时间倒序排序
+        list.sort((a, b) => new Date(b.insertTime) - new Date(a.insertTime));
+
+        const summary = list
+          .slice(0, 3)
+          .map(
+            (r) =>
+              `ID:${r.id} UDI:${r.udiCode || '-'} 时间:${r.insertTime || '-'}`
+          )
+          .join('；');
+
+        this.addLog(
+          `${label} 托盘 ${trayCode} 存在 ${
+            list.length
+          } 条已称重未下线记录，请在历史订单中核对处理。${summary}${
+            list.length > 3 ? '…' : ''
+          }`,
+          'alarm'
+        );
+      } catch (err) {
+        this.addLog(
+          `${label} 检查未下线托盘异常：${err.message || err}`,
+          'alarm'
+        );
+      }
+    },
     async handleWeighUdiBarcodeChange(newVal) {
       const label = '称重位UDI条码';
+
+      // 称重前检查是否有未下线的历史记录
+      const trayCode = this.normalizePlcTrayCode(this.weighTrayCode);
+      if (trayCode) {
+        await this.checkPendingWeighedTray(trayCode);
+      }
+
       // 清理前缀和特殊字符：去掉F<、引号、星号等
       let cleanUdi = newVal
         .replace(/^F<'?/, '') // 去掉开头的 F< 或 F<'
@@ -1626,9 +1670,10 @@ export default {
       try {
         const res = await HttpUtil.post('/order_info/selectByList', {
           trayCode,
-          trayStatus: '3'
+          trayStatus: '3',
+          invalidFlag: '0'
         });
-        const list = res.data || [];
+        let list = res.data || [];
         if (list.length === 0) {
           this[productInfoKey] = '';
           this.addLog(
@@ -1637,7 +1682,23 @@ export default {
           );
           return;
         }
-        const record = list[0];
+
+        // 优先使用当前称重记录ID，如果没有匹配的，则按时间倒序取最新一条
+        let record = null;
+        if (this.currentWeighRecordId) {
+          record = list.find((r) => r.id === this.currentWeighRecordId);
+        }
+
+        if (!record) {
+          list.sort((a, b) => new Date(b.insertTime) - new Date(a.insertTime));
+          record = list[0];
+        }
+
+        // 下货成功后，如果使用的是 currentWeighRecordId，则清空
+        if (this.currentWeighRecordId === record.id) {
+          this.currentWeighRecordId = null;
+        }
+
         this[productInfoKey] = [record.productName, record.spec, record.batchId]
           .filter(Boolean)
           .join(' ');

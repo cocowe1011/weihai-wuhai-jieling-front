@@ -23,6 +23,15 @@
         </el-date-picker>
       </div>
       <div class="query-item">
+        <label>托盘号：</label>
+        <el-input
+          v-model="queryForm.trayCode"
+          placeholder="托盘号"
+          style="width: 160px"
+          clearable
+        ></el-input>
+      </div>
+      <div class="query-item">
         <label>批次ID：</label>
         <el-input
           v-model="queryForm.batchId"
@@ -301,6 +310,7 @@ import HttpUtil from '@/utils/HttpUtil';
 
 const emptyQueryForm = () => ({
   productionDate: '',
+  trayCode: '',
   batchId: '',
   productCode: '',
   orderId: ''
