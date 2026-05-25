@@ -2,7 +2,7 @@
   <el-dialog
     title="订单查询"
     :visible.sync="dialogVisible"
-    width="95%"
+    width="98%"
     :close-on-click-modal="false"
     :modal-append-to-body="false"
     append-to-body
@@ -36,7 +36,7 @@
         <el-input
           v-model="queryForm.batchId"
           placeholder="批次ID"
-          style="width: 200px"
+          style="width: 170px"
           clearable
         ></el-input>
       </div>
@@ -45,7 +45,7 @@
         <el-input
           v-model="queryForm.productCode"
           placeholder="物料编码"
-          style="width: 200px"
+          style="width: 170px"
           clearable
         ></el-input>
       </div>
@@ -54,16 +54,24 @@
         <el-input
           v-model="queryForm.orderId"
           placeholder="生产订单号"
-          style="width: 200px"
+          style="width: 170px"
           clearable
         ></el-input>
       </div>
-      <div class="query-item">
+      <div class="query-item query-actions">
         <el-button type="primary" @click="handleSearch" :loading="loading">
           <i class="el-icon-search"></i>查询
         </el-button>
         <el-button @click="handleReset">
           <i class="el-icon-refresh-left"></i>重置
+        </el-button>
+        <el-button
+          type="success"
+          @click="handleExportExcel"
+          :loading="exportLoading"
+          :disabled="pagination.total === 0"
+        >
+          <i class="el-icon-download"></i>导出Excel
         </el-button>
       </div>
     </div>
@@ -179,9 +187,7 @@
           align="center"
         >
           <template slot-scope="scope">
-            <span>{{
-              scope.row.unloadPort ? scope.row.unloadPort + '#' : '—'
-            }}</span>
+            <span>{{ formatUnloadPort(scope.row.unloadPort) }}</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -230,70 +236,72 @@
       :close-on-click-modal="false"
       @closed="resetEditForm"
     >
-      <el-form
-        ref="editFormRef"
-        :model="editForm"
-        label-width="100px"
-        size="small"
-      >
-        <el-form-item label="托盘号">
-          <el-input v-model="editForm.trayCode" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="产品名称">
-          <el-input v-model="editForm.productName" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="规格">
-          <el-input v-model="editForm.spec" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="批次订单ID">
-          <el-input v-model="editForm.batchId" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="托盘状态">
-          <el-select
-            v-model="editForm.trayStatus"
-            placeholder="请选择"
-            style="width: 100%"
-          >
-            <el-option label="已称重" value="3"></el-option>
-            <el-option label="已下货" value="4"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="称重重量">
-          <el-input v-model="editForm.weight" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="组批数量">
-          <el-input v-model="editForm.batchNum" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="来源">
-          <el-input v-model="editForm.source" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="物料编码">
-          <el-input v-model="editForm.productCode" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="生产订单号">
-          <el-input v-model="editForm.orderId" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="分录行号">
-          <el-input v-model="editForm.fseqId" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="分录ID">
-          <el-input v-model="editForm.fentryId" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="下货口">
-          <el-select
-            v-model="editForm.unloadPort"
-            placeholder="请选择"
-            style="width: 100%"
-            clearable
-          >
-            <el-option label="1#下货口" value="1"></el-option>
-            <el-option label="2#下货口" value="2"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="UDI条码">
-          <el-input v-model="editForm.udiCode" clearable></el-input>
-        </el-form-item>
-      </el-form>
+      <div class="edit-form-body">
+        <el-form
+          ref="editFormRef"
+          :model="editForm"
+          label-width="100px"
+          size="small"
+        >
+          <el-form-item label="托盘号">
+            <el-input v-model="editForm.trayCode" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="产品名称">
+            <el-input v-model="editForm.productName" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="规格">
+            <el-input v-model="editForm.spec" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="批次订单ID">
+            <el-input v-model="editForm.batchId" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="托盘状态">
+            <el-select
+              v-model="editForm.trayStatus"
+              placeholder="请选择"
+              style="width: 100%"
+            >
+              <el-option label="已称重" value="3"></el-option>
+              <el-option label="已下货" value="4"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="称重重量">
+            <el-input v-model="editForm.weight" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="组批数量">
+            <el-input v-model="editForm.batchNum" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="来源">
+            <el-input v-model="editForm.source" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="物料编码">
+            <el-input v-model="editForm.productCode" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="生产订单号">
+            <el-input v-model="editForm.orderId" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="分录行号">
+            <el-input v-model="editForm.fseqId" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="分录ID">
+            <el-input v-model="editForm.fentryId" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="下货口">
+            <el-select
+              v-model="editForm.unloadPort"
+              placeholder="请选择"
+              style="width: 100%"
+              clearable
+            >
+              <el-option label="1#下货口" value="1"></el-option>
+              <el-option label="2#下货口" value="2"></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="UDI条码">
+            <el-input v-model="editForm.udiCode" clearable></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
         <el-button type="primary" :loading="editSaving" @click="submitEdit">
@@ -306,7 +314,11 @@
 
 <script>
 import { ipcRenderer } from 'electron';
+import * as XLSX from 'xlsx';
+import fs from 'fs';
 import HttpUtil from '@/utils/HttpUtil';
+
+const remote = require('electron').remote;
 
 const emptyQueryForm = () => ({
   productionDate: '',
@@ -345,6 +357,7 @@ export default {
   data() {
     return {
       loading: false,
+      exportLoading: false,
       queryForm: emptyQueryForm(),
       tableData: [],
       pagination: {
@@ -487,26 +500,110 @@ export default {
         })
         .catch(() => {});
     },
+    buildSearchParams(overrides = {}) {
+      const params = {
+        pageNum: this.pagination.pageNum,
+        pageSize: this.pagination.pageSize,
+        ...this.queryForm,
+        ...overrides
+      };
+
+      Object.keys(params).forEach((key) => {
+        if (
+          params[key] === '' ||
+          params[key] === null ||
+          params[key] === undefined
+        ) {
+          delete params[key];
+        }
+      });
+
+      params.invalidFlag = '0';
+      return params;
+    },
+
+    formatUnloadPort(unloadPort) {
+      return unloadPort != null && unloadPort !== '' ? `${unloadPort}#` : '—';
+    },
+
+    mapRowToExport(row) {
+      return {
+        生产日期: row.insertTime || '',
+        批次订单ID: row.batchId || '',
+        产品名称: row.productName || '',
+        托盘号: row.trayCode || '',
+        托盘状态: this.getTrayStatusText(row.trayStatus),
+        规格: row.spec || '',
+        订单完成时间: row.finishTime || '',
+        称重重量: row.weight != null ? row.weight : '',
+        组批数量: row.batchNum != null ? row.batchNum : '',
+        来源: row.source || '',
+        物料编码: row.productCode || '',
+        生产订单号: row.orderId || '',
+        分录行号: row.fseqId || '',
+        分录ID: row.fentryId || '',
+        下货口: this.formatUnloadPort(row.unloadPort),
+        UDI条码: row.udiCode || ''
+      };
+    },
+
+    async handleExportExcel() {
+      if (this.pagination.total === 0) {
+        this.$message.warning('暂无数据可导出');
+        return;
+      }
+
+      this.exportLoading = true;
+      try {
+        const params = this.buildSearchParams({
+          pageNum: 1,
+          pageSize: this.pagination.total
+        });
+        const res = await HttpUtil.post(
+          '/order_info/queryHistoryOrderList',
+          params
+        );
+        const list = (res && res.data && res.data.list) || [];
+        if (!list.length) {
+          this.$message.warning('暂无数据可导出');
+          return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(
+          list.map((row) => this.mapRowToExport(row))
+        );
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '订单查询');
+
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const timestamp = `${now.getFullYear()}-${pad(
+          now.getMonth() + 1
+        )}-${pad(now.getDate())}_${pad(now.getHours())}${pad(
+          now.getMinutes()
+        )}${pad(now.getSeconds())}`;
+        const { canceled, filePath } = await remote.dialog.showSaveDialog({
+          title: '导出Excel',
+          defaultPath: `订单查询_${timestamp}.xlsx`,
+          filters: [{ name: 'Excel文件', extensions: ['xlsx'] }]
+        });
+        if (canceled || !filePath) return;
+
+        const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
+        fs.writeFileSync(filePath, buffer);
+        this.$message.success('导出成功');
+      } catch (error) {
+        console.error('导出Excel失败:', error);
+        this.$message.error('导出失败，请重试');
+      } finally {
+        this.exportLoading = false;
+      }
+    },
+
     async handleSearch() {
       this.loading = true;
       try {
-        const params = {
-          pageNum: this.pagination.pageNum,
-          pageSize: this.pagination.pageSize,
-          ...this.queryForm
-        };
-
-        Object.keys(params).forEach((key) => {
-          if (
-            params[key] === '' ||
-            params[key] === null ||
-            params[key] === undefined
-          ) {
-            delete params[key];
-          }
-        });
-
-        params.invalidFlag = '0';
+        const params = this.buildSearchParams();
 
         const res = await HttpUtil.post(
           '/order_info/queryHistoryOrderList',
@@ -580,13 +677,15 @@ export default {
     text-align: left;
     display: flex;
     align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
+    gap: 12px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 
     .query-item {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
 
       label {
         font-size: 14px;
@@ -597,6 +696,10 @@ export default {
       .el-button + .el-button {
         margin-left: 10px;
       }
+    }
+
+    .query-actions {
+      white-space: nowrap;
     }
   }
 
@@ -619,5 +722,10 @@ export default {
       color: #c0c4cc;
     }
   }
+}
+
+.edit-form-body {
+  max-height: 60vh;
+  overflow-y: auto;
 }
 </style>
