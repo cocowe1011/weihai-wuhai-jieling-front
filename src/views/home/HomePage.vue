@@ -8,7 +8,7 @@
             style="width: 38px; height: 38px"
           />
           <div style="margin-left: 10px; height: 100%">
-            <div class="maskDiv-top-left-top-title">码垛称重记录系统</div>
+            <div class="maskDiv-top-left-top-title">码垛智能分拣系统</div>
             <div class="maskDiv-top-left-top-title2">weight-records</div>
           </div>
         </div>

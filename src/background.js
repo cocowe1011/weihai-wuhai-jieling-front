@@ -35,7 +35,7 @@ var conn = new nodes7();
 function logToFile(message) {
   const timestamp = new Date().toLocaleString();
   const logPath =
-    'D://stacking-weight-record-software/log/' +
+    'D://weihai-cainiao-front/log/' +
     new Date().toLocaleDateString().replaceAll('/', '-') +
     'runlog.txt';
   fs.appendFile(logPath, `[${timestamp}] ${message}\n`, (err) => {
@@ -74,11 +74,11 @@ function flushLogBuffer() {
   if (logBuffer.length === 0) return;
 
   const logPath =
-    'D://stacking-weight-record-software/log/' +
+    'D://weihai-cainiao-front/log/' +
     (new Date().toLocaleDateString() + '.txt').replaceAll('/', '-');
 
   // 确保日志目录存在
-  const logDir = 'D://stacking-weight-record-software/log';
+  const logDir = 'D://weihai-cainiao-front/log';
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
   }
@@ -346,7 +346,7 @@ app.on('ready', () => {
         '-XX:+UseG1GC', // 使用G1垃圾收集器
         '-XX:MaxGCPauseMillis=200', // 最大GC停顿时间
         '-XX:+HeapDumpOnOutOfMemoryError', // 内存溢出时导出堆转储
-        '-XX:HeapDumpPath=D://stacking-weight-record-software/dump', // 堆转储文件路径
+        '-XX:HeapDumpPath=D://weihai-cainiao-front/dump', // 堆转储文件路径
 
         // 启动速度优化 - 减少JIT编译开销
         '-XX:+TieredCompilation', // 分层编译
@@ -358,7 +358,7 @@ app.on('ready', () => {
 
         // 错误处理
         '-XX:+ExitOnOutOfMemoryError', // 发生OOM时退出
-        '-XX:ErrorFile=D://stacking-weight-record-software/log/hs_err_%p.log', // JVM错误日志
+        '-XX:ErrorFile=D://weihai-cainiao-front/log/hs_err_%p.log', // JVM错误日志
         // 编码
         '-Dfile.encoding=UTF-8',
         // 应用参数
@@ -366,8 +366,8 @@ app.on('ready', () => {
         jarPath
       ];
       // 确保日志目录存在
-      const logDir = 'D://stacking-weight-record-software/log';
-      const dumpDir = 'D://stacking-weight-record-software/dump';
+      const logDir = 'D://weihai-cainiao-front/log';
+      const dumpDir = 'D://weihai-cainiao-front/dump';
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true });
       }
