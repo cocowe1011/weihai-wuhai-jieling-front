@@ -203,7 +203,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit0')"
                 >
-                  <div class="marker-label">S-1#</div>
+                  <div class="marker-label">01001</div>
                 </div>
                 <!-- 01002 -->
                 <div
@@ -213,7 +213,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit1')"
                 >
-                  <div class="marker-label">S-2#</div>
+                  <div class="marker-label">01002</div>
                 </div>
                 <!-- 01013光电1 -->
                 <div
@@ -223,7 +223,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit2')"
                 >
-                  <div class="marker-label">S-13-1#</div>
+                  <div class="marker-label">01013-1</div>
                 </div>
                 <!-- 01004 -->
                 <div
@@ -233,7 +233,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit3')"
                 >
-                  <div class="marker-label">S-4#</div>
+                  <div class="marker-label">01004</div>
                 </div>
                 <!-- 01005 -->
                 <div
@@ -243,7 +243,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit4')"
                 >
-                  <div class="marker-label">S-5#</div>
+                  <div class="marker-label">01005</div>
                 </div>
                 <!-- 01006 -->
                 <div
@@ -253,7 +253,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit5')"
                 >
-                  <div class="marker-label">S-6#</div>
+                  <div class="marker-label">01006</div>
                 </div>
                 <!-- 01007 -->
                 <div
@@ -263,7 +263,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit6')"
                 >
-                  <div class="marker-label">S-7#</div>
+                  <div class="marker-label">01007</div>
                 </div>
                 <!-- 01008 -->
                 <div
@@ -273,7 +273,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit7')"
                 >
-                  <div class="marker-label">S-8#</div>
+                  <div class="marker-label">01008</div>
                 </div>
                 <!-- 01009 -->
                 <div
@@ -283,7 +283,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit8')"
                 >
-                  <div class="marker-label">S-9#</div>
+                  <div class="marker-label">01009</div>
                 </div>
                 <!-- 01010 -->
                 <div
@@ -293,7 +293,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit9')"
                 >
-                  <div class="marker-label">S-10#</div>
+                  <div class="marker-label">01010</div>
                 </div>
                 <!-- 01011 -->
                 <div
@@ -303,7 +303,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit10')"
                 >
-                  <div class="marker-label">S-11#</div>
+                  <div class="marker-label">01011</div>
                 </div>
                 <!-- 01012 -->
                 <div
@@ -313,7 +313,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit11')"
                 >
-                  <div class="marker-label">S-12#</div>
+                  <div class="marker-label">01012</div>
                 </div>
                 <!-- 01013光电2 -->
                 <div
@@ -323,7 +323,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit12')"
                 >
-                  <div class="marker-label">S-13-2#</div>
+                  <div class="marker-label">01013-2</div>
                 </div>
                 <!-- 01014 -->
                 <div
@@ -333,7 +333,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit13')"
                 >
-                  <div class="marker-label">S-14#</div>
+                  <div class="marker-label">01014</div>
                 </div>
                 <!-- 01015 -->
                 <div
@@ -343,7 +343,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit14')"
                 >
-                  <div class="marker-label">S-15#</div>
+                  <div class="marker-label">01015</div>
                 </div>
                 <!-- 01016 -->
                 <div
@@ -353,7 +353,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal1, 'bit15')"
                 >
-                  <div class="marker-label">S-16#</div>
+                  <div class="marker-label">01016</div>
                 </div>
                 <!-- DBW14 光电信号--2 -->
                 <!-- 01017 -->
@@ -364,7 +364,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit0')"
                 >
-                  <div class="marker-label">S-17#</div>
+                  <div class="marker-label">01017</div>
                 </div>
                 <!-- 01018 -->
                 <div
@@ -374,7 +374,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit1')"
                 >
-                  <div class="marker-label">S-18#</div>
+                  <div class="marker-label">01018</div>
                 </div>
                 <!-- 01019 -->
                 <div
@@ -384,7 +384,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit2')"
                 >
-                  <div class="marker-label">S-19#</div>
+                  <div class="marker-label">01019</div>
                 </div>
                 <!-- 01020 -->
                 <div
@@ -394,7 +394,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit3')"
                 >
-                  <div class="marker-label">S-20#</div>
+                  <div class="marker-label">01020</div>
                 </div>
                 <!-- 01021 -->
                 <div
@@ -404,7 +404,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit4')"
                 >
-                  <div class="marker-label">S-21#</div>
+                  <div class="marker-label">01021</div>
                 </div>
                 <!-- 01022 -->
                 <div
@@ -414,7 +414,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit5')"
                 >
-                  <div class="marker-label">S-22#</div>
+                  <div class="marker-label">01022</div>
                 </div>
                 <!-- 01023 -->
                 <div
@@ -424,7 +424,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit6')"
                 >
-                  <div class="marker-label">S-23#</div>
+                  <div class="marker-label">01023</div>
                 </div>
                 <!-- 01024 -->
                 <div
@@ -434,7 +434,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit7')"
                 >
-                  <div class="marker-label">S-24#</div>
+                  <div class="marker-label">01024</div>
                 </div>
                 <!-- 01025 -->
                 <div
@@ -444,7 +444,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit8')"
                 >
-                  <div class="marker-label">S-25#</div>
+                  <div class="marker-label">01025</div>
                 </div>
                 <!-- 01026 -->
                 <div
@@ -454,7 +454,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit9')"
                 >
-                  <div class="marker-label">S-26#</div>
+                  <div class="marker-label">01026</div>
                 </div>
                 <!-- 01027 -->
                 <div
@@ -464,7 +464,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit10')"
                 >
-                  <div class="marker-label">S-27#</div>
+                  <div class="marker-label">01027</div>
                 </div>
                 <!-- 01028 -->
                 <div
@@ -474,7 +474,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit11')"
                 >
-                  <div class="marker-label">S-28#</div>
+                  <div class="marker-label">01028</div>
                 </div>
                 <!-- 01029 -->
                 <div
@@ -484,7 +484,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit12')"
                 >
-                  <div class="marker-label">S-29#</div>
+                  <div class="marker-label">01029</div>
                 </div>
                 <!-- 01030 -->
                 <div
@@ -494,7 +494,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit13')"
                 >
-                  <div class="marker-label">S-30#</div>
+                  <div class="marker-label">01030</div>
                 </div>
                 <!-- 01031 -->
                 <div
@@ -504,7 +504,7 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit14')"
                 >
-                  <div class="marker-label">S-31#</div>
+                  <div class="marker-label">01031</div>
                 </div>
                 <!-- 01032 -->
                 <div
@@ -514,128 +514,128 @@
                   data-y="1380"
                   @click="toggleBitValue(photoelectricSignal2, 'bit15')"
                 >
-                  <div class="marker-label">S-32#</div>
+                  <div class="marker-label">01032</div>
                 </div>
                 <!-- DBW6 电机运行信号 01001-01016 -->
                 <!-- 01001 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit0 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="400"
+                  data-y="245"
                   @click="toggleBitValue(motorRunningWord6, 'bit0')"
                 >
-                  <div class="marker-label">S1#</div>
+                  <div class="marker-label">01001</div>
                 </div>
                 <!-- 01002 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit1 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="650"
+                  data-y="260"
                   @click="toggleBitValue(motorRunningWord6, 'bit1')"
                 >
-                  <div class="marker-label">S2#</div>
+                  <div class="marker-label">01002</div>
                 </div>
                 <!-- 01003 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit2 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="665"
+                  data-y="445"
                   @click="toggleBitValue(motorRunningWord6, 'bit2')"
                 >
-                  <div class="marker-label">S3#</div>
+                  <div class="marker-label">01003</div>
                 </div>
                 <!-- 01004 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit3 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="660"
+                  data-y="660"
                   @click="toggleBitValue(motorRunningWord6, 'bit3')"
                 >
-                  <div class="marker-label">S4#</div>
+                  <div class="marker-label">01004</div>
                 </div>
                 <!-- 01005 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit4 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="650"
+                  data-y="900"
                   @click="toggleBitValue(motorRunningWord6, 'bit4')"
                 >
-                  <div class="marker-label">S5#</div>
+                  <div class="marker-label">01005</div>
                 </div>
                 <!-- 01006 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-left"
                   :class="{ running: motorRunningWord6.bit5 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="648"
+                  data-y="980"
                   @click="toggleBitValue(motorRunningWord6, 'bit5')"
                 >
-                  <div class="marker-label">S6#</div>
+                  <div class="marker-label">01006</div>
                 </div>
                 <!-- 01007 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit6 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="646"
+                  data-y="1060"
                   @click="toggleBitValue(motorRunningWord6, 'bit6')"
                 >
-                  <div class="marker-label">S7#</div>
+                  <div class="marker-label">01007</div>
                 </div>
                 <!-- 01008 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-left"
                   :class="{ running: motorRunningWord6.bit7 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="642"
+                  data-y="1140"
                   @click="toggleBitValue(motorRunningWord6, 'bit7')"
                 >
-                  <div class="marker-label">S8#</div>
+                  <div class="marker-label">01008</div>
                 </div>
                 <!-- 01009 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit8 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="639"
+                  data-y="1210"
                   @click="toggleBitValue(motorRunningWord6, 'bit8')"
                 >
-                  <div class="marker-label">S9#</div>
+                  <div class="marker-label">01009</div>
                 </div>
                 <!-- 01010 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-left"
                   :class="{ running: motorRunningWord6.bit9 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="637"
+                  data-y="1270"
                   @click="toggleBitValue(motorRunningWord6, 'bit9')"
                 >
-                  <div class="marker-label">S10#</div>
+                  <div class="marker-label">01010</div>
                 </div>
                 <!-- 01011 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-bottom"
                   :class="{ running: motorRunningWord6.bit10 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="662"
+                  data-y="1330"
                   @click="toggleBitValue(motorRunningWord6, 'bit10')"
                 >
-                  <div class="marker-label">S11#</div>
+                  <div class="marker-label">01011</div>
                 </div>
                 <!-- 01012 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit11 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="760"
+                  data-y="1345"
                   @click="toggleBitValue(motorRunningWord6, 'bit11')"
                 >
-                  <div class="marker-label">S12#</div>
+                  <div class="marker-label">01012</div>
                 </div>
                 <!-- 01013 -->
                 <div
@@ -645,7 +645,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord6, 'bit12')"
                 >
-                  <div class="marker-label">S13#</div>
+                  <div class="marker-label">01013</div>
                 </div>
                 <!-- 01014 -->
                 <div
@@ -655,7 +655,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord6, 'bit13')"
                 >
-                  <div class="marker-label">S14#</div>
+                  <div class="marker-label">01014</div>
                 </div>
                 <!-- 01015 -->
                 <div
@@ -665,7 +665,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord6, 'bit14')"
                 >
-                  <div class="marker-label">S15#</div>
+                  <div class="marker-label">01015</div>
                 </div>
                 <!-- 01016 -->
                 <div
@@ -675,7 +675,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord6, 'bit15')"
                 >
-                  <div class="marker-label">S16#</div>
+                  <div class="marker-label">01016</div>
                 </div>
                 <!-- DBW8 电机运行信号 01017-01030（bit14/15 备用不生成） -->
                 <!-- 01017 -->
@@ -686,7 +686,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit0')"
                 >
-                  <div class="marker-label">S17#</div>
+                  <div class="marker-label">01017</div>
                 </div>
                 <!-- 01018 -->
                 <div
@@ -696,7 +696,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit1')"
                 >
-                  <div class="marker-label">S18#</div>
+                  <div class="marker-label">01018</div>
                 </div>
                 <!-- 01019 -->
                 <div
@@ -706,7 +706,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit2')"
                 >
-                  <div class="marker-label">S19#</div>
+                  <div class="marker-label">01019</div>
                 </div>
                 <!-- 01020 -->
                 <div
@@ -716,7 +716,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit3')"
                 >
-                  <div class="marker-label">S20#</div>
+                  <div class="marker-label">01020</div>
                 </div>
                 <!-- 01021 -->
                 <div
@@ -726,7 +726,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit4')"
                 >
-                  <div class="marker-label">S21#</div>
+                  <div class="marker-label">01021</div>
                 </div>
                 <!-- 01022 -->
                 <div
@@ -736,7 +736,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit5')"
                 >
-                  <div class="marker-label">S22#</div>
+                  <div class="marker-label">01022</div>
                 </div>
                 <!-- 01023 -->
                 <div
@@ -746,7 +746,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit6')"
                 >
-                  <div class="marker-label">S23#</div>
+                  <div class="marker-label">01023</div>
                 </div>
                 <!-- 01024 -->
                 <div
@@ -756,7 +756,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit7')"
                 >
-                  <div class="marker-label">S24#</div>
+                  <div class="marker-label">01024</div>
                 </div>
                 <!-- 01025 -->
                 <div
@@ -766,7 +766,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit8')"
                 >
-                  <div class="marker-label">S25#</div>
+                  <div class="marker-label">01025</div>
                 </div>
                 <!-- 01026 -->
                 <div
@@ -776,7 +776,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit9')"
                 >
-                  <div class="marker-label">S26#</div>
+                  <div class="marker-label">01026</div>
                 </div>
                 <!-- 01027 -->
                 <div
@@ -786,7 +786,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit10')"
                 >
-                  <div class="marker-label">S27#</div>
+                  <div class="marker-label">01027</div>
                 </div>
                 <!-- 01028 -->
                 <div
@@ -796,7 +796,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit11')"
                 >
-                  <div class="marker-label">S28#</div>
+                  <div class="marker-label">01028</div>
                 </div>
                 <!-- 01029 -->
                 <div
@@ -806,7 +806,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit12')"
                 >
-                  <div class="marker-label">S29#</div>
+                  <div class="marker-label">01029</div>
                 </div>
                 <!-- 01030 -->
                 <div
@@ -816,7 +816,7 @@
                   data-y="1390"
                   @click="toggleBitValue(motorRunningWord8, 'bit13')"
                 >
-                  <div class="marker-label">S30#</div>
+                  <div class="marker-label">01030</div>
                 </div>
                 <!-- DBW10 分拣电机运行信号 -->
                 <!-- 分拣1左执行 -->
@@ -1232,20 +1232,20 @@ export default {
       ],
       // 添加队列位置标识数据
       queueMarkers: [
-        { id: 1, name: '上货区', queueId: 1, x: 1325, y: 1350 },
-        { id: 2, name: '分拣口1', queueId: 2, x: 2500, y: 1530 },
-        { id: 3, name: '分拣口2', queueId: 3, x: 1325, y: 1230 },
-        { id: 4, name: '分拣口3', queueId: 4, x: 1050, y: 1065 },
-        { id: 5, name: '分拣口4', queueId: 5, x: 1050, y: 845 },
-        { id: 6, name: '分拣口5', queueId: 6, x: 1050, y: 645 },
-        { id: 7, name: '分拣口6', queueId: 7, x: 1610, y: 1065 },
-        { id: 8, name: '分拣口7', queueId: 8, x: 1610, y: 845 },
-        { id: 9, name: '分拣口8', queueId: 9, x: 1610, y: 645 },
-        { id: 10, name: '分拣口9', queueId: 10, x: 2190, y: 1065 },
-        { id: 11, name: '分拣口10', queueId: 11, x: 2190, y: 845 },
-        { id: 12, name: '分拣口11', queueId: 12, x: 2190, y: 645 },
-        { id: 13, name: '分拣口12', queueId: 13, x: 2070, y: 480 },
-        { id: 14, name: '分拣口13', queueId: 14, x: 2070, y: 320 }
+        { id: 1, name: '上货区', queueId: 1, x: 760, y: 780 },
+        { id: 2, name: '分拣口1', queueId: 2, x: 1730, y: 1650 },
+        { id: 3, name: '分拣口2', queueId: 3, x: 1730, y: 1020 },
+        { id: 4, name: '分拣口3', queueId: 4, x: 1910, y: 1650 },
+        { id: 5, name: '分拣口4', queueId: 5, x: 1910, y: 1020 },
+        { id: 6, name: '分拣口5', queueId: 6, x: 2090, y: 1650 },
+        { id: 7, name: '分拣口6', queueId: 7, x: 2090, y: 1020 },
+        { id: 8, name: '分拣口7', queueId: 8, x: 2280, y: 1650 },
+        { id: 9, name: '分拣口8', queueId: 9, x: 2280, y: 1020 },
+        { id: 10, name: '分拣口9', queueId: 10, x: 2470, y: 1650 },
+        { id: 11, name: '分拣口10', queueId: 11, x: 2470, y: 1020 },
+        { id: 12, name: '分拣口11', queueId: 12, x: 2650, y: 1650 },
+        { id: 13, name: '分拣口12', queueId: 13, x: 2650, y: 1020 },
+        { id: 14, name: '分拣口13', queueId: 14, x: 2820, y: 1350 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // —— 读取点位（与 读取点位.csv / background.js 一致）——
