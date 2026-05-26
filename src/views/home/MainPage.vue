@@ -6,57 +6,57 @@
       <div class="side-info-panel">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
-          <div class="section-header">当前扫码托盘信息</div>
+          <div class="section-header">当前扫码包裹信息</div>
           <div class="scrollable-content" style="margin-top: 5px">
             <div class="status-overview">
               <div class="data-card">
                 <div class="data-card-border">
                   <div class="data-card-border-borderTop granient-text">
-                    订单id
+                    大包号
                   </div>
                   <div
                     class="data-card-border-borderDown"
                     style="font-size: 1.3vw"
                   >
-                    {{ nowScanTrayInfo.orderId || '--' }}
+                    {{ nowScanTrayInfo.packageNo || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">产品名称</div>
+                  <div class="data-card-border-borderTop">客户来源</div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.productName || '--' }}
+                    {{ nowScanTrayInfo.customerSource || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">当前进货口</div>
+                  <div class="data-card-border-borderTop">来源仓</div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.inPut || '--' }}
+                    {{ nowScanTrayInfo.sourceWarehouse || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">是否消毒</div>
+                  <div class="data-card-border-borderTop">渠道</div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.isTerile || '--' }}
+                    {{ nowScanTrayInfo.channel || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">物料编号</div>
+                  <div class="data-card-border-borderTop">目的国</div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.productCode || '--' }}
+                    {{ nowScanTrayInfo.destinationCountry || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">批次</div>
+                  <div class="data-card-border-borderTop">批次号</div>
                   <div class="data-card-border-borderDown">
                     {{ nowScanTrayInfo.batchNo || '--' }}
                   </div>
@@ -273,17 +273,8 @@
               <div class="selected-queue-header" v-if="selectedQueue">
                 <h3>{{ selectedQueue.queueName }}</h3>
                 <div class="queue-header-actions">
-                  <el-button
-                    type="primary"
-                    size="small"
-                    @click="showAddTrayDialog"
-                    :disabled="!selectedQueue"
-                    icon="el-icon-plus"
-                  >
-                    添加托盘
-                  </el-button>
                   <span class="tray-total"
-                    >托盘数量: {{ selectedQueue.trayInfo?.length || 0 }}</span
+                    >包裹数量: {{ selectedQueue.trayInfo?.length || 0 }}</span
                   >
                 </div>
               </div>
@@ -305,38 +296,24 @@
                     <div class="tray-info">
                       <div class="tray-info-row">
                         <span class="tray-name">{{ tray.name }}</span>
-                        <div class="tray-batch-group">
-                          <span class="tray-batch">
-                            <span>
-                              {{
-                                tray.isTerile === 1 ? '消毒' : '不消毒'
-                              }}</span
-                            >
-                          </span>
-                        </div>
+                        <span class="tray-detail">{{
+                          tray.channel || '--'
+                        }}</span>
                       </div>
                       <div class="tray-info-row">
                         <span class="tray-detail"
-                          >订单ID：{{ tray.orderId || '--' }}</span
+                          >业务编号：{{ tray.businessNo || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >物料编码：{{ tray.productCode || '--' }}</span
+                          >客户来源：{{ tray.customerSource || '--' }}</span
                         >
                       </div>
                       <div class="tray-info-row">
                         <span class="tray-detail"
-                          >产品名称：{{ tray.productName || '--' }}</span
+                          >目的国：{{ tray.destinationCountry || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >规格：{{ tray.unit || '--' }}</span
-                        >
-                      </div>
-                      <div class="tray-info-row">
-                        <span class="tray-detail"
-                          >批次：{{ tray.batchNo || '--' }}</span
-                        >
-                        <span class="tray-detail"
-                          >备注：{{ tray.remark || '--' }}</span
+                          >批次号：{{ tray.batchNo || '--' }}</span
                         >
                       </div>
                       <span class="tray-time">{{ tray.time }}</span>
@@ -401,6 +378,7 @@
               <div class="qrcode-input-group">
                 <div class="qrcode-label">六面扫:</div>
                 <el-input
+                  v-model="sixScanBarcode"
                   size="small"
                   placeholder="输入扫码信息"
                   class="qrcode-input"
@@ -422,6 +400,11 @@ import HttpUtil from '@/utils/HttpUtil';
 import moment from 'moment';
 import { ipcRenderer } from 'electron';
 import OrderQueryDialog from '@/components/OrderQueryDialog.vue';
+import {
+  mockPackageByBarcode,
+  toOrderInfoPayload,
+  toScanDisplayInfo
+} from '@/utils/packageMockData';
 export default {
   name: 'MainPage',
   components: {
@@ -430,6 +413,9 @@ export default {
   data() {
     return {
       nowScanTrayInfo: {},
+      sixScanBarcode: '',
+      lastProcessedBarcode: '',
+      sixScanProcessing: false,
       showTestPanel: false,
       orderQueryDialogVisible: false,
       buttonStates: {
@@ -733,6 +719,20 @@ export default {
       return this.queues[this.selectedQueueIndex];
     }
   },
+  watch: {
+    sixScanBarcode(newVal) {
+      const barcode = (newVal || '').trim();
+      if (!barcode) {
+        return;
+      }
+      if (barcode === this.lastProcessedBarcode) {
+        this.addLog(`六面扫条码重复，跳过：${barcode}`);
+        return;
+      }
+      this.addLog(`六面扫识别条码：${barcode}`);
+      this.handleSixScanUpload(barcode);
+    }
+  },
   mounted() {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
@@ -922,8 +922,64 @@ export default {
       this.spareTrayId = values.DBB700 ?? '';
     });
   },
-  watch: {},
   methods: {
+    async handleSixScanUpload(barcode) {
+      if (this.sixScanProcessing) {
+        this.addLog('六面扫上货处理中，请稍候');
+        return;
+      }
+      this.sixScanProcessing = true;
+      this.addLog(`六面扫开始上货，条码：${barcode}`);
+      try {
+        const packageInfo = mockPackageByBarcode(barcode);
+        this.addLog(
+          `已Mock包裹信息，大包号：${packageInfo.packageNo}，客户来源：${
+            packageInfo.customerSource || '--'
+          }，批次号：${packageInfo.batchNo || '--'}`
+        );
+
+        const payload = toOrderInfoPayload(packageInfo);
+        const res = await HttpUtil.post('/order_info/save', payload);
+        const savedOrder = res && res.data;
+        if (!savedOrder || savedOrder.id == null) {
+          throw new Error((res && res.message) || '保存订单失败');
+        }
+        this.addLog(`订单已写入 order_info，ID：${savedOrder.id}`);
+
+        const queueItem = {
+          orderInfoId: savedOrder.id,
+          packageNo: packageInfo.packageNo,
+          trayTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+          businessNo: packageInfo.businessNo,
+          customerSource: packageInfo.customerSource,
+          batchNo: packageInfo.batchNo,
+          destinationCountry: packageInfo.destinationCountry,
+          channel: packageInfo.channel,
+          trayStatus: '1'
+        };
+
+        this.queues[0].trayInfo.push(queueItem);
+        this.nowScanTrayInfo = toScanDisplayInfo(packageInfo);
+        this.lastProcessedBarcode = barcode;
+
+        if (this.selectedQueueIndex === 0) {
+          this.showTrays(0);
+        }
+
+        this.addLog(
+          `六面扫上货成功，大包号：${packageInfo.packageNo}，已加入上货区队列（当前 ${this.queues[0].trayInfo.length} 件）`
+        );
+        this.$message.success(`大包 ${packageInfo.packageNo} 已上货`);
+      } catch (error) {
+        console.error('六面扫上货失败:', error);
+        this.$message.error(`六面扫上货失败：${error.message || '请重试'}`);
+        this.addLog(
+          `六面扫上货失败，条码：${barcode}，原因：${error.message || '请重试'}`
+        );
+      } finally {
+        this.sixScanProcessing = false;
+      }
+    },
     changeQueueExpanded() {
       this.isQueueExpanded = !this.isQueueExpanded;
       // 当展开面板时，刷新当前选中队列的托盘信息
@@ -1132,22 +1188,20 @@ export default {
           : [];
 
         this.nowTrays = trayInfo
-          .map((tray) => ({
-            id: tray.trayCode || '',
-            name: tray.trayCode ? `托盘 ${tray.trayCode}` : '未知托盘',
-            time: tray.trayTime || '',
-            isTerile: tray.isTerile,
-            sendTo: tray.sendTo || '', // 添加sendTo属性
-            state: tray.state || '', // 添加state属性
-            sequenceNumber: tray.sequenceNumber || '', // 添加sequenceNumber属性
-            orderId: tray.orderId || '', // 添加订单ID
-            productCode: tray.productCode || '', // 添加物料编码
-            productName: tray.productName || '', // 添加产品名称
-            unit: tray.unit || '', // 添加规格
-            batchNo: tray.batchNo || '', // 添加批次
-            remark: tray.remark || '' // 添加备注
-          }))
-          .filter((tray) => tray.id); // 过滤掉没有 id 的托盘
+          .map((tray) => {
+            const packageNo = tray.packageNo || tray.trayCode || '';
+            return {
+              id: packageNo,
+              name: packageNo ? `大包 ${packageNo}` : '未知大包',
+              time: tray.trayTime || '',
+              businessNo: tray.businessNo || tray.orderId || '',
+              customerSource: tray.customerSource || tray.productName || '',
+              destinationCountry: tray.destinationCountry || tray.unit || '',
+              batchNo: tray.batchNo || '',
+              channel: tray.channel || ''
+            };
+          })
+          .filter((tray) => tray.id);
       } catch (error) {
         console.error('处理托盘信息时出错:', error);
         this.nowTrays = [];
@@ -1212,7 +1266,7 @@ export default {
         }
 
         const trayIndex = sourceQueue.trayInfo.findIndex(
-          (t) => t.trayCode === this.draggedTray.id
+          (t) => (t.packageNo || t.trayCode) === this.draggedTray.id
         );
         if (trayIndex === -1) {
           throw new Error('找不到要移动的托盘');
@@ -1237,12 +1291,16 @@ export default {
 
         // 添加托盘移动日志
         this.addLog(
-          `托盘 ${movedTray.trayCode} 从 ${sourceQueue.queueName} 移动到 ${targetQueue.queueName}`
+          `托盘 ${movedTray.packageNo || movedTray.trayCode} 从 ${
+            sourceQueue.queueName
+          } 移动到 ${targetQueue.queueName}`
         );
 
         this.$message({
           type: 'success',
-          message: `托盘 ${movedTray.trayCode} 已成功移动到 ${targetQueue.queueName}`,
+          message: `大包 ${
+            movedTray.packageNo || movedTray.trayCode
+          } 已成功移动到 ${targetQueue.queueName}`,
           duration: 2000
         });
       } catch (error) {
@@ -1252,6 +1310,7 @@ export default {
         }
         console.error('移动托盘时出错:', error);
         this.$message.error(error.message || '移动托盘失败，请重试');
+        this.addLog(`移动大包失败：${error.message || '请重试'}`);
       } finally {
         this.draggedTray = null;
         this.dragSourceQueue = null;
@@ -1327,7 +1386,7 @@ export default {
 
         // 确认上移操作
         await this.$confirm(
-          `确认将托盘 ${currentTray.trayCode} 上移一位（与 ${prevTray.trayCode} 交换位置）？`,
+          `确认将大包 ${currentTray.id} 上移一位（与 ${prevTray.id} 交换位置）？`,
           '上移托盘确认',
           {
             confirmButtonText: '确定',
@@ -1348,7 +1407,7 @@ export default {
 
         // 添加操作日志
         this.addLog(
-          `托盘 ${currentTray.trayCode} 在 ${this.selectedQueue.queueName} 中上移`
+          `大包 ${currentTray.id} 在 ${this.selectedQueue.queueName} 中上移`
         );
 
         this.$message.success('托盘上移成功');
@@ -1375,7 +1434,7 @@ export default {
 
         // 确认下移操作
         await this.$confirm(
-          `确认将托盘 ${currentTray.trayCode} 下移一位（与 ${nextTray.trayCode} 交换位置）？`,
+          `确认将大包 ${currentTray.id} 下移一位（与 ${nextTray.id} 交换位置）？`,
           '下移托盘确认',
           {
             confirmButtonText: '确定',
@@ -1396,7 +1455,7 @@ export default {
 
         // 添加操作日志
         this.addLog(
-          `托盘 ${currentTray.trayCode} 在 ${this.selectedQueue.queueName} 中下移`
+          `大包 ${currentTray.id} 在 ${this.selectedQueue.queueName} 中下移`
         );
 
         this.$message.success('托盘下移成功');
