@@ -443,60 +443,33 @@ function conPLC() {
             return variables[tag];
           }); // This sets the "translation" to allow us to work with object names
           logger.info('连接PLC成功');
-          // —— 读取点位（与 读取点位.csv / DB101 一致）——
-          conn.addItems('DBW0'); // 输送线看门狗心跳
+          // —— 读取点位（与 读取点位.csv / DB1000、DB1001 一致）——
+          conn.addItems('DBW0'); // 输送线看门狗心跳 DB1000.DBW0
           conn.addItems('DBW2'); // 输送线当前运行状态
-          conn.addItems('DBW4'); // 进料反馈（进货线体编号，位定义见表）
-          // A 机器人码垛位 DBW6–16
-          conn.addItems('DBW6');
-          conn.addItems('DBW8');
-          conn.addItems('DBW10');
-          conn.addItems('DBW12');
-          conn.addItems('DBW14');
-          conn.addItems('DBW16');
-          // B 机器人码垛位 DBW18–28
-          conn.addItems('DBW18');
-          conn.addItems('DBW20');
-          conn.addItems('DBW22');
-          conn.addItems('DBW24');
-          conn.addItems('DBW26');
-          conn.addItems('DBW28');
-          // C 机器人码垛位 DBW30–40
-          conn.addItems('DBW30');
-          conn.addItems('DBW32');
-          conn.addItems('DBW34');
-          conn.addItems('DBW36');
-          conn.addItems('DBW38');
-          conn.addItems('DBW40');
-          // D 机器人码垛位 DBW42–52
-          conn.addItems('DBW42');
-          conn.addItems('DBW44');
-          conn.addItems('DBW46');
-          conn.addItems('DBW48');
-          conn.addItems('DBW50');
-          conn.addItems('DBW52');
-          // E 桶码垛位 DBW54–56
-          conn.addItems('DBW54');
-          conn.addItems('DBW56');
-          // F 桶码垛位 DBW58–60
-          conn.addItems('DBW58');
-          conn.addItems('DBW60');
-          conn.addItems('DBW62'); // 称重托盘重量
-          // 托盘号（Dint类型）
-          conn.addItems('DBD64'); // 称重托盘托盘号
-          conn.addItems('DBD68'); // 下货位置1托盘号
-          conn.addItems('DBD112'); // 下货位置2托盘号
-          conn.addItems('DBD72'); // A1 上货位托盘码
-          conn.addItems('DBD76'); // A2 上货位托盘码
-          conn.addItems('DBD80'); // B1 上货位托盘码
-          conn.addItems('DBD84'); // B2 上货位托盘码
-          conn.addItems('DBD88'); // C1 上货位托盘码
-          conn.addItems('DBD92'); // C2 上货位托盘码
-          conn.addItems('DBD96'); // D1 上货位托盘码
-          conn.addItems('DBD100'); // D2 上货位托盘码
-          conn.addItems('DBD104'); // E 上货位托盘码
-          conn.addItems('DBD108'); // F 上货位托盘码
-          conn.addItems('CBB200'); // 称重位置UDI条码
+          conn.addItems('DBW4'); // 区域报警
+          conn.addItems('DBW6'); // 电机运行信号
+          conn.addItems('DBW8'); // 电机运行信号
+          conn.addItems('DBW10'); // 电机运行信号
+          conn.addItems('DBW12'); // 光电信号--1
+          conn.addItems('DBW14'); // 光电信号--2
+          conn.addItems('DBW16'); // 对接WCS信号
+          conn.addItems('DBW18'); // 对接WCS信号
+          conn.addItems('DBW20'); // 反馈WCS信号
+          // 反馈WCS写虚拟ID（DB1001.DBB300-729，每段 char(30)）
+          conn.addItems('DBB300'); // 分拣口01进货ID
+          conn.addItems('DBB330'); // 分拣口02进货ID
+          conn.addItems('DBB360'); // 分拣口03进货ID
+          conn.addItems('DBB390'); // 分拣口04进货ID
+          conn.addItems('DBB420'); // 分拣口05进货ID
+          conn.addItems('DBB450'); // 分拣口06进货ID
+          conn.addItems('DBB480'); // 分拣口07进货ID
+          conn.addItems('DBB520'); // 分拣口08进货ID
+          conn.addItems('DBB550'); // 分拣口09进货ID
+          conn.addItems('DBB580'); // 分拣口10进货ID
+          conn.addItems('DBB610'); // 分拣口11进货ID
+          conn.addItems('DBB640'); // 分拣口12进货ID
+          conn.addItems('DBB670'); // 分拣口13进货ID
+          conn.addItems('DBB700'); // 备用
           setInterval(() => {
             conn.readAllItems(valuesReady);
           }, 200);
@@ -522,91 +495,72 @@ function sendHeartToPLC() {
       nowValue = 1 - nowValue;
     }
     times++;
-    writeValuesToPLC('W_DBW1000', nowValue);
+    writeValuesToPLC('W_DBW0', nowValue);
   }, 200); // 每200毫秒执行一次交替
 }
 
 var variables = {
-  // —— 读取（读取点位.csv）——
-  DBW0: 'DB101,INT0', // 输送线看门狗心跳
-  DBW2: 'DB101,INT2', // 输送线当前运行状态
-  DBW4: 'DB101,INT4', // 进料反馈（进货线体编号）
-  DBW6: 'DB101,INT6', // A 机器人 1#码垛货位货物来源
-  DBW8: 'DB101,INT8', // A 机器人 2#码垛货位货物来源
-  DBW10: 'DB101,INT10', // A 机器人 1#码垛货位货物数量
-  DBW12: 'DB101,INT12', // A 机器人 2#码垛货位货物数量
-  DBW14: 'DB101,INT14', // A 机器人 1#码垛位清零
-  DBW16: 'DB101,INT16', // A 机器人 2#码垛位清零
-  DBW18: 'DB101,INT18', // B 机器人 1#码垛货位货物来源
-  DBW20: 'DB101,INT20', // B 机器人 2#码垛货位货物来源
-  DBW22: 'DB101,INT22', // B 机器人 1#码垛货位货物数量
-  DBW24: 'DB101,INT24', // B 机器人 2#码垛货位货物数量
-  DBW26: 'DB101,INT26', // B 机器人 1#码垛位清零
-  DBW28: 'DB101,INT28', // B 机器人 2#码垛位清零
-  DBW30: 'DB101,INT30', // C 机器人 1#码垛货位货物来源
-  DBW32: 'DB101,INT32', // C 机器人 2#码垛货位货物来源
-  DBW34: 'DB101,INT34', // C 机器人 1#码垛货位货物数量
-  DBW36: 'DB101,INT36', // C 机器人 2#码垛货位货物数量
-  DBW38: 'DB101,INT38', // C 机器人 1#码垛位清零
-  DBW40: 'DB101,INT40', // C 机器人 2#码垛位清零
-  DBW42: 'DB101,INT42', // D 机器人 1#码垛货位货物来源
-  DBW44: 'DB101,INT44', // D 机器人 2#码垛货位货物来源
-  DBW46: 'DB101,INT46', // D 机器人 1#码垛货位货物数量
-  DBW48: 'DB101,INT48', // D 机器人 2#码垛货位货物数量
-  DBW50: 'DB101,INT50', // D 机器人 1#码垛位清零
-  DBW52: 'DB101,INT52', // D 机器人 2#码垛位清零
-  DBW54: 'DB101,INT54', // E 桶 1#码垛货位货物数量
-  DBW56: 'DB101,INT56', // E 桶 1#码垛位清零
-  DBW58: 'DB101,INT58', // 称重位对应托盘的数量绑定信息
-  DBW60: 'DB101,INT60', // F 桶 1#码垛位清零
-  DBW62: 'DB101,INT62', // 称重托盘重量
-  // 托盘号（Dint类型，整数）
-  DBD64: 'DB101,DINT64', // 称重托盘托盘号
-  DBD68: 'DB101,DINT68', // 下货位置1托盘号
-  DBD112: 'DB101,DINT112', // 下货位置2托盘号
-  DBD72: 'DB101,DINT72', // A1 上货位托盘码
-  DBD76: 'DB101,DINT76', // A2 上货位托盘码
-  DBD80: 'DB101,DINT80', // B1 上货位托盘码
-  DBD84: 'DB101,DINT84', // B2 上货位托盘码
-  DBD88: 'DB101,DINT88', // C1 上货位托盘码
-  DBD92: 'DB101,DINT92', // C2 上货位托盘码
-  DBD96: 'DB101,DINT96', // D1 上货位托盘码
-  DBD100: 'DB101,DINT100', // D2 上货位托盘码
-  DBD104: 'DB101,DINT104', // E 上货位托盘码
-  DBD108: 'DB101,DINT108', // F 上货位托盘码
-  // 称重位置UDI条码 (100字节CHAR)
-  CBB200: 'DB101,C200.100',
-  // —— 写入（写入点位.csv）——
-  W_DBW1000: 'DB101,INT1000', // WCS 看门狗心跳
-  W_DBW1002: 'DB101,INT1002', // WCS-全线启动
-  W_DBW1004: 'DB101,INT1004', // WCS-全线停止
-  W_DBW1006: 'DB101,INT1006', // WCS-全线暂停
-  W_DBW1008: 'DB101,INT1008', // WCS-故障复位
-  W_DBW1010_BIT0: 'DB101,X1010.0', // WCS-允许出托盘 A1允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT1: 'DB101,X1010.1', // WCS-允许出托盘 A2允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT2: 'DB101,X1010.2', // WCS-允许出托盘 B1允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT3: 'DB101,X1010.3', // WCS-允许出托盘 B2允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT4: 'DB101,X1010.4', // WCS-允许出托盘 C1允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT5: 'DB101,X1010.5', // WCS-允许出托盘 C2允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT6: 'DB101,X1010.6', // WCS-允许出托盘 D1允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT7: 'DB101,X1010.7', // WCS-允许出托盘 D2允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT8: 'DB101,X1011.0', // WCS-允许出托盘 E允许出货信号   （代表数据已经记录）
-  W_DBW1010_BIT9: 'DB101,X1011.1', // WCS-允许出托盘 F允许出货信号   （代表数据已经记录）
-  W_DBW1012: 'DB101,INT1012', // WCS 称重绑定成功
-  W_DBW1014: 'DB101,INT1014', // 1#WCS下货成功
-  W_CBB1016: 'DB101,C1016.2', // WCS下发1#下线线体号 (2字节CHAR)
-  W_CBB1018: 'DB101,C1018.2', // WCS下发2#下线线体号 (2字节CHAR)
-  W_DBW1020: 'DB101,INT1020', // 2#WCS下货成功
-  W_DBW1022: 'DB101,INT1022' // UDI码数据提取成功信号
+  // —— 读取（读取点位.csv / DB1000、DB1001）——
+  DBW0: 'DB1000,INT0', // 输送线看门狗心跳
+  DBW2: 'DB1000,INT2', // 输送线当前运行状态
+  DBW4: 'DB1000,INT4', // 区域报警
+  DBW6: 'DB1000,INT6', // 电机运行信号
+  DBW8: 'DB1000,INT8', // 电机运行信号
+  DBW10: 'DB1000,INT10', // 电机运行信号
+  DBW12: 'DB1000,INT12', // 光电信号--1
+  DBW14: 'DB1000,INT14', // 光电信号--2
+  DBW16: 'DB1000,INT16', // 对接WCS信号
+  DBW18: 'DB1000,INT18', // 对接WCS信号
+  DBW20: 'DB1000,INT20', // 反馈WCS信号
+  DBB300: 'DB1001,C300.30', // 分拣口01进货ID
+  DBB330: 'DB1001,C330.30', // 分拣口02进货ID
+  DBB360: 'DB1001,C360.30', // 分拣口03进货ID
+  DBB390: 'DB1001,C390.30', // 分拣口04进货ID
+  DBB420: 'DB1001,C420.30', // 分拣口05进货ID
+  DBB450: 'DB1001,C450.30', // 分拣口06进货ID
+  DBB480: 'DB1001,C480.30', // 分拣口07进货ID
+  DBB520: 'DB1001,C520.30', // 分拣口08进货ID
+  DBB550: 'DB1001,C550.30', // 分拣口09进货ID
+  DBB580: 'DB1001,C580.30', // 分拣口10进货ID
+  DBB610: 'DB1001,C610.30', // 分拣口11进货ID
+  DBB640: 'DB1001,C640.30', // 分拣口12进货ID
+  DBB670: 'DB1001,C670.30', // 分拣口13进货ID
+  DBB700: 'DB1001,C700.30', // 备用
+  // —— 写入（写入点位.csv / DB1001）——
+  W_DBW0: 'DB1001,INT0', // WCS看门狗心跳
+  W_DBW2: 'DB1001,INT2', // WCS-全线启动（系统在线）
+  W_DBW4: 'DB1001,INT4', // WCS-全线停止
+  W_DBW6: 'DB1001,INT6', // WCS-故障复位
+  W_DBW8: 'DB1001,INT8', // WCS六面扫位写目的地
+  W_DBB10: 'DB1001,C10.30', // WCS写虚拟ID
+  W_DBW50: 'DB1001,INT50', // WCS修改电机编号
+  W_DBW52: 'DB1001,INT52', // WCS修改目的地
+  W_DBB54: 'DB1001,C54.30', // WCS下修改模拟ID
+  W_DBW100: 'DB1001,INT100', // WCS下发修改命令
+  W_DBW102_BIT0: 'DB1001,X102.0', // 分拣口01禁止进货
+  W_DBW102_BIT1: 'DB1001,X102.1', // 分拣口02禁止进货
+  W_DBW102_BIT2: 'DB1001,X102.2', // 分拣口03禁止进货
+  W_DBW102_BIT3: 'DB1001,X102.3', // 分拣口04禁止进货
+  W_DBW102_BIT4: 'DB1001,X102.4', // 分拣口05禁止进货
+  W_DBW102_BIT5: 'DB1001,X102.5', // 分拣口06禁止进货
+  W_DBW102_BIT6: 'DB1001,X102.6', // 分拣口07禁止进货
+  W_DBW102_BIT7: 'DB1001,X102.7', // 分拣口08禁止进货
+  W_DBW102_BIT8: 'DB1001,X103.0', // 分拣口09禁止进货
+  W_DBW102_BIT9: 'DB1001,X103.1', // 分拣口10禁止进货
+  W_DBW102_BIT10: 'DB1001,X103.2', // 分拣口11禁止进货
+  W_DBW102_BIT11: 'DB1001,X103.3', // 分拣口12禁止进货
+  W_DBW102_BIT12: 'DB1001,X103.4', // 分拣口13禁止进货
+  W_DBW102_BIT13: 'DB1001,X103.5', // 分拣口14禁止进货
+  W_DBW102_BIT14: 'DB1001,X103.6', // 分拣口15禁止进货
+  W_DBW102_BIT15: 'DB1001,X103.7' // 备用
 };
 
-var writeStrArr = [0, 0, 0, 0, 0];
+var writeStrArr = [0, 0, 0, 0, 0, 0, 0, 0];
 var writeAddArr = [
-  'W_DBW1000',
-  'W_DBW1002',
-  'W_DBW1004',
-  'W_DBW1006',
-  'W_DBW1008'
+  'W_DBW0', // WCS看门狗心跳
+  'W_DBW2', // WCS-全线启动
+  'W_DBW4', // WCS-全线停止
+  'W_DBW6' // WCS-故障复位
 ];
 
 // 给PLC写值
