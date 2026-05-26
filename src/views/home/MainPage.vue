@@ -197,10 +197,10 @@
                 <!-- 上货区输送线光电信号 -->
                 <div
                   class="marker"
-                  :class="{ scanning: aLinePhotoelectricSignal.bit0 === '1' }"
+                  :class="{ scanning: photoelectricSignal1.bit0 === '1' }"
                   data-x="640"
                   data-y="1380"
-                  @click="toggleBitValue(aLinePhotoelectricSignal, 'bit0')"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit0')"
                 >
                   <div class="marker-label">S-1#</div>
                 </div>
@@ -208,10 +208,10 @@
                 <!-- 上货区电机运行信号（扫码后入队） -->
                 <div
                   class="motor-marker marker-show-label"
-                  :class="{ running: aLineMotorRunning.bit0 === '1' }"
+                  :class="{ running: motorRunningWord6.bit0 === '1' }"
                   data-x="1080"
                   data-y="1390"
-                  @click="toggleBitValue(aLineMotorRunning, 'bit0')"
+                  @click="toggleBitValue(motorRunningWord6, 'bit0')"
                 >
                   <div class="marker-label">S1#</div>
                 </div>
@@ -399,7 +399,7 @@
             <span class="test-label">扫码信息测试:</span>
             <div class="qrcode-test-container">
               <div class="qrcode-input-group">
-                <div class="qrcode-label">一楼扫码:</div>
+                <div class="qrcode-label">六面扫:</div>
                 <el-input
                   size="small"
                   placeholder="输入扫码信息"
@@ -538,28 +538,186 @@ export default {
         { id: 14, name: '分拣口13', queueId: 14, x: 2070, y: 320 }
       ],
       logId: 1000, // 添加一个日志ID计数器
-      // A线电机运行信号-读取PLC
-      aLineMotorRunning: {
-        bit0: '0', // A1-1#电机运行信号
-        bit1: '0', // A1-2#电机运行信号
-        bit2: '0', // A2-1#电机运行信号
-        bit3: '0', // A2-2#电机运行信号
-        bit4: '0', // A3-1#电机运行信号
-        bit5: '0' // A3-2#电机运行信号
+      // —— 读取点位（与 读取点位.csv / background.js 一致）——
+      conveyorHeartbeat: 0, // DBW0 输送线看门狗心跳
+      conveyorRunStatus: 0, // DBW2 输送线当前运行状态
+      // DBW4 区域报警
+      areaAlarm: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
       },
-      // A线光电检测信号-读取PLC
-      aLinePhotoelectricSignal: {
-        bit0: '0', // A-1#光电
-        bit1: '0', // A-2#光电
-        bit2: '0', // A-3#光电
-        bit3: '0', // A-4#光电
-        bit4: '0', // A-5#光电
-        bit5: '0', // A-6#光电
-        bit6: '0', // A-7#光电
-        bit7: '0', // A-8#光电
-        bit8: '0', // A-9#光电
-        bit9: '0' // A-10#光电
-      }
+      // DBW6 电机运行信号 01001-01016
+      motorRunningWord6: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
+      },
+      // DBW8 电机运行信号 01017-01030
+      motorRunningWord8: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
+      },
+      // DBW10 分拣机左右执行
+      motorRunningWord10: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0'
+      },
+      // DBW12 光电信号--1
+      photoelectricSignal1: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
+      },
+      // DBW14 光电信号--2
+      photoelectricSignal2: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
+      },
+      // DBW16 对接WCS信号
+      wcsDockWord16: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0',
+        bit15: '0'
+      },
+      // DBW18 分拣口呼叫空托
+      wcsDockWord18: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0'
+      },
+      // DBW20 分拣口进货成功
+      wcsFeedbackWord20: {
+        bit0: '0',
+        bit1: '0',
+        bit2: '0',
+        bit3: '0',
+        bit4: '0',
+        bit5: '0',
+        bit6: '0',
+        bit7: '0',
+        bit8: '0',
+        bit9: '0',
+        bit10: '0',
+        bit11: '0',
+        bit12: '0',
+        bit13: '0',
+        bit14: '0'
+      },
+      // 反馈WCS写虚拟ID
+      sortPort01TrayId: '',
+      sortPort02TrayId: '',
+      sortPort03TrayId: '',
+      sortPort04TrayId: '',
+      sortPort05TrayId: '',
+      sortPort06TrayId: '',
+      sortPort07TrayId: '',
+      sortPort08TrayId: '',
+      sortPort09TrayId: '',
+      sortPort10TrayId: '',
+      sortPort11TrayId: '',
+      sortPort12TrayId: '',
+      sortPort13TrayId: '',
+      spareTrayId: ''
     };
   },
   computed: {
@@ -579,29 +737,189 @@ export default {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
-      // 使用位运算优化赋值
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
-      // A线电机运行信号 (DBW6)
-      let word6 = this.convertToWord(values.DBW6);
-      this.aLineMotorRunning.bit0 = getBit(word6, 8);
-      this.aLineMotorRunning.bit1 = getBit(word6, 9);
-      this.aLineMotorRunning.bit2 = getBit(word6, 10);
-      this.aLineMotorRunning.bit3 = getBit(word6, 11);
-      this.aLineMotorRunning.bit4 = getBit(word6, 12);
-      this.aLineMotorRunning.bit5 = getBit(word6, 13);
 
-      // A线光电检测信号 (DBW8)
-      let word8 = this.convertToWord(values.DBW8);
-      this.aLinePhotoelectricSignal.bit0 = getBit(word8, 8);
-      this.aLinePhotoelectricSignal.bit1 = getBit(word8, 9);
-      this.aLinePhotoelectricSignal.bit2 = getBit(word8, 10);
-      this.aLinePhotoelectricSignal.bit3 = getBit(word8, 11);
-      this.aLinePhotoelectricSignal.bit4 = getBit(word8, 12);
-      this.aLinePhotoelectricSignal.bit5 = getBit(word8, 13);
-      this.aLinePhotoelectricSignal.bit6 = getBit(word8, 14);
-      this.aLinePhotoelectricSignal.bit7 = getBit(word8, 15);
-      this.aLinePhotoelectricSignal.bit8 = getBit(word8, 0);
-      this.aLinePhotoelectricSignal.bit9 = getBit(word8, 1);
+      // 基础状态
+      this.conveyorHeartbeat = Number(values.DBW0 ?? 0);
+      this.conveyorRunStatus = Number(values.DBW2 ?? 0);
+
+      // DBW4 区域报警
+      const word4 = this.convertToWord(values.DBW4 ?? 0);
+      this.areaAlarm.bit0 = getBit(word4, 0);
+      this.areaAlarm.bit1 = getBit(word4, 1);
+      this.areaAlarm.bit2 = getBit(word4, 2);
+      this.areaAlarm.bit3 = getBit(word4, 3);
+      this.areaAlarm.bit4 = getBit(word4, 4);
+      this.areaAlarm.bit5 = getBit(word4, 5);
+      this.areaAlarm.bit6 = getBit(word4, 6);
+      this.areaAlarm.bit7 = getBit(word4, 7);
+      this.areaAlarm.bit8 = getBit(word4, 8);
+      this.areaAlarm.bit9 = getBit(word4, 9);
+      this.areaAlarm.bit10 = getBit(word4, 10);
+      this.areaAlarm.bit11 = getBit(word4, 11);
+      this.areaAlarm.bit12 = getBit(word4, 12);
+      this.areaAlarm.bit13 = getBit(word4, 13);
+      this.areaAlarm.bit14 = getBit(word4, 14);
+      this.areaAlarm.bit15 = getBit(word4, 15);
+
+      // DBW6 电机运行信号 01001-01016
+      const word6 = this.convertToWord(values.DBW6 ?? 0);
+      this.motorRunningWord6.bit0 = getBit(word6, 0);
+      this.motorRunningWord6.bit1 = getBit(word6, 1);
+      this.motorRunningWord6.bit2 = getBit(word6, 2);
+      this.motorRunningWord6.bit3 = getBit(word6, 3);
+      this.motorRunningWord6.bit4 = getBit(word6, 4);
+      this.motorRunningWord6.bit5 = getBit(word6, 5);
+      this.motorRunningWord6.bit6 = getBit(word6, 6);
+      this.motorRunningWord6.bit7 = getBit(word6, 7);
+      this.motorRunningWord6.bit8 = getBit(word6, 8);
+      this.motorRunningWord6.bit9 = getBit(word6, 9);
+      this.motorRunningWord6.bit10 = getBit(word6, 10);
+      this.motorRunningWord6.bit11 = getBit(word6, 11);
+      this.motorRunningWord6.bit12 = getBit(word6, 12);
+      this.motorRunningWord6.bit13 = getBit(word6, 13);
+      this.motorRunningWord6.bit14 = getBit(word6, 14);
+      this.motorRunningWord6.bit15 = getBit(word6, 15);
+
+      // DBW8 电机运行信号 01017-01030
+      const word8 = this.convertToWord(values.DBW8 ?? 0);
+      this.motorRunningWord8.bit0 = getBit(word8, 0);
+      this.motorRunningWord8.bit1 = getBit(word8, 1);
+      this.motorRunningWord8.bit2 = getBit(word8, 2);
+      this.motorRunningWord8.bit3 = getBit(word8, 3);
+      this.motorRunningWord8.bit4 = getBit(word8, 4);
+      this.motorRunningWord8.bit5 = getBit(word8, 5);
+      this.motorRunningWord8.bit6 = getBit(word8, 6);
+      this.motorRunningWord8.bit7 = getBit(word8, 7);
+      this.motorRunningWord8.bit8 = getBit(word8, 8);
+      this.motorRunningWord8.bit9 = getBit(word8, 9);
+      this.motorRunningWord8.bit10 = getBit(word8, 10);
+      this.motorRunningWord8.bit11 = getBit(word8, 11);
+      this.motorRunningWord8.bit12 = getBit(word8, 12);
+      this.motorRunningWord8.bit13 = getBit(word8, 13);
+      this.motorRunningWord8.bit14 = getBit(word8, 14);
+      this.motorRunningWord8.bit15 = getBit(word8, 15);
+
+      // DBW10 分拣机左右执行
+      const word10 = this.convertToWord(values.DBW10 ?? 0);
+      this.motorRunningWord10.bit0 = getBit(word10, 0);
+      this.motorRunningWord10.bit1 = getBit(word10, 1);
+      this.motorRunningWord10.bit2 = getBit(word10, 2);
+      this.motorRunningWord10.bit3 = getBit(word10, 3);
+      this.motorRunningWord10.bit4 = getBit(word10, 4);
+      this.motorRunningWord10.bit5 = getBit(word10, 5);
+      this.motorRunningWord10.bit6 = getBit(word10, 6);
+      this.motorRunningWord10.bit7 = getBit(word10, 7);
+      this.motorRunningWord10.bit8 = getBit(word10, 8);
+      this.motorRunningWord10.bit9 = getBit(word10, 9);
+      this.motorRunningWord10.bit10 = getBit(word10, 10);
+      this.motorRunningWord10.bit11 = getBit(word10, 11);
+
+      // DBW12 光电信号--1
+      const word12 = this.convertToWord(values.DBW12 ?? 0);
+      this.photoelectricSignal1.bit0 = getBit(word12, 0);
+      this.photoelectricSignal1.bit1 = getBit(word12, 1);
+      this.photoelectricSignal1.bit2 = getBit(word12, 2);
+      this.photoelectricSignal1.bit3 = getBit(word12, 3);
+      this.photoelectricSignal1.bit4 = getBit(word12, 4);
+      this.photoelectricSignal1.bit5 = getBit(word12, 5);
+      this.photoelectricSignal1.bit6 = getBit(word12, 6);
+      this.photoelectricSignal1.bit7 = getBit(word12, 7);
+      this.photoelectricSignal1.bit8 = getBit(word12, 8);
+      this.photoelectricSignal1.bit9 = getBit(word12, 9);
+      this.photoelectricSignal1.bit10 = getBit(word12, 10);
+      this.photoelectricSignal1.bit11 = getBit(word12, 11);
+      this.photoelectricSignal1.bit12 = getBit(word12, 12);
+      this.photoelectricSignal1.bit13 = getBit(word12, 13);
+      this.photoelectricSignal1.bit14 = getBit(word12, 14);
+      this.photoelectricSignal1.bit15 = getBit(word12, 15);
+
+      // DBW14 光电信号--2
+      const word14 = this.convertToWord(values.DBW14 ?? 0);
+      this.photoelectricSignal2.bit0 = getBit(word14, 0);
+      this.photoelectricSignal2.bit1 = getBit(word14, 1);
+      this.photoelectricSignal2.bit2 = getBit(word14, 2);
+      this.photoelectricSignal2.bit3 = getBit(word14, 3);
+      this.photoelectricSignal2.bit4 = getBit(word14, 4);
+      this.photoelectricSignal2.bit5 = getBit(word14, 5);
+      this.photoelectricSignal2.bit6 = getBit(word14, 6);
+      this.photoelectricSignal2.bit7 = getBit(word14, 7);
+      this.photoelectricSignal2.bit8 = getBit(word14, 8);
+      this.photoelectricSignal2.bit9 = getBit(word14, 9);
+      this.photoelectricSignal2.bit10 = getBit(word14, 10);
+      this.photoelectricSignal2.bit11 = getBit(word14, 11);
+      this.photoelectricSignal2.bit12 = getBit(word14, 12);
+      this.photoelectricSignal2.bit13 = getBit(word14, 13);
+      this.photoelectricSignal2.bit14 = getBit(word14, 14);
+      this.photoelectricSignal2.bit15 = getBit(word14, 15);
+
+      // DBW16 对接WCS信号
+      const word16 = this.convertToWord(values.DBW16 ?? 0);
+      this.wcsDockWord16.bit0 = getBit(word16, 0);
+      this.wcsDockWord16.bit1 = getBit(word16, 1);
+      this.wcsDockWord16.bit2 = getBit(word16, 2);
+      this.wcsDockWord16.bit3 = getBit(word16, 3);
+      this.wcsDockWord16.bit4 = getBit(word16, 4);
+      this.wcsDockWord16.bit5 = getBit(word16, 5);
+      this.wcsDockWord16.bit6 = getBit(word16, 6);
+      this.wcsDockWord16.bit7 = getBit(word16, 7);
+      this.wcsDockWord16.bit8 = getBit(word16, 8);
+      this.wcsDockWord16.bit9 = getBit(word16, 9);
+      this.wcsDockWord16.bit10 = getBit(word16, 10);
+      this.wcsDockWord16.bit11 = getBit(word16, 11);
+      this.wcsDockWord16.bit12 = getBit(word16, 12);
+      this.wcsDockWord16.bit13 = getBit(word16, 13);
+      this.wcsDockWord16.bit14 = getBit(word16, 14);
+      this.wcsDockWord16.bit15 = getBit(word16, 15);
+
+      // DBW18 分拣口呼叫空托
+      const word18 = this.convertToWord(values.DBW18 ?? 0);
+      this.wcsDockWord18.bit0 = getBit(word18, 0);
+      this.wcsDockWord18.bit1 = getBit(word18, 1);
+      this.wcsDockWord18.bit2 = getBit(word18, 2);
+      this.wcsDockWord18.bit3 = getBit(word18, 3);
+      this.wcsDockWord18.bit4 = getBit(word18, 4);
+      this.wcsDockWord18.bit5 = getBit(word18, 5);
+      this.wcsDockWord18.bit6 = getBit(word18, 6);
+      this.wcsDockWord18.bit7 = getBit(word18, 7);
+      this.wcsDockWord18.bit8 = getBit(word18, 8);
+      this.wcsDockWord18.bit9 = getBit(word18, 9);
+      this.wcsDockWord18.bit10 = getBit(word18, 10);
+      this.wcsDockWord18.bit11 = getBit(word18, 11);
+
+      // DBW20 分拣口进货成功
+      const word20 = this.convertToWord(values.DBW20 ?? 0);
+      this.wcsFeedbackWord20.bit0 = getBit(word20, 0);
+      this.wcsFeedbackWord20.bit1 = getBit(word20, 1);
+      this.wcsFeedbackWord20.bit2 = getBit(word20, 2);
+      this.wcsFeedbackWord20.bit3 = getBit(word20, 3);
+      this.wcsFeedbackWord20.bit4 = getBit(word20, 4);
+      this.wcsFeedbackWord20.bit5 = getBit(word20, 5);
+      this.wcsFeedbackWord20.bit6 = getBit(word20, 6);
+      this.wcsFeedbackWord20.bit7 = getBit(word20, 7);
+      this.wcsFeedbackWord20.bit8 = getBit(word20, 8);
+      this.wcsFeedbackWord20.bit9 = getBit(word20, 9);
+      this.wcsFeedbackWord20.bit10 = getBit(word20, 10);
+      this.wcsFeedbackWord20.bit11 = getBit(word20, 11);
+      this.wcsFeedbackWord20.bit12 = getBit(word20, 12);
+      this.wcsFeedbackWord20.bit13 = getBit(word20, 13);
+      this.wcsFeedbackWord20.bit14 = getBit(word20, 14);
+
+      // 反馈WCS写虚拟ID
+      this.sortPort01TrayId = values.DBB300 ?? '';
+      this.sortPort02TrayId = values.DBB330 ?? '';
+      this.sortPort03TrayId = values.DBB360 ?? '';
+      this.sortPort04TrayId = values.DBB390 ?? '';
+      this.sortPort05TrayId = values.DBB420 ?? '';
+      this.sortPort06TrayId = values.DBB450 ?? '';
+      this.sortPort07TrayId = values.DBB480 ?? '';
+      this.sortPort08TrayId = values.DBB520 ?? '';
+      this.sortPort09TrayId = values.DBB550 ?? '';
+      this.sortPort10TrayId = values.DBB580 ?? '';
+      this.sortPort11TrayId = values.DBB610 ?? '';
+      this.sortPort12TrayId = values.DBB640 ?? '';
+      this.sortPort13TrayId = values.DBB670 ?? '';
+      this.spareTrayId = values.DBB700 ?? '';
     });
   },
   watch: {},
@@ -632,9 +950,9 @@ export default {
               fault_reset: false,
               clear: false
             };
-            ipcRenderer.send('writeValuesToPLC', 'DBW502', 1);
+            ipcRenderer.send('writeValuesToPLC', 'W_DBW2', 1);
             setTimeout(() => {
-              ipcRenderer.send('writeValuesToPLC', 'DBW502', 0);
+              ipcRenderer.send('writeValuesToPLC', 'W_DBW2', 0);
             }, 2000);
             this.buttonStates[button] = !this.buttonStates[button];
             this.$message.success('全线启动成功');
@@ -657,9 +975,9 @@ export default {
               fault_reset: false,
               clear: false
             };
-            ipcRenderer.send('writeValuesToPLC', 'DBW504', 1);
+            ipcRenderer.send('writeValuesToPLC', 'W_DBW4', 1);
             setTimeout(() => {
-              ipcRenderer.send('writeValuesToPLC', 'DBW504', 0);
+              ipcRenderer.send('writeValuesToPLC', 'W_DBW4', 0);
             }, 2000);
             this.buttonStates[button] = !this.buttonStates[button];
             this.$message.success('全线停止成功');
@@ -683,9 +1001,9 @@ export default {
               clear: false
             };
             this.buttonStates[button] = !this.buttonStates[button];
-            ipcRenderer.send('writeValuesToPLC', 'DBW506', 1);
+            ipcRenderer.send('writeSingleValueToPLC', 'W_DBW4', 1);
             setTimeout(() => {
-              ipcRenderer.send('writeValuesToPLC', 'DBW506', 0);
+              ipcRenderer.send('writeSingleValueToPLC', 'W_DBW4', 0);
             }, 2000);
             this.$message.success('全线暂停成功');
             this.addLog('全线暂停成功');
@@ -700,9 +1018,9 @@ export default {
           type: 'warning'
         })
           .then(() => {
-            ipcRenderer.send('writeValuesToPLC', 'DBW508', 1);
+            ipcRenderer.send('writeValuesToPLC', 'W_DBW6', 1);
             setTimeout(() => {
-              ipcRenderer.send('writeValuesToPLC', 'DBW508', 0);
+              ipcRenderer.send('writeValuesToPLC', 'W_DBW6', 0);
             }, 2000);
             this.$message.success('故障复位成功');
             this.addLog('故障复位成功');
