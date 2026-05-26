@@ -194,7 +194,8 @@
                     <span class="queue-marker-name">{{ marker.name }}</span>
                   </div>
                 </div>
-                <!-- 上货区输送线光电信号 -->
+                <!-- DBW12 光电信号--1 -->
+                <!-- 01001 -->
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit0 === '1' }"
@@ -204,8 +205,319 @@
                 >
                   <div class="marker-label">S-1#</div>
                 </div>
-                <!-- 电机点位示例，可以控制标签位置：label-top、label-left、label-right -->
-                <!-- 上货区电机运行信号（扫码后入队） -->
+                <!-- 01002 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit1 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit1')"
+                >
+                  <div class="marker-label">S-2#</div>
+                </div>
+                <!-- 01013光电1 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit2 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit2')"
+                >
+                  <div class="marker-label">S-13-1#</div>
+                </div>
+                <!-- 01004 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit3 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit3')"
+                >
+                  <div class="marker-label">S-4#</div>
+                </div>
+                <!-- 01005 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit4 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit4')"
+                >
+                  <div class="marker-label">S-5#</div>
+                </div>
+                <!-- 01006 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit5 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit5')"
+                >
+                  <div class="marker-label">S-6#</div>
+                </div>
+                <!-- 01007 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit6 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit6')"
+                >
+                  <div class="marker-label">S-7#</div>
+                </div>
+                <!-- 01008 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit7 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit7')"
+                >
+                  <div class="marker-label">S-8#</div>
+                </div>
+                <!-- 01009 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit8 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit8')"
+                >
+                  <div class="marker-label">S-9#</div>
+                </div>
+                <!-- 01010 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit9 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit9')"
+                >
+                  <div class="marker-label">S-10#</div>
+                </div>
+                <!-- 01011 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit10 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit10')"
+                >
+                  <div class="marker-label">S-11#</div>
+                </div>
+                <!-- 01012 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit11 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit11')"
+                >
+                  <div class="marker-label">S-12#</div>
+                </div>
+                <!-- 01013光电2 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit12 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit12')"
+                >
+                  <div class="marker-label">S-13-2#</div>
+                </div>
+                <!-- 01014 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit13 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit13')"
+                >
+                  <div class="marker-label">S-14#</div>
+                </div>
+                <!-- 01015 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit14 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit14')"
+                >
+                  <div class="marker-label">S-15#</div>
+                </div>
+                <!-- 01016 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal1.bit15 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal1, 'bit15')"
+                >
+                  <div class="marker-label">S-16#</div>
+                </div>
+                <!-- DBW14 光电信号--2 -->
+                <!-- 01017 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit0 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit0')"
+                >
+                  <div class="marker-label">S-17#</div>
+                </div>
+                <!-- 01018 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit1 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit1')"
+                >
+                  <div class="marker-label">S-18#</div>
+                </div>
+                <!-- 01019 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit2 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit2')"
+                >
+                  <div class="marker-label">S-19#</div>
+                </div>
+                <!-- 01020 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit3 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit3')"
+                >
+                  <div class="marker-label">S-20#</div>
+                </div>
+                <!-- 01021 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit4 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit4')"
+                >
+                  <div class="marker-label">S-21#</div>
+                </div>
+                <!-- 01022 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit5 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit5')"
+                >
+                  <div class="marker-label">S-22#</div>
+                </div>
+                <!-- 01023 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit6 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit6')"
+                >
+                  <div class="marker-label">S-23#</div>
+                </div>
+                <!-- 01024 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit7 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit7')"
+                >
+                  <div class="marker-label">S-24#</div>
+                </div>
+                <!-- 01025 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit8 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit8')"
+                >
+                  <div class="marker-label">S-25#</div>
+                </div>
+                <!-- 01026 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit9 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit9')"
+                >
+                  <div class="marker-label">S-26#</div>
+                </div>
+                <!-- 01027 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit10 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit10')"
+                >
+                  <div class="marker-label">S-27#</div>
+                </div>
+                <!-- 01028 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit11 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit11')"
+                >
+                  <div class="marker-label">S-28#</div>
+                </div>
+                <!-- 01029 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit12 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit12')"
+                >
+                  <div class="marker-label">S-29#</div>
+                </div>
+                <!-- 01030 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit13 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit13')"
+                >
+                  <div class="marker-label">S-30#</div>
+                </div>
+                <!-- 01031 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit14 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit14')"
+                >
+                  <div class="marker-label">S-31#</div>
+                </div>
+                <!-- 01032 -->
+                <div
+                  class="marker"
+                  :class="{ scanning: photoelectricSignal2.bit15 === '1' }"
+                  data-x="640"
+                  data-y="1380"
+                  @click="toggleBitValue(photoelectricSignal2, 'bit15')"
+                >
+                  <div class="marker-label">S-32#</div>
+                </div>
+                <!-- DBW6 电机运行信号 01001-01016 -->
+                <!-- 01001 -->
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord6.bit0 === '1' }"
@@ -214,6 +526,418 @@
                   @click="toggleBitValue(motorRunningWord6, 'bit0')"
                 >
                   <div class="marker-label">S1#</div>
+                </div>
+                <!-- 01002 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit1 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit1')"
+                >
+                  <div class="marker-label">S2#</div>
+                </div>
+                <!-- 01003 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit2 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit2')"
+                >
+                  <div class="marker-label">S3#</div>
+                </div>
+                <!-- 01004 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit3 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit3')"
+                >
+                  <div class="marker-label">S4#</div>
+                </div>
+                <!-- 01005 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit4 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit4')"
+                >
+                  <div class="marker-label">S5#</div>
+                </div>
+                <!-- 01006 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit5 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit5')"
+                >
+                  <div class="marker-label">S6#</div>
+                </div>
+                <!-- 01007 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit6 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit6')"
+                >
+                  <div class="marker-label">S7#</div>
+                </div>
+                <!-- 01008 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit7 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit7')"
+                >
+                  <div class="marker-label">S8#</div>
+                </div>
+                <!-- 01009 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit8 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit8')"
+                >
+                  <div class="marker-label">S9#</div>
+                </div>
+                <!-- 01010 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit9 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit9')"
+                >
+                  <div class="marker-label">S10#</div>
+                </div>
+                <!-- 01011 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit10 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit10')"
+                >
+                  <div class="marker-label">S11#</div>
+                </div>
+                <!-- 01012 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit11 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit11')"
+                >
+                  <div class="marker-label">S12#</div>
+                </div>
+                <!-- 01013 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit12 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit12')"
+                >
+                  <div class="marker-label">S13#</div>
+                </div>
+                <!-- 01014 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit13 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit13')"
+                >
+                  <div class="marker-label">S14#</div>
+                </div>
+                <!-- 01015 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit14 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit14')"
+                >
+                  <div class="marker-label">S15#</div>
+                </div>
+                <!-- 01016 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord6.bit15 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord6, 'bit15')"
+                >
+                  <div class="marker-label">S16#</div>
+                </div>
+                <!-- DBW8 电机运行信号 01017-01030（bit14/15 备用不生成） -->
+                <!-- 01017 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit0 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit0')"
+                >
+                  <div class="marker-label">S17#</div>
+                </div>
+                <!-- 01018 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit1 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit1')"
+                >
+                  <div class="marker-label">S18#</div>
+                </div>
+                <!-- 01019 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit2 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit2')"
+                >
+                  <div class="marker-label">S19#</div>
+                </div>
+                <!-- 01020 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit3 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit3')"
+                >
+                  <div class="marker-label">S20#</div>
+                </div>
+                <!-- 01021 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit4 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit4')"
+                >
+                  <div class="marker-label">S21#</div>
+                </div>
+                <!-- 01022 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit5 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit5')"
+                >
+                  <div class="marker-label">S22#</div>
+                </div>
+                <!-- 01023 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit6 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit6')"
+                >
+                  <div class="marker-label">S23#</div>
+                </div>
+                <!-- 01024 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit7 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit7')"
+                >
+                  <div class="marker-label">S24#</div>
+                </div>
+                <!-- 01025 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit8 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit8')"
+                >
+                  <div class="marker-label">S25#</div>
+                </div>
+                <!-- 01026 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit9 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit9')"
+                >
+                  <div class="marker-label">S26#</div>
+                </div>
+                <!-- 01027 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit10 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit10')"
+                >
+                  <div class="marker-label">S27#</div>
+                </div>
+                <!-- 01028 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit11 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit11')"
+                >
+                  <div class="marker-label">S28#</div>
+                </div>
+                <!-- 01029 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit12 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit12')"
+                >
+                  <div class="marker-label">S29#</div>
+                </div>
+                <!-- 01030 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit13 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord8, 'bit13')"
+                >
+                  <div class="marker-label">S30#</div>
+                </div>
+                <!-- DBW10 分拣电机运行信号 -->
+                <!-- 分拣1左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit0 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit0')"
+                >
+                  <div class="marker-label">分拣1左</div>
+                </div>
+                <!-- 分拣机1右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit1 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit1')"
+                >
+                  <div class="marker-label">分拣1右</div>
+                </div>
+                <!-- 分拣机2左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit2 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit2')"
+                >
+                  <div class="marker-label">分拣2左</div>
+                </div>
+                <!-- 分拣机2右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit3 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit3')"
+                >
+                  <div class="marker-label">分拣2右</div>
+                </div>
+                <!-- 分拣机3左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit4 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit4')"
+                >
+                  <div class="marker-label">分拣3左</div>
+                </div>
+                <!-- 分拣机3右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit5 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit5')"
+                >
+                  <div class="marker-label">分拣3右</div>
+                </div>
+                <!-- 分拣机4左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit6 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit6')"
+                >
+                  <div class="marker-label">分拣4左</div>
+                </div>
+                <!-- 分拣机4右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit7 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit7')"
+                >
+                  <div class="marker-label">分拣4右</div>
+                </div>
+                <!-- 分拣机5左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit8 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit8')"
+                >
+                  <div class="marker-label">分拣5左</div>
+                </div>
+                <!-- 分拣机5右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit9 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit9')"
+                >
+                  <div class="marker-label">分拣5右</div>
+                </div>
+                <!-- 分拣机6左执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit10 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit10')"
+                >
+                  <div class="marker-label">分拣6左</div>
+                </div>
+                <!-- 分拣机6右执行 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord10.bit11 === '1' }"
+                  data-x="1080"
+                  data-y="1390"
+                  @click="toggleBitValue(motorRunningWord10, 'bit11')"
+                >
+                  <div class="marker-label">分拣6右</div>
                 </div>
               </div>
             </div>
