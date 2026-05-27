@@ -167,7 +167,7 @@
           <!-- 左侧区域 -->
           <div class="floor-left">
             <div class="floor-title">
-              <i class="el-icon-office-building"></i> 一楼区域
+              <i class="el-icon-office-building"></i> 作业区域
             </div>
             <div class="floor-image-container">
               <div class="image-wrapper">
