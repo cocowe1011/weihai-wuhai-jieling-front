@@ -3272,7 +3272,7 @@ export default {
           display: flex;
           background: var(--mp-surface-muted);
           border-radius: 12px;
-          padding: 15px;
+          padding: 8px;
           gap: 20px;
           overflow: hidden;
           border: 1px solid var(--mp-border);

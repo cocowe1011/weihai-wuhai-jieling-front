@@ -11,7 +11,7 @@
           />
           <div class="title-bar-text">
             <span class="title-bar-name">码垛智能分拣系统</span>
-            <span class="title-bar-sub">weight-records</span>
+            <!-- <span class="title-bar-sub">weight-records</span> -->
           </div>
         </div>
         <div class="title-bar-actions">
