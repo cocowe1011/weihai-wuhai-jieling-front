@@ -3,7 +3,7 @@
     <!-- 内容区包装器 -->
     <div class="content-wrapper">
       <!-- 左侧面板 -->
-      <div class="side-info-panel">
+      <div class="side-info-panel" v-show="false">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
           <div class="section-header">当前扫码包裹信息</div>
@@ -197,10 +197,10 @@
                 <!-- DBW12 光电信号--1 -->
                 <!-- 01001 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit0 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="600"
+                  data-y="300"
                   @click="toggleBitValue(photoelectricSignal1, 'bit0')"
                 >
                   <div class="marker-label">01001</div>
@@ -639,40 +639,40 @@
                 </div>
                 <!-- 01013 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit12 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1260"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord6, 'bit12')"
                 >
                   <div class="marker-label">01013</div>
                 </div>
                 <!-- 01014 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit13 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1420"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord6, 'bit13')"
                 >
                   <div class="marker-label">01014</div>
                 </div>
                 <!-- 01015 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit14 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1580"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord6, 'bit14')"
                 >
                   <div class="marker-label">01015</div>
                 </div>
                 <!-- 01016 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord6.bit15 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1820"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord6, 'bit15')"
                 >
                   <div class="marker-label">01016</div>
@@ -680,50 +680,50 @@
                 <!-- DBW8 电机运行信号 01017-01030（bit14/15 备用不生成） -->
                 <!-- 01017 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit0 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2010"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord8, 'bit0')"
                 >
                   <div class="marker-label">01017</div>
                 </div>
                 <!-- 01018 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit1 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2190"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord8, 'bit1')"
                 >
                   <div class="marker-label">01018</div>
                 </div>
                 <!-- 01019 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit2 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2368"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord8, 'bit2')"
                 >
                   <div class="marker-label">01019</div>
                 </div>
                 <!-- 01020 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit3 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2555"
+                  data-y="1335"
                   @click="toggleBitValue(motorRunningWord8, 'bit3')"
                 >
                   <div class="marker-label">01020</div>
                 </div>
                 <!-- 01021 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit4 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1730"
+                  data-y="1220"
                   @click="toggleBitValue(motorRunningWord8, 'bit4')"
                 >
                   <div class="marker-label">01021</div>
@@ -732,18 +732,18 @@
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit5 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1730"
+                  data-y="1420"
                   @click="toggleBitValue(motorRunningWord8, 'bit5')"
                 >
                   <div class="marker-label">01022</div>
                 </div>
                 <!-- 01023 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit6 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1910"
+                  data-y="1220"
                   @click="toggleBitValue(motorRunningWord8, 'bit6')"
                 >
                   <div class="marker-label">01023</div>
@@ -752,18 +752,18 @@
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit7 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="1910"
+                  data-y="1420"
                   @click="toggleBitValue(motorRunningWord8, 'bit7')"
                 >
                   <div class="marker-label">01024</div>
                 </div>
                 <!-- 01025 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit8 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2100"
+                  data-y="1220"
                   @click="toggleBitValue(motorRunningWord8, 'bit8')"
                 >
                   <div class="marker-label">01025</div>
@@ -772,18 +772,18 @@
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit9 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2100"
+                  data-y="1420"
                   @click="toggleBitValue(motorRunningWord8, 'bit9')"
                 >
                   <div class="marker-label">01026</div>
                 </div>
                 <!-- 01027 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit10 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2280"
+                  data-y="1220"
                   @click="toggleBitValue(motorRunningWord8, 'bit10')"
                 >
                   <div class="marker-label">01027</div>
@@ -792,18 +792,18 @@
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit11 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2280"
+                  data-y="1420"
                   @click="toggleBitValue(motorRunningWord8, 'bit11')"
                 >
                   <div class="marker-label">01028</div>
                 </div>
                 <!-- 01029 -->
                 <div
-                  class="motor-marker marker-show-label"
+                  class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit12 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2460"
+                  data-y="1220"
                   @click="toggleBitValue(motorRunningWord8, 'bit12')"
                 >
                   <div class="marker-label">01029</div>
@@ -812,8 +812,28 @@
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit13 === '1' }"
-                  data-x="1080"
-                  data-y="1390"
+                  data-x="2460"
+                  data-y="1420"
+                  @click="toggleBitValue(motorRunningWord8, 'bit13')"
+                >
+                  <div class="marker-label">01030</div>
+                </div>
+                <!-- 01030 -->
+                <div
+                  class="motor-marker marker-show-label label-top"
+                  :class="{ running: motorRunningWord8.bit12 === '1' }"
+                  data-x="2650"
+                  data-y="1220"
+                  @click="toggleBitValue(motorRunningWord8, 'bit12')"
+                >
+                  <div class="marker-label">01029</div>
+                </div>
+                <!-- 01031 -->
+                <div
+                  class="motor-marker marker-show-label"
+                  :class="{ running: motorRunningWord8.bit13 === '1' }"
+                  data-x="2655"
+                  data-y="1420"
                   @click="toggleBitValue(motorRunningWord8, 'bit13')"
                 >
                   <div class="marker-label">01030</div>
