@@ -66,7 +66,7 @@
         <!-- 操作区 -->
         <div class="operation-panel">
           <div class="section-header">
-            <span>操作区</span>
+            <span>操作</span>
             <el-button
               type="primary"
               size="mini"
@@ -78,12 +78,14 @@
           </div>
           <div class="operation-buttons">
             <button
+              class="btn-start"
               @click="toggleButtonState('start')"
               :class="{ pressed: buttonStates.start }"
             >
               <i class="el-icon-switch-button"></i><span>全线启动</span>
             </button>
             <button
+              class="btn-stop"
               @click="toggleButtonState('stop')"
               :class="{ pressed: buttonStates.stop }"
             >
@@ -91,6 +93,7 @@
             </button>
             <button
               v-show="false"
+              class="btn-reset"
               @click="toggleButtonState('reset')"
               :class="{ pressed: buttonStates.reset }"
             >
@@ -108,7 +111,7 @@
         <!-- 日志区域 -->
         <div class="log-section">
           <div class="section-header">
-            日志区
+            日志记录
             <div class="log-tabs">
               <div
                 class="log-tab"
@@ -163,9 +166,7 @@
         <div class="floor-container">
           <!-- 左侧区域 -->
           <div class="floor-left">
-            <div class="floor-title">
-              <i class="el-icon-office-building"></i> 作业区域
-            </div>
+            <div class="floor-title">生产线监控</div>
             <div class="floor-image-container">
               <div class="image-wrapper">
                 <img
@@ -2700,9 +2701,26 @@ export default {
             box-shadow: 0 6px 16px rgba(67, 133, 255, 0.35);
           }
           button.pressed {
-            background: linear-gradient(135deg, #3e7bfa, #2f54eb);
-            box-shadow: 0 4px 10px rgba(67, 133, 255, 0.3);
-            transform: scale(0.95);
+            transform: scale(0.98);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+          }
+          button.btn-start.pressed {
+            background: linear-gradient(135deg, #52c41a, #237804);
+          }
+          button.btn-start.pressed:hover {
+            background: linear-gradient(135deg, #73d13d, #389e0d);
+          }
+          button.btn-stop.pressed {
+            background: linear-gradient(135deg, #ff4d4f, #a8071a);
+          }
+          button.btn-stop.pressed:hover {
+            background: linear-gradient(135deg, #ff7875, #cf1322);
+          }
+          button.btn-reset.pressed {
+            background: linear-gradient(135deg, #faad14, #d48806);
+          }
+          button.btn-reset.pressed:hover {
+            background: linear-gradient(135deg, #ffc53d, #fa8c16);
           }
         }
       }
