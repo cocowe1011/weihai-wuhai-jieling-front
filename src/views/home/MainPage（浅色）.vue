@@ -195,16 +195,16 @@
                 <!-- DBW12 光电信号--1 -->
                 <!-- 01001 -->
                 <div
-                  class="marker label-left"
+                  class="marker label-right"
                   :class="{ scanning: photoelectricSignal1.bit0 === '1' }"
                   data-x="600"
-                  data-y="300"
+                  data-y="190"
                   @click="toggleBitValue(photoelectricSignal1, 'bit0')"
                 >
                   <div class="marker-label">01001</div>
                 </div>
                 <!-- 01002 -->
-                <div
+                <!-- <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit1 === '1' }"
                   data-x="640"
@@ -212,83 +212,83 @@
                   @click="toggleBitValue(photoelectricSignal1, 'bit1')"
                 >
                   <div class="marker-label">01002</div>
-                </div>
+                </div> -->
                 <!-- 01013光电1 -->
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit2 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1200"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit2')"
                 >
                   <div class="marker-label">01013-1</div>
                 </div>
                 <!-- 01004 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit3 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="605"
+                  data-y="870"
                   @click="toggleBitValue(photoelectricSignal1, 'bit3')"
                 >
                   <div class="marker-label">01004</div>
                 </div>
                 <!-- 01005 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit4 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="603"
+                  data-y="945"
                   @click="toggleBitValue(photoelectricSignal1, 'bit4')"
                 >
                   <div class="marker-label">01005</div>
                 </div>
                 <!-- 01006 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit5 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="600"
+                  data-y="1030"
                   @click="toggleBitValue(photoelectricSignal1, 'bit5')"
                 >
                   <div class="marker-label">01006</div>
                 </div>
                 <!-- 01007 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit6 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="595"
+                  data-y="1110"
                   @click="toggleBitValue(photoelectricSignal1, 'bit6')"
                 >
                   <div class="marker-label">01007</div>
                 </div>
                 <!-- 01008 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit7 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="590"
+                  data-y="1185"
                   @click="toggleBitValue(photoelectricSignal1, 'bit7')"
                 >
                   <div class="marker-label">01008</div>
                 </div>
                 <!-- 01009 -->
                 <div
-                  class="marker"
+                  class="marker label-right"
                   :class="{ scanning: photoelectricSignal1.bit8 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="700"
+                  data-y="1253"
                   @click="toggleBitValue(photoelectricSignal1, 'bit8')"
                 >
                   <div class="marker-label">01009</div>
                 </div>
                 <!-- 01010 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit9 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="590"
+                  data-y="1330"
                   @click="toggleBitValue(photoelectricSignal1, 'bit9')"
                 >
                   <div class="marker-label">01010</div>
@@ -297,8 +297,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit10 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="760"
+                  data-y="1400"
                   @click="toggleBitValue(photoelectricSignal1, 'bit10')"
                 >
                   <div class="marker-label">01011</div>
@@ -307,8 +307,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit11 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="860"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit11')"
                 >
                   <div class="marker-label">01012</div>
@@ -317,8 +317,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit12 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1350"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit12')"
                 >
                   <div class="marker-label">01013-2</div>
@@ -327,8 +327,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit13 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1490"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit13')"
                 >
                   <div class="marker-label">01014</div>
@@ -337,8 +337,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit14 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1620"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit14')"
                 >
                   <div class="marker-label">01015</div>
@@ -347,8 +347,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit15 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1820"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit15')"
                 >
                   <div class="marker-label">01016</div>
@@ -358,8 +358,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit0 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2010"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit0')"
                 >
                   <div class="marker-label">01017</div>
@@ -368,8 +368,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit1 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2190"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit1')"
                 >
                   <div class="marker-label">01018</div>
@@ -378,8 +378,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit2 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2368"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit2')"
                 >
                   <div class="marker-label">01019</div>
@@ -388,128 +388,128 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit3 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2555"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit3')"
                 >
                   <div class="marker-label">01020</div>
                 </div>
                 <!-- 01021 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit4 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1660"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit4')"
                 >
                   <div class="marker-label">01021</div>
                 </div>
                 <!-- 01022 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit5 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1660"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit5')"
                 >
                   <div class="marker-label">01022</div>
                 </div>
                 <!-- 01023 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit6 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1840"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit6')"
                 >
                   <div class="marker-label">01023</div>
                 </div>
                 <!-- 01024 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit7 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1840"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit7')"
                 >
                   <div class="marker-label">01024</div>
                 </div>
                 <!-- 01025 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit8 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2025"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit8')"
                 >
                   <div class="marker-label">01025</div>
                 </div>
                 <!-- 01026 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit9 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2025"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit9')"
                 >
                   <div class="marker-label">01026</div>
                 </div>
                 <!-- 01027 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit10 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2210"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit10')"
                 >
                   <div class="marker-label">01027</div>
                 </div>
                 <!-- 01028 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit11 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2210"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit11')"
                 >
                   <div class="marker-label">01028</div>
                 </div>
                 <!-- 01029 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit12 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2390"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit12')"
                 >
                   <div class="marker-label">01029</div>
                 </div>
                 <!-- 01030 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit13 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2390"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit13')"
                 >
                   <div class="marker-label">01030</div>
                 </div>
                 <!-- 01031 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit14 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2575"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit14')"
                 >
                   <div class="marker-label">01031</div>
                 </div>
                 <!-- 01032 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit15 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2575"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit15')"
                 >
                   <div class="marker-label">01032</div>
@@ -527,7 +527,7 @@
                 </div>
                 <!-- 01002 -->
                 <div
-                  class="motor-marker marker-show-label label-top"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit1 === '1' }"
                   data-x="650"
                   data-y="260"
@@ -567,7 +567,7 @@
                 </div>
                 <!-- 01006 -->
                 <div
-                  class="motor-marker marker-show-label label-left"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit5 === '1' }"
                   data-x="648"
                   data-y="980"
@@ -587,7 +587,7 @@
                 </div>
                 <!-- 01008 -->
                 <div
-                  class="motor-marker marker-show-label label-left"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit7 === '1' }"
                   data-x="642"
                   data-y="1140"
@@ -819,26 +819,26 @@
                 <!-- 01030 -->
                 <div
                   class="motor-marker marker-show-label label-top"
-                  :class="{ running: motorRunningWord8.bit12 === '1' }"
+                  :class="{ running: motorRunningWord8.bit14 === '1' }"
                   data-x="2650"
                   data-y="1220"
-                  @click="toggleBitValue(motorRunningWord8, 'bit12')"
+                  @click="toggleBitValue(motorRunningWord8, 'bit14')"
                 >
-                  <div class="marker-label">01029</div>
+                  <div class="marker-label">01031</div>
                 </div>
                 <!-- 01031 -->
                 <div
                   class="motor-marker marker-show-label"
-                  :class="{ running: motorRunningWord8.bit13 === '1' }"
+                  :class="{ running: motorRunningWord8.bit15 === '1' }"
                   data-x="2655"
                   data-y="1420"
-                  @click="toggleBitValue(motorRunningWord8, 'bit13')"
+                  @click="toggleBitValue(motorRunningWord8, 'bit15')"
                 >
-                  <div class="marker-label">01030</div>
+                  <div class="marker-label">01032</div>
                 </div>
                 <!-- DBW10 分拣电机运行信号 -->
                 <!-- 分拣1左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit0 === '1' }"
                   data-x="1080"
@@ -846,9 +846,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit0')"
                 >
                   <div class="marker-label">分拣1左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机1右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit1 === '1' }"
                   data-x="1080"
@@ -856,9 +856,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit1')"
                 >
                   <div class="marker-label">分拣1右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机2左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit2 === '1' }"
                   data-x="1080"
@@ -866,9 +866,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit2')"
                 >
                   <div class="marker-label">分拣2左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机2右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit3 === '1' }"
                   data-x="1080"
@@ -876,9 +876,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit3')"
                 >
                   <div class="marker-label">分拣2右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机3左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit4 === '1' }"
                   data-x="1080"
@@ -886,9 +886,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit4')"
                 >
                   <div class="marker-label">分拣3左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机3右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit5 === '1' }"
                   data-x="1080"
@@ -896,9 +896,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit5')"
                 >
                   <div class="marker-label">分拣3右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机4左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit6 === '1' }"
                   data-x="1080"
@@ -906,9 +906,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit6')"
                 >
                   <div class="marker-label">分拣4左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机4右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit7 === '1' }"
                   data-x="1080"
@@ -916,9 +916,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit7')"
                 >
                   <div class="marker-label">分拣4右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机5左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit8 === '1' }"
                   data-x="1080"
@@ -926,9 +926,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit8')"
                 >
                   <div class="marker-label">分拣5左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机5右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit9 === '1' }"
                   data-x="1080"
@@ -936,9 +936,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit9')"
                 >
                   <div class="marker-label">分拣5右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机6左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit10 === '1' }"
                   data-x="1080"
@@ -946,9 +946,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit10')"
                 >
                   <div class="marker-label">分拣6左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机6右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit11 === '1' }"
                   data-x="1080"
@@ -956,7 +956,7 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit11')"
                 >
                   <div class="marker-label">分拣6右</div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -1478,191 +1478,191 @@ export default {
   mounted() {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
-    ipcRenderer.on('receivedMsg', (event, values, values2) => {
-      const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
+    // ipcRenderer.on('receivedMsg', (event, values, values2) => {
+    //   const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
-      // 基础状态
-      this.conveyorHeartbeat = Number(values.DBW0 ?? 0);
-      this.conveyorRunStatus = Number(values.DBW2 ?? 0);
+    //   // 基础状态
+    //   this.conveyorHeartbeat = Number(values.DBW0 ?? 0);
+    //   this.conveyorRunStatus = Number(values.DBW2 ?? 0);
 
-      // DBW4 区域报警
-      let word4 = this.convertToWord(values.DBW4 ?? 0);
-      this.areaAlarm.bit0 = getBit(word4, 8);
-      this.areaAlarm.bit1 = getBit(word4, 9);
-      this.areaAlarm.bit2 = getBit(word4, 10);
-      this.areaAlarm.bit3 = getBit(word4, 11);
-      this.areaAlarm.bit4 = getBit(word4, 12);
-      this.areaAlarm.bit5 = getBit(word4, 13);
-      this.areaAlarm.bit6 = getBit(word4, 14);
-      this.areaAlarm.bit7 = getBit(word4, 15);
-      this.areaAlarm.bit8 = getBit(word4, 0);
-      this.areaAlarm.bit9 = getBit(word4, 1);
-      this.areaAlarm.bit10 = getBit(word4, 2);
-      this.areaAlarm.bit11 = getBit(word4, 3);
-      this.areaAlarm.bit12 = getBit(word4, 4);
-      this.areaAlarm.bit13 = getBit(word4, 5);
-      this.areaAlarm.bit14 = getBit(word4, 6);
-      this.areaAlarm.bit15 = getBit(word4, 7);
+    //   // DBW4 区域报警
+    //   let word4 = this.convertToWord(values.DBW4 ?? 0);
+    //   this.areaAlarm.bit0 = getBit(word4, 8);
+    //   this.areaAlarm.bit1 = getBit(word4, 9);
+    //   this.areaAlarm.bit2 = getBit(word4, 10);
+    //   this.areaAlarm.bit3 = getBit(word4, 11);
+    //   this.areaAlarm.bit4 = getBit(word4, 12);
+    //   this.areaAlarm.bit5 = getBit(word4, 13);
+    //   this.areaAlarm.bit6 = getBit(word4, 14);
+    //   this.areaAlarm.bit7 = getBit(word4, 15);
+    //   this.areaAlarm.bit8 = getBit(word4, 0);
+    //   this.areaAlarm.bit9 = getBit(word4, 1);
+    //   this.areaAlarm.bit10 = getBit(word4, 2);
+    //   this.areaAlarm.bit11 = getBit(word4, 3);
+    //   this.areaAlarm.bit12 = getBit(word4, 4);
+    //   this.areaAlarm.bit13 = getBit(word4, 5);
+    //   this.areaAlarm.bit14 = getBit(word4, 6);
+    //   this.areaAlarm.bit15 = getBit(word4, 7);
 
-      // DBW6 电机运行信号 01001-01016
-      let word6 = this.convertToWord(values.DBW6 ?? 0);
-      this.motorRunningWord6.bit0 = getBit(word6, 8);
-      this.motorRunningWord6.bit1 = getBit(word6, 9);
-      this.motorRunningWord6.bit2 = getBit(word6, 10);
-      this.motorRunningWord6.bit3 = getBit(word6, 11);
-      this.motorRunningWord6.bit4 = getBit(word6, 12);
-      this.motorRunningWord6.bit5 = getBit(word6, 13);
-      this.motorRunningWord6.bit6 = getBit(word6, 14);
-      this.motorRunningWord6.bit7 = getBit(word6, 15);
-      this.motorRunningWord6.bit8 = getBit(word6, 0);
-      this.motorRunningWord6.bit9 = getBit(word6, 1);
-      this.motorRunningWord6.bit10 = getBit(word6, 2);
-      this.motorRunningWord6.bit11 = getBit(word6, 3);
-      this.motorRunningWord6.bit12 = getBit(word6, 4);
-      this.motorRunningWord6.bit13 = getBit(word6, 5);
-      this.motorRunningWord6.bit14 = getBit(word6, 6);
-      this.motorRunningWord6.bit15 = getBit(word6, 7);
+    //   // DBW6 电机运行信号 01001-01016
+    //   let word6 = this.convertToWord(values.DBW6 ?? 0);
+    //   this.motorRunningWord6.bit0 = getBit(word6, 8);
+    //   this.motorRunningWord6.bit1 = getBit(word6, 9);
+    //   this.motorRunningWord6.bit2 = getBit(word6, 10);
+    //   this.motorRunningWord6.bit3 = getBit(word6, 11);
+    //   this.motorRunningWord6.bit4 = getBit(word6, 12);
+    //   this.motorRunningWord6.bit5 = getBit(word6, 13);
+    //   this.motorRunningWord6.bit6 = getBit(word6, 14);
+    //   this.motorRunningWord6.bit7 = getBit(word6, 15);
+    //   this.motorRunningWord6.bit8 = getBit(word6, 0);
+    //   this.motorRunningWord6.bit9 = getBit(word6, 1);
+    //   this.motorRunningWord6.bit10 = getBit(word6, 2);
+    //   this.motorRunningWord6.bit11 = getBit(word6, 3);
+    //   this.motorRunningWord6.bit12 = getBit(word6, 4);
+    //   this.motorRunningWord6.bit13 = getBit(word6, 5);
+    //   this.motorRunningWord6.bit14 = getBit(word6, 6);
+    //   this.motorRunningWord6.bit15 = getBit(word6, 7);
 
-      // DBW8 电机运行信号 01017-01030
-      let word8 = this.convertToWord(values.DBW8 ?? 0);
-      this.motorRunningWord8.bit0 = getBit(word8, 8);
-      this.motorRunningWord8.bit1 = getBit(word8, 9);
-      this.motorRunningWord8.bit2 = getBit(word8, 10);
-      this.motorRunningWord8.bit3 = getBit(word8, 11);
-      this.motorRunningWord8.bit4 = getBit(word8, 12);
-      this.motorRunningWord8.bit5 = getBit(word8, 13);
-      this.motorRunningWord8.bit6 = getBit(word8, 14);
-      this.motorRunningWord8.bit7 = getBit(word8, 15);
-      this.motorRunningWord8.bit8 = getBit(word8, 0);
-      this.motorRunningWord8.bit9 = getBit(word8, 1);
-      this.motorRunningWord8.bit10 = getBit(word8, 2);
-      this.motorRunningWord8.bit11 = getBit(word8, 3);
-      this.motorRunningWord8.bit12 = getBit(word8, 4);
-      this.motorRunningWord8.bit13 = getBit(word8, 5);
-      this.motorRunningWord8.bit14 = getBit(word8, 6);
-      this.motorRunningWord8.bit15 = getBit(word8, 7);
+    //   // DBW8 电机运行信号 01017-01030
+    //   let word8 = this.convertToWord(values.DBW8 ?? 0);
+    //   this.motorRunningWord8.bit0 = getBit(word8, 8);
+    //   this.motorRunningWord8.bit1 = getBit(word8, 9);
+    //   this.motorRunningWord8.bit2 = getBit(word8, 10);
+    //   this.motorRunningWord8.bit3 = getBit(word8, 11);
+    //   this.motorRunningWord8.bit4 = getBit(word8, 12);
+    //   this.motorRunningWord8.bit5 = getBit(word8, 13);
+    //   this.motorRunningWord8.bit6 = getBit(word8, 14);
+    //   this.motorRunningWord8.bit7 = getBit(word8, 15);
+    //   this.motorRunningWord8.bit8 = getBit(word8, 0);
+    //   this.motorRunningWord8.bit9 = getBit(word8, 1);
+    //   this.motorRunningWord8.bit10 = getBit(word8, 2);
+    //   this.motorRunningWord8.bit11 = getBit(word8, 3);
+    //   this.motorRunningWord8.bit12 = getBit(word8, 4);
+    //   this.motorRunningWord8.bit13 = getBit(word8, 5);
+    //   this.motorRunningWord8.bit14 = getBit(word8, 6);
+    //   this.motorRunningWord8.bit15 = getBit(word8, 7);
 
-      // DBW10 分拣机左右执行
-      let word10 = this.convertToWord(values.DBW10 ?? 0);
-      this.motorRunningWord10.bit0 = getBit(word10, 8);
-      this.motorRunningWord10.bit1 = getBit(word10, 9);
-      this.motorRunningWord10.bit2 = getBit(word10, 10);
-      this.motorRunningWord10.bit3 = getBit(word10, 11);
-      this.motorRunningWord10.bit4 = getBit(word10, 12);
-      this.motorRunningWord10.bit5 = getBit(word10, 13);
-      this.motorRunningWord10.bit6 = getBit(word10, 14);
-      this.motorRunningWord10.bit7 = getBit(word10, 15);
-      this.motorRunningWord10.bit8 = getBit(word10, 0);
-      this.motorRunningWord10.bit9 = getBit(word10, 1);
-      this.motorRunningWord10.bit10 = getBit(word10, 2);
-      this.motorRunningWord10.bit11 = getBit(word10, 3);
+    //   // DBW10 分拣机左右执行
+    //   let word10 = this.convertToWord(values.DBW10 ?? 0);
+    //   this.motorRunningWord10.bit0 = getBit(word10, 8);
+    //   this.motorRunningWord10.bit1 = getBit(word10, 9);
+    //   this.motorRunningWord10.bit2 = getBit(word10, 10);
+    //   this.motorRunningWord10.bit3 = getBit(word10, 11);
+    //   this.motorRunningWord10.bit4 = getBit(word10, 12);
+    //   this.motorRunningWord10.bit5 = getBit(word10, 13);
+    //   this.motorRunningWord10.bit6 = getBit(word10, 14);
+    //   this.motorRunningWord10.bit7 = getBit(word10, 15);
+    //   this.motorRunningWord10.bit8 = getBit(word10, 0);
+    //   this.motorRunningWord10.bit9 = getBit(word10, 1);
+    //   this.motorRunningWord10.bit10 = getBit(word10, 2);
+    //   this.motorRunningWord10.bit11 = getBit(word10, 3);
 
-      // DBW12 光电信号--1
-      let word12 = this.convertToWord(values.DBW12 ?? 0);
-      this.photoelectricSignal1.bit0 = getBit(word12, 8);
-      this.photoelectricSignal1.bit1 = getBit(word12, 9);
-      this.photoelectricSignal1.bit2 = getBit(word12, 10);
-      this.photoelectricSignal1.bit3 = getBit(word12, 11);
-      this.photoelectricSignal1.bit4 = getBit(word12, 12);
-      this.photoelectricSignal1.bit5 = getBit(word12, 13);
-      this.photoelectricSignal1.bit6 = getBit(word12, 14);
-      this.photoelectricSignal1.bit7 = getBit(word12, 15);
-      this.photoelectricSignal1.bit8 = getBit(word12, 0);
-      this.photoelectricSignal1.bit9 = getBit(word12, 1);
-      this.photoelectricSignal1.bit10 = getBit(word12, 2);
-      this.photoelectricSignal1.bit11 = getBit(word12, 3);
-      this.photoelectricSignal1.bit12 = getBit(word12, 4);
-      this.photoelectricSignal1.bit13 = getBit(word12, 5);
-      this.photoelectricSignal1.bit14 = getBit(word12, 6);
-      this.photoelectricSignal1.bit15 = getBit(word12, 7);
+    //   // DBW12 光电信号--1
+    //   let word12 = this.convertToWord(values.DBW12 ?? 0);
+    //   this.photoelectricSignal1.bit0 = getBit(word12, 8);
+    //   this.photoelectricSignal1.bit1 = getBit(word12, 9);
+    //   this.photoelectricSignal1.bit2 = getBit(word12, 10);
+    //   this.photoelectricSignal1.bit3 = getBit(word12, 11);
+    //   this.photoelectricSignal1.bit4 = getBit(word12, 12);
+    //   this.photoelectricSignal1.bit5 = getBit(word12, 13);
+    //   this.photoelectricSignal1.bit6 = getBit(word12, 14);
+    //   this.photoelectricSignal1.bit7 = getBit(word12, 15);
+    //   this.photoelectricSignal1.bit8 = getBit(word12, 0);
+    //   this.photoelectricSignal1.bit9 = getBit(word12, 1);
+    //   this.photoelectricSignal1.bit10 = getBit(word12, 2);
+    //   this.photoelectricSignal1.bit11 = getBit(word12, 3);
+    //   this.photoelectricSignal1.bit12 = getBit(word12, 4);
+    //   this.photoelectricSignal1.bit13 = getBit(word12, 5);
+    //   this.photoelectricSignal1.bit14 = getBit(word12, 6);
+    //   this.photoelectricSignal1.bit15 = getBit(word12, 7);
 
-      // DBW14 光电信号--2
-      let word14 = this.convertToWord(values.DBW14 ?? 0);
-      this.photoelectricSignal2.bit0 = getBit(word14, 8);
-      this.photoelectricSignal2.bit1 = getBit(word14, 9);
-      this.photoelectricSignal2.bit2 = getBit(word14, 10);
-      this.photoelectricSignal2.bit3 = getBit(word14, 11);
-      this.photoelectricSignal2.bit4 = getBit(word14, 12);
-      this.photoelectricSignal2.bit5 = getBit(word14, 13);
-      this.photoelectricSignal2.bit6 = getBit(word14, 14);
-      this.photoelectricSignal2.bit7 = getBit(word14, 15);
-      this.photoelectricSignal2.bit8 = getBit(word14, 0);
-      this.photoelectricSignal2.bit9 = getBit(word14, 1);
-      this.photoelectricSignal2.bit10 = getBit(word14, 2);
-      this.photoelectricSignal2.bit11 = getBit(word14, 3);
-      this.photoelectricSignal2.bit12 = getBit(word14, 4);
-      this.photoelectricSignal2.bit13 = getBit(word14, 5);
-      this.photoelectricSignal2.bit14 = getBit(word14, 6);
-      this.photoelectricSignal2.bit15 = getBit(word14, 7);
+    //   // DBW14 光电信号--2
+    //   let word14 = this.convertToWord(values.DBW14 ?? 0);
+    //   this.photoelectricSignal2.bit0 = getBit(word14, 8);
+    //   this.photoelectricSignal2.bit1 = getBit(word14, 9);
+    //   this.photoelectricSignal2.bit2 = getBit(word14, 10);
+    //   this.photoelectricSignal2.bit3 = getBit(word14, 11);
+    //   this.photoelectricSignal2.bit4 = getBit(word14, 12);
+    //   this.photoelectricSignal2.bit5 = getBit(word14, 13);
+    //   this.photoelectricSignal2.bit6 = getBit(word14, 14);
+    //   this.photoelectricSignal2.bit7 = getBit(word14, 15);
+    //   this.photoelectricSignal2.bit8 = getBit(word14, 0);
+    //   this.photoelectricSignal2.bit9 = getBit(word14, 1);
+    //   this.photoelectricSignal2.bit10 = getBit(word14, 2);
+    //   this.photoelectricSignal2.bit11 = getBit(word14, 3);
+    //   this.photoelectricSignal2.bit12 = getBit(word14, 4);
+    //   this.photoelectricSignal2.bit13 = getBit(word14, 5);
+    //   this.photoelectricSignal2.bit14 = getBit(word14, 6);
+    //   this.photoelectricSignal2.bit15 = getBit(word14, 7);
 
-      // DBW16 对接WCS信号
-      let word16 = this.convertToWord(values.DBW16 ?? 0);
-      this.wcsDockWord16.bit0 = getBit(word16, 8);
-      this.wcsDockWord16.bit1 = getBit(word16, 9);
-      this.wcsDockWord16.bit2 = getBit(word16, 10);
-      this.wcsDockWord16.bit3 = getBit(word16, 11);
-      this.wcsDockWord16.bit4 = getBit(word16, 12);
-      this.wcsDockWord16.bit5 = getBit(word16, 13);
-      this.wcsDockWord16.bit6 = getBit(word16, 14);
-      this.wcsDockWord16.bit7 = getBit(word16, 15);
-      this.wcsDockWord16.bit8 = getBit(word16, 0);
-      this.wcsDockWord16.bit9 = getBit(word16, 1);
-      this.wcsDockWord16.bit10 = getBit(word16, 2);
-      this.wcsDockWord16.bit11 = getBit(word16, 3);
-      this.wcsDockWord16.bit12 = getBit(word16, 4);
-      this.wcsDockWord16.bit13 = getBit(word16, 5);
-      this.wcsDockWord16.bit14 = getBit(word16, 6);
-      this.wcsDockWord16.bit15 = getBit(word16, 7);
+    //   // DBW16 对接WCS信号
+    //   let word16 = this.convertToWord(values.DBW16 ?? 0);
+    //   this.wcsDockWord16.bit0 = getBit(word16, 8);
+    //   this.wcsDockWord16.bit1 = getBit(word16, 9);
+    //   this.wcsDockWord16.bit2 = getBit(word16, 10);
+    //   this.wcsDockWord16.bit3 = getBit(word16, 11);
+    //   this.wcsDockWord16.bit4 = getBit(word16, 12);
+    //   this.wcsDockWord16.bit5 = getBit(word16, 13);
+    //   this.wcsDockWord16.bit6 = getBit(word16, 14);
+    //   this.wcsDockWord16.bit7 = getBit(word16, 15);
+    //   this.wcsDockWord16.bit8 = getBit(word16, 0);
+    //   this.wcsDockWord16.bit9 = getBit(word16, 1);
+    //   this.wcsDockWord16.bit10 = getBit(word16, 2);
+    //   this.wcsDockWord16.bit11 = getBit(word16, 3);
+    //   this.wcsDockWord16.bit12 = getBit(word16, 4);
+    //   this.wcsDockWord16.bit13 = getBit(word16, 5);
+    //   this.wcsDockWord16.bit14 = getBit(word16, 6);
+    //   this.wcsDockWord16.bit15 = getBit(word16, 7);
 
-      // DBW18 分拣口呼叫空托
-      let word18 = this.convertToWord(values.DBW18 ?? 0);
-      this.wcsDockWord18.bit0 = getBit(word18, 8);
-      this.wcsDockWord18.bit1 = getBit(word18, 9);
-      this.wcsDockWord18.bit2 = getBit(word18, 10);
-      this.wcsDockWord18.bit3 = getBit(word18, 11);
-      this.wcsDockWord18.bit4 = getBit(word18, 12);
-      this.wcsDockWord18.bit5 = getBit(word18, 13);
-      this.wcsDockWord18.bit6 = getBit(word18, 14);
-      this.wcsDockWord18.bit7 = getBit(word18, 15);
-      this.wcsDockWord18.bit8 = getBit(word18, 0);
-      this.wcsDockWord18.bit9 = getBit(word18, 1);
-      this.wcsDockWord18.bit10 = getBit(word18, 2);
-      this.wcsDockWord18.bit11 = getBit(word18, 3);
+    //   // DBW18 分拣口呼叫空托
+    //   let word18 = this.convertToWord(values.DBW18 ?? 0);
+    //   this.wcsDockWord18.bit0 = getBit(word18, 8);
+    //   this.wcsDockWord18.bit1 = getBit(word18, 9);
+    //   this.wcsDockWord18.bit2 = getBit(word18, 10);
+    //   this.wcsDockWord18.bit3 = getBit(word18, 11);
+    //   this.wcsDockWord18.bit4 = getBit(word18, 12);
+    //   this.wcsDockWord18.bit5 = getBit(word18, 13);
+    //   this.wcsDockWord18.bit6 = getBit(word18, 14);
+    //   this.wcsDockWord18.bit7 = getBit(word18, 15);
+    //   this.wcsDockWord18.bit8 = getBit(word18, 0);
+    //   this.wcsDockWord18.bit9 = getBit(word18, 1);
+    //   this.wcsDockWord18.bit10 = getBit(word18, 2);
+    //   this.wcsDockWord18.bit11 = getBit(word18, 3);
 
-      // DBW20 分拣口进货成功
-      let word20 = this.convertToWord(values.DBW20 ?? 0);
-      this.wcsFeedbackWord20.bit0 = getBit(word20, 8);
-      this.wcsFeedbackWord20.bit1 = getBit(word20, 9);
-      this.wcsFeedbackWord20.bit2 = getBit(word20, 10);
-      this.wcsFeedbackWord20.bit3 = getBit(word20, 11);
-      this.wcsFeedbackWord20.bit4 = getBit(word20, 12);
-      this.wcsFeedbackWord20.bit5 = getBit(word20, 13);
-      this.wcsFeedbackWord20.bit6 = getBit(word20, 14);
-      this.wcsFeedbackWord20.bit7 = getBit(word20, 15);
-      this.wcsFeedbackWord20.bit8 = getBit(word20, 0);
-      this.wcsFeedbackWord20.bit9 = getBit(word20, 1);
-      this.wcsFeedbackWord20.bit10 = getBit(word20, 2);
-      this.wcsFeedbackWord20.bit11 = getBit(word20, 3);
-      this.wcsFeedbackWord20.bit12 = getBit(word20, 4);
-      this.wcsFeedbackWord20.bit13 = getBit(word20, 5);
-      this.wcsFeedbackWord20.bit14 = getBit(word20, 6);
+    //   // DBW20 分拣口进货成功
+    //   let word20 = this.convertToWord(values.DBW20 ?? 0);
+    //   this.wcsFeedbackWord20.bit0 = getBit(word20, 8);
+    //   this.wcsFeedbackWord20.bit1 = getBit(word20, 9);
+    //   this.wcsFeedbackWord20.bit2 = getBit(word20, 10);
+    //   this.wcsFeedbackWord20.bit3 = getBit(word20, 11);
+    //   this.wcsFeedbackWord20.bit4 = getBit(word20, 12);
+    //   this.wcsFeedbackWord20.bit5 = getBit(word20, 13);
+    //   this.wcsFeedbackWord20.bit6 = getBit(word20, 14);
+    //   this.wcsFeedbackWord20.bit7 = getBit(word20, 15);
+    //   this.wcsFeedbackWord20.bit8 = getBit(word20, 0);
+    //   this.wcsFeedbackWord20.bit9 = getBit(word20, 1);
+    //   this.wcsFeedbackWord20.bit10 = getBit(word20, 2);
+    //   this.wcsFeedbackWord20.bit11 = getBit(word20, 3);
+    //   this.wcsFeedbackWord20.bit12 = getBit(word20, 4);
+    //   this.wcsFeedbackWord20.bit13 = getBit(word20, 5);
+    //   this.wcsFeedbackWord20.bit14 = getBit(word20, 6);
 
-      // 反馈WCS写虚拟ID
-      this.sortPort01TrayId = values.DBB300 ?? '';
-      this.sortPort02TrayId = values.DBB330 ?? '';
-      this.sortPort03TrayId = values.DBB360 ?? '';
-      this.sortPort04TrayId = values.DBB390 ?? '';
-      this.sortPort05TrayId = values.DBB420 ?? '';
-      this.sortPort06TrayId = values.DBB450 ?? '';
-      this.sortPort07TrayId = values.DBB480 ?? '';
-      this.sortPort08TrayId = values.DBB520 ?? '';
-      this.sortPort09TrayId = values.DBB550 ?? '';
-      this.sortPort10TrayId = values.DBB580 ?? '';
-      this.sortPort11TrayId = values.DBB610 ?? '';
-      this.sortPort12TrayId = values.DBB640 ?? '';
-      this.sortPort13TrayId = values.DBB670 ?? '';
-      this.spareTrayId = values.DBB700 ?? '';
-    });
+    //   // 反馈WCS写虚拟ID
+    //   this.sortPort01TrayId = values.DBB300 ?? '';
+    //   this.sortPort02TrayId = values.DBB330 ?? '';
+    //   this.sortPort03TrayId = values.DBB360 ?? '';
+    //   this.sortPort04TrayId = values.DBB390 ?? '';
+    //   this.sortPort05TrayId = values.DBB420 ?? '';
+    //   this.sortPort06TrayId = values.DBB450 ?? '';
+    //   this.sortPort07TrayId = values.DBB480 ?? '';
+    //   this.sortPort08TrayId = values.DBB520 ?? '';
+    //   this.sortPort09TrayId = values.DBB550 ?? '';
+    //   this.sortPort10TrayId = values.DBB580 ?? '';
+    //   this.sortPort11TrayId = values.DBB610 ?? '';
+    //   this.sortPort12TrayId = values.DBB640 ?? '';
+    //   this.sortPort13TrayId = values.DBB670 ?? '';
+    //   this.spareTrayId = values.DBB700 ?? '';
+    // });
   },
   methods: {
     async handleSixScanUpload(barcode) {
