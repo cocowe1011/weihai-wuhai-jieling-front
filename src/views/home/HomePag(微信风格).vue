@@ -168,59 +168,58 @@ export default {
       const items = [
         { index: '1', label: '首页', icon: 'el-icon-s-home' },
         { index: '2', label: '业务', icon: 'el-icon-s-operation' },
-        { index: '5', label: '关于', icon: 'el-icon-info' }
-      ];
-      if (this.userRole === 'ADMIN') {
-        items.splice(2, 0, {
+        {
           index: '3',
           label: '用户',
-          icon: 'el-icon-user-solid'
-        });
-      }
-      return items;
+          icon: 'el-icon-user-solid',
+          isAdminShow: true
+        },
+        { index: '5', label: '关于', icon: 'el-icon-info' }
+      ];
+      return items.filter(
+        (item) => !item.isAdminShow || this.userRole === 'ADMIN'
+      );
     }
   },
-  watch: {
-    '$route.path'() {
-      this.syncActiveFromRoute();
-    }
-  },
+  watch: {},
   methods: {
-    syncActiveFromRoute() {
-      const path = this.$route.path;
-      if (path.includes('welcomPage')) this.activeIndex = '1';
-      else if (path.includes('MainPage')) this.activeIndex = '2';
-      else if (path.includes('userManagement')) this.activeIndex = '3';
-      else if (path.includes('aboutPage')) this.activeIndex = '5';
-    },
-    handleSelect(key) {
+    handleSelect(key, keyPath) {
       this.activeIndex = key;
       switch (key) {
+        // welcomPage
         case '1':
           this.$nextTick(() => {
             if (this.$route.path !== '/homePage/welcomPage') {
-              this.$router.replace({ path: '/homePage/welcomPage' });
+              this.$router.replace({
+                path: '/homePage/welcomPage'
+              });
             }
           });
           break;
         case '2':
           this.$nextTick(() => {
             if (this.$route.path !== '/homePage/MainPage') {
-              this.$router.replace({ path: '/homePage/MainPage' });
+              this.$router.replace({
+                path: '/homePage/MainPage'
+              });
             }
           });
           break;
         case '3':
           this.$nextTick(() => {
             if (this.$route.path !== '/homePage/userManagement') {
-              this.$router.replace({ path: '/homePage/userManagement' });
+              this.$router.replace({
+                path: '/homePage/userManagement'
+              });
             }
           });
           break;
         case '5':
           this.$nextTick(() => {
             if (this.$route.path !== '/homePage/aboutPage') {
-              this.$router.replace({ path: '/homePage/aboutPage' });
+              this.$router.replace({
+                path: '/homePage/aboutPage'
+              });
             }
           });
           break;
@@ -229,6 +228,7 @@ export default {
       }
     },
     closewindow() {
+      // 检查用户权限，只有管理员可以关闭系统
       if (this.userRole !== 'ADMIN') {
         this.$message.warning('操作员权限不足，无法关闭系统！');
         return;
@@ -248,7 +248,9 @@ export default {
     },
     logoutMethod() {
       this.$nextTick(() => {
-        this.$router.replace({ path: '/' });
+        this.$router.replace({
+          path: '/'
+        });
       });
       this.$nextTick(() => {
         ipcRenderer.send('logStatus', 'logout');
@@ -257,6 +259,7 @@ export default {
     handelCommand(command) {
       switch (command) {
         case 'logout':
+          // 检查用户权限，只有管理员可以退出登录
           if (this.userRole !== 'ADMIN') {
             this.$message.warning('操作员权限不足，无法退出登录！');
             return;
@@ -275,6 +278,7 @@ export default {
             cancelButtonText: '取消'
           })
             .then(({ value }) => {
+              // 验证姓名是否正确
               const param = {
                 userName: value,
                 userCode: remote.getGlobal('sharedObject').userInfo.userCode
@@ -283,17 +287,21 @@ export default {
                 .then((res) => {
                   if (res.data) {
                     this.$message.success('验证通过！');
+                    // 打开修改密码的弹窗，可以修改密码
                     this.dialogFormVisible = true;
                   } else {
                     this.$message.error('验证未通过！');
                   }
                 })
-                .catch(() => {
+                .catch((err) => {
                   this.$message.error('验证未通过！请重试！');
                 });
             })
             .catch(() => {
-              this.$message({ type: 'info', message: '取消验证！' });
+              this.$message({
+                type: 'info',
+                message: '取消验证！'
+              });
             });
           break;
         default:
@@ -301,6 +309,7 @@ export default {
       }
     },
     setCommand(command) {
+      console.log(command);
       switch (command) {
         case 'full_screen':
           this.fullScreen();
@@ -344,22 +353,24 @@ export default {
               type: 'success',
               duration: 2000
             });
+            // 打开修改密码的弹窗，可以修改密码
             this.dialogFormVisible = false;
             this.logoutMethod();
           } else {
             this.$message.error('修改失败！');
           }
         })
-        .catch(() => {
+        .catch((err) => {
           this.$message.error('修改失败！');
         });
     }
   },
   created() {
+    // 给主进程发送消息，更改窗口大小，设置最小大小，默认全屏
     ipcRenderer.send('logStatus', 'login');
     this.changeIcon();
+    // 获取用户角色
     this.userRole = remote.getGlobal('sharedObject').userInfo.userRole || '';
-    this.syncActiveFromRoute();
   },
   mounted() {}
 };

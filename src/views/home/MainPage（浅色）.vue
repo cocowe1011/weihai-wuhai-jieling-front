@@ -2869,7 +2869,7 @@ export default {
                 .marker-label {
                   position: absolute;
                   white-space: nowrap;
-                  background: rgba(38, 38, 38, 0.88);
+                  background: rgba(0, 0, 0, 0.8);
                   color: #fff;
                   padding: 4px 8px;
                   border-radius: 4px;
@@ -2935,30 +2935,30 @@ export default {
                 z-index: 2;
                 .data-panel {
                   position: absolute;
-                  background: var(--mp-surface);
-                  border: 1px solid var(--mp-accent-border);
+                  background: linear-gradient(135deg, #0e1a27, #3c4c63);
+                  border: 1px solid rgba(64, 158, 255, 0.3);
                   border-radius: 8px;
                   padding: 12px;
                   width: 170px;
-                  box-shadow: var(--mp-shadow-lg);
+                  // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
                   opacity: 0;
                   transition: all 0.3s ease;
                   pointer-events: none;
                   .data-panel-header {
                     font-size: 14px;
-                    color: var(--mp-accent);
+                    color: #409eff;
                     margin-bottom: 6px;
                     padding-bottom: 6px;
-                    border-bottom: 1px solid var(--mp-border-light);
+                    border-bottom: 1px solid rgba(64, 158, 255, 0.2);
                   }
                   .data-panel-content {
                     font-size: 12px;
                     .data-panel-row {
                       display: flex;
                       justify-content: space-between;
-                      color: var(--mp-text);
+                      color: rgba(255, 255, 255, 0.9);
                       .data-panel-label {
-                        color: var(--mp-text-secondary);
+                        color: rgba(255, 255, 255, 0.6);
                         font-size: 12px;
                       }
                     }
@@ -2976,8 +2976,8 @@ export default {
 
                     /* 调整复选框标签颜色 */
                     .checkbox-group :deep(.el-checkbox__label) {
-                      color: var(--mp-text-muted);
-                      font-size: 12px;
+                      color: rgba(255, 255, 255, 0.8); /* 调整标签颜色 */
+                      font-size: 12px; /* 调整标签字体大小 */
                     }
 
                     /* 执行控制区域的特殊样式 */
@@ -2992,15 +2992,15 @@ export default {
                       :deep(
                         .el-checkbox__input.is-checked + .el-checkbox__label
                       ) {
-                      color: #4385ff; /* 选中时标签颜色 */
+                      color: #0ac5a8; /* 选中时标签颜色 */
                     }
 
                     .checkbox-group
                       :deep(
                         .el-checkbox__input.is-checked .el-checkbox__inner
                       ) {
-                      background-color: #4385ff; /* 选中时背景色 */
-                      border-color: #4385ff; /* 选中时边框色 */
+                      background-color: #0ac5a8; /* 选中时背景色 */
+                      border-color: #0ac5a8; /* 选中时边框色 */
                     }
                   }
                 }
@@ -3057,7 +3057,7 @@ export default {
                     gap: 4px;
                     margin-bottom: 8px;
                     padding-bottom: 8px;
-                    border-bottom: 1px solid var(--mp-border-light);
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                   }
                   .data-panel-label {
                     margin-bottom: 2px;
@@ -3077,18 +3077,18 @@ export default {
                 cursor: pointer;
               }
               .marker-with-button .warehouse-btn {
-                background: linear-gradient(135deg, #4385ff, #2f54eb);
+                background: linear-gradient(135deg, #0e1a27, #3c4c63);
                 color: white;
                 font-weight: bold;
                 border: none;
-                box-shadow: 0 2px 8px rgba(67, 133, 255, 0.25);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
                 border-radius: 4px;
                 padding: 10px 15px;
                 transition: all 0.3s ease;
               }
               .marker-with-button .warehouse-btn:hover {
                 transform: scale(1.05);
-                box-shadow: 0 4px 12px rgba(67, 133, 255, 0.35);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
               }
 
               /* 预热房选择样式 */
@@ -3096,9 +3096,9 @@ export default {
                 position: absolute;
                 transform: translate(-50%, -50%);
                 z-index: 10;
-                background: linear-gradient(135deg, #4385ff 0%, #2f54eb 100%);
+                background: linear-gradient(135deg, #005aff 0%, #000000 100%);
                 border-radius: 5px;
-                box-shadow: 0 2px 8px rgba(67, 133, 255, 0.25);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
                 overflow: hidden;
                 width: 80px;
                 .preheating-room-content {
@@ -3111,7 +3111,7 @@ export default {
                     padding: 4px 0;
                     font-size: 11px;
                     color: white;
-                    background-color: rgba(255, 255, 255, 0.2);
+                    background-color: rgba(0, 0, 0, 0.2);
                     font-weight: bold;
                   }
                   .preheating-room-body {
@@ -3193,55 +3193,55 @@ export default {
                 transform: translate(-50%, -50%);
                 cursor: pointer;
                 z-index: 10;
-                background: var(--mp-surface);
+                background: rgba(10, 30, 50, 0.85);
                 padding: 4px 8px;
                 border-radius: 4px;
-                border: 1px solid var(--mp-accent-border);
+                border: 1px solid rgba(64, 158, 255, 0.5);
                 transition: all 0.3s ease;
                 min-width: 40px;
                 text-align: center;
-                box-shadow: var(--mp-shadow);
-                color: var(--mp-text);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+                color: #ffffff;
                 .queue-marker-content {
                   display: flex;
                   flex-direction: column;
                   align-items: center;
-                  color: var(--mp-text);
+                  color: #fff;
                   font-size: 12px;
                   .queue-marker-name {
-                    color: var(--mp-text-secondary);
+                    color: #fff;
                   }
 
                   .queue-marker-count {
                     font-size: 14px;
                     font-weight: bold;
-                    color: var(--mp-accent);
+                    color: #409eff;
                   }
                 }
               }
               .queue-marker:hover {
-                background: var(--mp-accent-bg);
-                border-color: rgba(67, 133, 255, 0.45);
-                box-shadow: 0 4px 12px rgba(67, 133, 255, 0.15);
+                background: rgba(24, 61, 97, 0.9);
+                border-color: rgba(64, 158, 255, 0.6);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
               }
 
               /* 特殊队列标记样式 - 上货1、上货2、缓存区1、缓存区2 */
               .special-queue {
-                background: rgba(67, 133, 255, 0.12) !important;
-                border: 1px solid rgba(67, 133, 255, 0.35) !important;
+                background: rgba(0, 123, 191, 0.9) !important;
+                border: 1px solid rgba(0, 123, 191, 0.7) !important;
               }
 
               .special-queue .queue-marker-count {
-                color: var(--mp-accent-deep) !important;
+                color: #ffffff !important;
               }
 
               .special-queue .queue-marker-name {
-                color: var(--mp-text) !important;
+                color: #ffffff !important;
               }
 
               .special-queue:hover {
-                background: rgba(67, 133, 255, 0.18) !important;
-                border-color: rgba(67, 133, 255, 0.5) !important;
+                background: rgba(0, 123, 191, 0.95) !important;
+                border-color: rgba(40, 167, 235, 0.8) !important;
               }
 
               /* 添加小车样式 */
@@ -3279,12 +3279,12 @@ export default {
     pointer-events: auto;
     /* 基础样式 */
     .queue-section {
-      background: var(--mp-surface);
+      background: rgba(30, 42, 56);
       border-radius: 15px;
-      box-shadow: var(--mp-shadow-lg);
-      color: var(--mp-text);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      color: #f5f5f5;
       box-sizing: border-box;
-      border: 1px solid var(--mp-border);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       .section-header {
         display: flex;
         justify-content: space-between;
@@ -3292,11 +3292,11 @@ export default {
         cursor: pointer;
         transition: color 0.3s ease;
         font-size: 20px;
-        color: var(--mp-text);
+        color: #7eb8ff;
         font-weight: 900;
         padding-bottom: 12px;
         margin-bottom: 12px;
-        border-bottom: 1px solid var(--mp-border-light);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         flex-shrink: 0;
       }
       .expandable-content-queue {
@@ -3308,12 +3308,12 @@ export default {
         .queue-container {
           flex: 1;
           display: flex;
-          background: var(--mp-surface-muted);
+          background: rgba(30, 42, 56, 0.9);
           border-radius: 12px;
-          padding: 8px;
+          padding: 15px;
           gap: 20px;
           overflow: hidden;
-          border: 1px solid var(--mp-border);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           height: 100%;
           min-height: 0;
           box-sizing: border-box;
@@ -3323,7 +3323,7 @@ export default {
             flex-direction: column;
             overflow-y: auto;
             padding-right: 15px;
-            border-right: 1px solid var(--mp-border-light);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
             height: 100%;
             min-height: 0;
             /* 队列项样式 */
@@ -3331,16 +3331,16 @@ export default {
               display: flex;
               justify-content: space-between;
               align-items: center;
-              background: var(--mp-surface);
+              background: rgba(48, 65, 85, 0.9);
               border-radius: 8px;
               padding: 12px 15px;
               margin-bottom: 8px;
               cursor: pointer;
               transition: all 0.3s ease;
-              border: 1px solid var(--mp-border);
+              border: 1px solid rgba(255, 255, 255, 0.15);
               .tray-count {
-                background: var(--mp-accent-bg);
-                color: var(--mp-accent);
+                background: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.7);
                 font-size: 12px;
                 padding: 2px 8px;
                 border-radius: 10px;
@@ -3350,14 +3350,14 @@ export default {
             }
 
             .queue:hover {
-              background: #eef2f8;
-              border-color: var(--mp-accent-border);
+              background: rgba(48, 65, 85, 1);
+              border-color: rgba(64, 158, 255, 0.45);
               transform: translateX(2px);
             }
 
             .queue.active {
-              background: var(--mp-accent-bg);
-              border-color: rgba(67, 133, 255, 0.4);
+              background: rgba(64, 158, 255, 0.14);
+              border-color: rgba(64, 158, 255, 0.45);
             }
           }
           /* 滚动条样式 */
@@ -3368,18 +3368,18 @@ export default {
 
           .queue-container-left::-webkit-scrollbar-track,
           .tray-list::-webkit-scrollbar-track {
-            background: var(--mp-surface-muted);
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 2px;
           }
 
           .queue-container-left::-webkit-scrollbar-thumb,
           .tray-list::-webkit-scrollbar-thumb {
-            background: #c0c4cc;
+            background: rgba(255, 255, 255, 0.2);
           }
 
           .queue-container-left::-webkit-scrollbar-thumb:hover,
           .tray-list::-webkit-scrollbar-thumb:hover {
-            background: #909399;
+            background: rgba(255, 255, 255, 0.3);
           }
           .queue-container-right {
             flex: 1;
@@ -3393,13 +3393,13 @@ export default {
               flex-shrink: 0;
               margin-bottom: 15px;
               padding-bottom: 10px;
-              border-bottom: 1px solid var(--mp-border-light);
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
               display: flex;
               justify-content: space-between;
               align-items: center;
               h3 {
                 margin: 0;
-                color: var(--mp-text);
+                color: rgba(255, 255, 255, 0.9);
                 font-size: 16px;
               }
               .queue-header-actions {
@@ -3407,18 +3407,18 @@ export default {
                 align-items: center;
                 gap: 12px;
                 .el-button {
-                  background: var(--mp-accent-bg);
-                  border: 1px solid var(--mp-accent-border);
-                  color: var(--mp-accent);
+                  background: rgba(64, 158, 255, 0.18);
+                  border: 1px solid rgba(64, 158, 255, 0.3);
+                  color: #7eb8ff;
                 }
                 .el-button:hover:not(:disabled) {
-                  background: var(--mp-accent-bg-hover);
-                  border-color: rgba(67, 133, 255, 0.4);
-                  color: var(--mp-accent-deep);
+                  background: rgba(64, 158, 255, 0.28);
+                  border-color: rgba(64, 158, 255, 0.45);
+                  color: #fff;
                 }
                 .tray-total {
-                  background: var(--mp-accent-bg);
-                  color: var(--mp-accent);
+                  background: rgba(255, 255, 255, 0.1);
+                  color: rgba(255, 255, 255, 0.7);
                   font-size: 13px;
                   padding: 4px 12px;
                   border-radius: 15px;
@@ -3437,13 +3437,13 @@ export default {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                background: var(--mp-surface);
+                background: rgba(48, 65, 85, 0.9);
                 margin: 0 0 8px 0;
                 padding: 12px 15px;
                 border-radius: 8px;
                 cursor: move;
                 transition: all 0.3s ease;
-                border: 1px solid var(--mp-border);
+                border: 1px solid rgba(255, 255, 255, 0.15);
                 position: relative;
 
                 .tray-info {
@@ -3458,7 +3458,7 @@ export default {
                     gap: 8px;
                     .tray-name {
                       font-weight: 500;
-                      color: var(--mp-text);
+                      color: rgba(255, 255, 255, 0.9);
                       font-size: 14px;
                     }
 
@@ -3472,14 +3472,14 @@ export default {
 
                     .tray-batch {
                       font-size: 12px;
-                      color: var(--mp-accent);
-                      background: var(--mp-accent-bg);
+                      color: #7eb8ff;
+                      background: rgba(64, 158, 255, 0.1);
                       padding: 2px 8px;
                       border-radius: 4px;
                       white-space: nowrap;
 
                       .sequence-number {
-                        color: #fa8c16;
+                        color: #ffa500;
                         font-weight: bold;
                         margin-left: 4px;
                       }
@@ -3487,7 +3487,7 @@ export default {
 
                     .tray-detail {
                       font-size: 11px;
-                      color: var(--mp-text-secondary);
+                      color: rgba(255, 255, 255, 0.7);
                       word-break: break-word;
                       line-height: 1.4;
                       flex: 1;
@@ -3496,7 +3496,7 @@ export default {
                   }
                   .tray-time {
                     font-size: 12px;
-                    color: var(--mp-text-secondary);
+                    color: rgba(255, 255, 255, 0.5);
                   }
                 }
                 .tray-actions {
@@ -3522,8 +3522,8 @@ export default {
                   }
 
                   &:not(.is-disabled):hover {
-                    background-color: #4385ff;
-                    border-color: #4385ff;
+                    background-color: #409eff;
+                    border-color: #409eff;
                   }
                 }
 
@@ -3537,8 +3537,8 @@ export default {
                 }
               }
               .tray-item:hover {
-                background: #eef2f8;
-                border-color: var(--mp-accent-border);
+                background: rgba(48, 65, 85, 1);
+                border-color: rgba(64, 158, 255, 0.45);
                 transform: translateX(2px);
                 .tray-actions {
                   opacity: 1;
@@ -3550,7 +3550,7 @@ export default {
               .tray-item.dragging {
                 opacity: 0.6;
                 transform: scale(0.98);
-                border: 1px dashed var(--mp-accent-border);
+                border: 1px dashed rgba(255, 255, 255, 0.3);
               }
               /* 添加空状态样式 */
               .empty-state {
@@ -3559,18 +3559,18 @@ export default {
                 align-items: center;
                 justify-content: center;
                 padding: 40px 0;
-                color: var(--mp-text-secondary);
+                color: rgba(255, 255, 255, 0.6);
                 i {
                   font-size: 48px;
                   margin-bottom: 16px;
-                  color: #c0c4cc;
+                  color: rgba(255, 255, 255, 0.3);
                 }
                 p {
                   font-size: 14px;
                   margin: 0 0 16px 0;
                 }
                 .el-button {
-                  color: #4385ff;
+                  color: #7eb8ff;
                   font-size: 14px;
                   i {
                     font-size: 14px;
@@ -3579,7 +3579,7 @@ export default {
                   }
                 }
                 .el-button:hover {
-                  color: #3e7bfa;
+                  color: #6aabf5;
                 }
               }
             }
@@ -3688,18 +3688,17 @@ export default {
   right: 50px;
   top: 0;
   width: 300px;
-  max-height: 80vh;
-  background: #ffffff;
-  border: 1px solid #e6e8eb;
+  max-height: 80vh; /* 限制最大高度为视窗高度的80% */
+  background: rgba(30, 42, 56, 0.98);
+  border: 1px solid rgba(64, 158, 255, 0.25);
   border-radius: 15px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
   transform-origin: top right;
   opacity: 1;
   transform: scale(1);
   display: flex;
   flex-direction: column;
-  color: #262626;
 }
 
 .test-panel.collapsed {
@@ -3710,16 +3709,15 @@ export default {
 
 .test-panel-header {
   padding: 15px;
-  background: rgba(67, 133, 255, 0.08);
+  background: rgba(64, 158, 255, 0.15);
   border-radius: 15px 15px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #4385ff;
+  color: #7eb8ff;
   font-weight: bold;
   pointer-events: auto;
   flex-shrink: 0;
-  border-bottom: 1px solid #e6e6e6;
 }
 
 .test-panel-content {
@@ -3735,17 +3733,17 @@ export default {
 }
 
 .test-panel-content::-webkit-scrollbar-track {
-  background: #f8f9fc;
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 2px;
 }
 
 .test-panel-content::-webkit-scrollbar-thumb {
-  background: rgba(67, 133, 255, 0.18);
+  background: rgba(64, 158, 255, 0.28);
   border-radius: 2px;
 }
 
 .test-panel-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(67, 133, 255, 0.35);
+  background: rgba(64, 158, 255, 0.45);
 }
 
 .test-panel-header i {
@@ -3759,15 +3757,15 @@ export default {
 
 .test-section {
   margin-bottom: 20px;
-  background: #f8f9fc;
+  background: rgba(0, 0, 0, 0.4);
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .test-label {
   display: block;
-  color: #4385ff;
+  color: #7eb8ff;
   margin-bottom: 10px;
   font-size: 14px;
   font-weight: bold;
@@ -3782,9 +3780,9 @@ export default {
 
 .position-btn {
   padding: 6px 12px;
-  background: rgba(67, 133, 255, 0.12);
-  border: 1px solid rgba(67, 133, 255, 0.25);
-  color: #4385ff;
+  background: rgba(64, 158, 255, 0.18);
+  border: 1px solid rgba(64, 158, 255, 0.35);
+  color: #fff;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -3792,8 +3790,7 @@ export default {
 }
 
 .position-btn:hover {
-  background: rgba(67, 133, 255, 0.2);
-  color: #2f54eb;
+  background: rgba(64, 158, 255, 0.32);
 }
 
 .position-btn:active {
@@ -3806,9 +3803,8 @@ export default {
   flex-direction: column;
   gap: 15px;
   padding: 10px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
 }
 
 .cart-position-group {
@@ -3819,7 +3815,7 @@ export default {
 
 .cart-position-label {
   font-size: 13px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.8);
   font-weight: bold;
   display: flex;
   justify-content: space-between;
@@ -3827,9 +3823,9 @@ export default {
 }
 
 .cart-value {
-  background: rgba(67, 133, 255, 0.12);
-  border: 1px solid rgba(67, 133, 255, 0.18);
-  color: #4385ff;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: bold;
@@ -3846,25 +3842,25 @@ export default {
 }
 
 .cart-position-slider :deep(.el-slider__runway) {
-  background-color: #e6e8eb;
+  background-color: rgba(255, 255, 255, 0.1);
   height: 6px;
 }
 
 .cart-position-slider :deep(.el-slider__bar) {
-  background-color: #4385ff;
+  background-color: #409eff;
   height: 6px;
 }
 
 .cart-position-slider :deep(.el-slider__button) {
-  border: 2px solid #4385ff;
+  border: 2px solid #409eff;
   background-color: #fff;
   width: 20px;
   height: 20px;
 }
 
 .cart-position-slider :deep(.el-slider__button:hover) {
-  border-color: #4385ff;
-  box-shadow: 0 0 5px rgba(67, 133, 255, 0.35);
+  border-color: #409eff;
+  box-shadow: 0 0 5px rgba(64, 158, 255, 0.45);
 }
 
 /* 测试添加结束 */
@@ -3874,9 +3870,8 @@ export default {
   flex-direction: column;
   gap: 12px;
   padding: 10px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
 }
 
 .qrcode-input-group {
@@ -3888,14 +3883,14 @@ export default {
 .qrcode-label {
   width: 80px;
   font-size: 13px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.8);
   text-align: right;
 }
 
 .send-label {
   width: 60px;
   font-size: 13px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.8);
   text-align: right;
 }
 
@@ -3904,34 +3899,34 @@ export default {
 }
 
 .qrcode-input :deep(.el-input__inner) {
-  background: #ffffff;
-  border: 1px solid #dcdfe6;
-  color: #262626;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #fff;
 }
 
 .qrcode-input :deep(.el-input__inner:hover),
 .qrcode-input :deep(.el-input__inner:focus) {
-  border-color: #4385ff;
+  border-color: #409eff;
 }
 
 .qrcode-actions {
   display: flex;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid #e6e6e6;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 8px;
 }
 
 .qrcode-actions .el-button {
-  background: rgba(67, 133, 255, 0.12);
-  border: 1px solid rgba(67, 133, 255, 0.18);
-  color: #4385ff;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
 }
 
 .qrcode-actions .el-button:hover {
-  background: rgba(67, 133, 255, 0.18);
-  border-color: rgba(67, 133, 255, 0.35);
-  color: #2f54eb;
+  background: rgba(64, 158, 255, 0.28);
+  border-color: rgba(64, 158, 255, 0.45);
+  color: #fff;
 }
 
 /* PLC 变量写入测试分组样式 */
@@ -3941,8 +3936,8 @@ export default {
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__header) {
-  background: rgba(67, 133, 255, 0.08);
-  color: #4385ff;
+  background: rgba(64, 158, 255, 0.1);
+  color: #7eb8ff;
   border: none;
   padding: 0 10px;
   height: 32px;
@@ -3953,7 +3948,7 @@ export default {
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__header.is-active) {
-  background: rgba(67, 133, 255, 0.12);
+  background: rgba(64, 158, 255, 0.18);
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__wrap) {
@@ -3963,7 +3958,7 @@ export default {
 
 .plc-test-wrapper :deep(.el-collapse-item__content) {
   padding: 8px 4px;
-  color: #262626;
+  color: #fff;
 }
 
 .compact-grid {
@@ -3981,7 +3976,7 @@ export default {
 .compact-label {
   width: 70px;
   font-size: 12px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
   text-align: right;
 }
@@ -3990,9 +3985,9 @@ export default {
   height: 24px;
   line-height: 24px;
   padding: 0 5px;
-  background: #ffffff;
-  border: 1px solid #dcdfe6;
-  color: #262626;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #fff;
 }
 
 .plc-test-wrapper :deep(.el-button--mini) {
@@ -4006,9 +4001,8 @@ export default {
   flex-direction: column;
   gap: 12px;
   padding: 10px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
 }
 
 .queue-select-group {
@@ -4020,7 +4014,7 @@ export default {
 .queue-move-label {
   width: 60px;
   font-size: 13px;
-  color: #606266;
+  color: rgba(255, 255, 255, 0.8);
   text-align: right;
 }
 
@@ -4028,36 +4022,35 @@ export default {
   display: flex;
   justify-content: flex-end;
   padding-top: 8px;
-  border-top: 1px solid #e6e6e6;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 8px;
 }
 
 .upload-area-actions {
   padding: 10px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
   display: flex;
   justify-content: center;
 }
 
 .upload-area-actions .el-button {
-  background: rgba(67, 133, 255, 0.12);
-  border: 1px solid rgba(67, 133, 255, 0.18);
-  color: #4385ff;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
   width: 100%;
 }
 
 .upload-area-actions .el-button:hover:not(:disabled) {
-  background: rgba(67, 133, 255, 0.18);
-  border-color: rgba(67, 133, 255, 0.35);
-  color: #2f54eb;
+  background: rgba(64, 158, 255, 0.28);
+  border-color: rgba(64, 158, 255, 0.45);
+  color: #fff;
 }
 
 .upload-area-actions .el-button:disabled {
-  background: #f5f7fa;
-  border-color: #e6e8eb;
-  color: #c0c4cc;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
   cursor: not-allowed;
 }
 
@@ -4066,9 +4059,8 @@ export default {
   flex-direction: column;
   gap: 12px;
   padding: 10px;
-  background: #ffffff;
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  border: 1px solid #e6e8eb;
 }
 
 .quantity-group {
@@ -4079,7 +4071,7 @@ export default {
 
 .quantity-title {
   font-size: 14px;
-  color: #4385ff;
+  color: #7eb8ff;
   font-weight: bold;
 }
 
@@ -4093,21 +4085,21 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f9fc;
+  background: rgba(30, 42, 56, 0.8);
   border-radius: 4px;
   padding: 8px;
-  border: 1px solid #e6e8eb;
+  border: 1px solid rgba(64, 158, 255, 0.1);
   margin-bottom: 5px;
 
   .quantity-label {
     font-size: 12px;
-    color: #606266;
+    color: rgba(255, 255, 255, 0.8);
     min-width: 30px;
   }
 
   .quantity-value {
     font-size: 14px;
-    color: #4385ff;
+    color: #7eb8ff;
     font-weight: bold;
     min-width: 30px;
     text-align: center;
@@ -4124,7 +4116,7 @@ export default {
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      background: rgba(67, 133, 255, 0.18);
+      background: rgba(64, 158, 255, 0.18);
       border: none;
       border-radius: 4px;
       color: #fff;
@@ -4140,9 +4132,9 @@ export default {
       }
 
       &.plus {
-        background: rgba(67, 133, 255, 0.35);
+        background: rgba(64, 158, 255, 0.32);
         &:hover {
-          background: rgba(67, 133, 255, 0.5);
+          background: rgba(64, 158, 255, 0.48);
         }
       }
 
@@ -4181,7 +4173,7 @@ export default {
       flex-direction: column;
       align-items: center;
       padding: 30px 20px;
-      background: #f8f9fc;
+      background: rgba(30, 42, 56, 0.8);
       border-radius: 8px;
       border: 1px solid rgba(255, 193, 7, 0.3);
 
@@ -4192,7 +4184,7 @@ export default {
       }
 
       p {
-        color: #606266;
+        color: rgba(255, 255, 255, 0.8);
         font-size: 14px;
         margin: 0;
         text-align: center;
@@ -4215,11 +4207,11 @@ export default {
   .arrow-icon {
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #4385ff;
+    color: #7eb8ff;
     font-size: 16px;
 
     &:hover {
-      color: var(--mp-accent-deep);
+      color: #fff;
       transform: scale(1.1);
     }
   }
