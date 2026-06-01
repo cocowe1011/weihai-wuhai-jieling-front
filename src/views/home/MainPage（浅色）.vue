@@ -168,6 +168,29 @@
           <div class="floor-left">
             <div class="floor-title">生产线监控</div>
             <div class="floor-image-container">
+              <div class="floor-map-legend">
+                <span class="legend-item">
+                  <i class="legend-dot legend-dot--photo"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">光电</span>
+                    <span class="legend-desc">圆形，触发为红色</span>
+                  </span>
+                </span>
+                <span class="legend-item">
+                  <i class="legend-dot legend-dot--motor"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">电机</span>
+                    <span class="legend-desc">方形，运行为绿色</span>
+                  </span>
+                </span>
+                <span class="legend-item">
+                  <i class="legend-arrow"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">箭头</span>
+                    <span class="legend-desc">输送线物料流向</span>
+                  </span>
+                </span>
+              </div>
               <div class="image-wrapper">
                 <img
                   src="@/assets/changzhou-img/image.png"
@@ -957,6 +980,24 @@
                 >
                   <div class="marker-label">分拣6右</div>
                 </div> -->
+                <!-- 输送线流动箭头 -->
+                <div
+                  v-for="(arrow, index) in conveyorArrows"
+                  :key="'conveyor-' + index"
+                  class="marker-with-flow flow-item"
+                  :data-x="arrow.x"
+                  :data-y="arrow.y"
+                  :style="{
+                    width: arrow.width + 'px',
+                    transform: `translate(-50%, -50%) scale(0.5) rotateZ(${arrow.rotation}deg)`
+                  }"
+                >
+                  <div
+                    v-for="item in arrow.arrowCount"
+                    :key="item"
+                    class="conveyor-arrow-item"
+                  ></div>
+                </div>
               </div>
             </div>
           </div>
@@ -1250,7 +1291,7 @@ export default {
       ],
       // 添加队列位置标识数据
       queueMarkers: [
-        { id: 1, name: '上货区', queueId: 1, x: 760, y: 780 },
+        { id: 1, name: '上货区', queueId: 1, x: 650, y: 780 },
         { id: 2, name: '分拣口1', queueId: 2, x: 1730, y: 1650 },
         { id: 3, name: '分拣口2', queueId: 3, x: 1730, y: 1020 },
         { id: 4, name: '分拣口3', queueId: 4, x: 1910, y: 1650 },
@@ -1264,6 +1305,58 @@ export default {
         { id: 12, name: '分拣口11', queueId: 12, x: 2650, y: 1650 },
         { id: 13, name: '分拣口12', queueId: 13, x: 2650, y: 1020 },
         { id: 14, name: '分拣口13', queueId: 14, x: 2820, y: 1350 }
+      ],
+      // 输送线流动箭头配置（坐标按平面图调整）
+      conveyorArrows: [
+        {
+          x: 390,
+          y: 245,
+          width: 200,
+          rotation: -2,
+          arrowCount: 6
+        },
+        {
+          x: 661,
+          y: 510,
+          width: 300,
+          rotation: 92,
+          arrowCount: 8
+        },
+        {
+          x: 642,
+          y: 1085,
+          width: 300,
+          rotation: 92,
+          arrowCount: 9
+        },
+        {
+          x: 800,
+          y: 1345,
+          width: 130,
+          rotation: -2,
+          arrowCount: 4
+        },
+        {
+          x: 1420,
+          y: 1343,
+          width: 250,
+          rotation: 0,
+          arrowCount: 8
+        },
+        {
+          x: 1920,
+          y: 1345,
+          width: 350,
+          rotation: 0,
+          arrowCount: 10
+        },
+        {
+          x: 2450,
+          y: 1345,
+          width: 350,
+          rotation: 0,
+          arrowCount: 10
+        }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // —— 读取点位（与 读取点位.csv / background.js 一致）——
@@ -1870,7 +1963,7 @@ export default {
         if (!imageWrapper) return;
 
         const markers = imageWrapper.querySelectorAll(
-          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker'
+          '.marker, .marker-with-panel, .marker-with-button, .marker-with-flow, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker'
         );
         const carts = imageWrapper.querySelectorAll('.cart-container');
         const wrapperRect = imageWrapper.getBoundingClientRect();
@@ -2773,6 +2866,103 @@ export default {
             height: calc(100% - var(--mp-module-header-height));
             position: relative;
             box-sizing: border-box;
+
+            .floor-map-legend {
+              position: absolute;
+              bottom: 10px;
+              left: 10px;
+              z-index: 20;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              padding: 8px 10px;
+              background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.96) 0%,
+                rgba(245, 248, 252, 0.94) 100%
+              );
+              border: 1px solid var(--mp-border);
+              border-radius: 6px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+              pointer-events: none;
+
+              .legend-item {
+                display: grid;
+                grid-template-columns: 18px 1fr;
+                align-items: center;
+                column-gap: 8px;
+              }
+
+              .legend-text {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+                line-height: 1.2;
+                min-width: 0;
+              }
+
+              .legend-name {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--mp-text);
+              }
+
+              .legend-desc {
+                font-size: 10px;
+                color: var(--mp-text-muted, #6b7280);
+              }
+
+              .legend-dot {
+                justify-self: center;
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                font-style: normal;
+
+                &--photo {
+                  border-radius: 50%;
+                  background: rgba(128, 128, 128, 0.85);
+                }
+
+                &--motor {
+                  border-radius: 1px;
+                  background: rgba(128, 128, 128, 0.85);
+                }
+              }
+
+              .legend-arrow {
+                justify-self: center;
+                position: relative;
+                display: inline-block;
+                width: 18px;
+                height: 10px;
+                font-style: normal;
+
+                &::before {
+                  content: '';
+                  position: absolute;
+                  left: 0;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 8px;
+                  height: 6px;
+                  background-color: #4385ff;
+                }
+
+                &::after {
+                  content: '';
+                  position: absolute;
+                  left: 6px;
+                  top: 50%;
+                  transform: translateY(-50%) rotate(45deg);
+                  width: 0;
+                  height: 0;
+                  border-right: 8px solid #4385ff;
+                  border-bottom: 8px solid transparent;
+                }
+              }
+            }
+
             .image-wrapper {
               position: relative;
               width: 100%;
@@ -2924,6 +3114,17 @@ export default {
                 transform: translateY(-50%);
               }
               /* --- 电机点位样式结束 --- */
+
+              /* 流水线流动箭头容器定位（置于光电/电机之下，避免遮挡点位） */
+              .marker-with-flow {
+                position: absolute;
+                transform: translate(-50%, -50%);
+                z-index: 1;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
 
               /* 带数据面板的标识点样式 */
               .marker-with-panel {
@@ -4214,6 +4415,56 @@ export default {
       color: #fff;
       transform: scale(1.1);
     }
+  }
+}
+
+/* 流动箭头（scoped 根级；配色与页面 --mp-accent 主题一致） */
+.conveyor-arrow-item {
+  position: relative;
+  display: inline-block;
+  width: 45px;
+  height: 34px;
+}
+.conveyor-arrow-item::before {
+  content: '';
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 16px;
+  background-color: #4385ff;
+}
+.conveyor-arrow-item::after {
+  content: '';
+  position: relative;
+  top: 4px;
+  right: 12px;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-right: 24px solid #4385ff;
+  border-bottom: 24px solid transparent;
+  transform: rotate(45deg);
+}
+
+.flow-item {
+  height: 34px;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  backface-visibility: hidden;
+  .conveyor-arrow-item {
+    position: relative;
+    animation: carousel 1s linear infinite;
+    will-change: transform;
+  }
+}
+
+@keyframes carousel {
+  0% {
+    transform: translateX(-45px) translateZ(0);
+  }
+  100% {
+    transform: translateX(0px) translateZ(0);
   }
 }
 </style>
