@@ -3,21 +3,18 @@
     <!-- 内容区包装器 -->
     <div class="content-wrapper">
       <!-- 左侧面板 -->
-      <div class="side-info-panel" v-show="false">
+      <div class="side-info-panel">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
           <div class="section-header">当前扫码包裹信息</div>
-          <div class="scrollable-content" style="margin-top: 5px">
+          <div class="scrollable-content">
             <div class="status-overview">
               <div class="data-card">
                 <div class="data-card-border">
                   <div class="data-card-border-borderTop granient-text">
                     大包号
                   </div>
-                  <div
-                    class="data-card-border-borderDown"
-                    style="font-size: 1.3vw"
-                  >
+                  <div class="data-card-border-borderDown">
                     {{ nowScanTrayInfo.packageNo || '--' }}
                   </div>
                 </div>
@@ -69,7 +66,7 @@
         <!-- 操作区 -->
         <div class="operation-panel">
           <div class="section-header">
-            <span>操作区</span>
+            <span>操作</span>
             <el-button
               type="primary"
               size="mini"
@@ -81,12 +78,14 @@
           </div>
           <div class="operation-buttons">
             <button
+              class="btn-start"
               @click="toggleButtonState('start')"
               :class="{ pressed: buttonStates.start }"
             >
               <i class="el-icon-switch-button"></i><span>全线启动</span>
             </button>
             <button
+              class="btn-stop"
               @click="toggleButtonState('stop')"
               :class="{ pressed: buttonStates.stop }"
             >
@@ -94,6 +93,7 @@
             </button>
             <button
               v-show="false"
+              class="btn-reset"
               @click="toggleButtonState('reset')"
               :class="{ pressed: buttonStates.reset }"
             >
@@ -111,7 +111,7 @@
         <!-- 日志区域 -->
         <div class="log-section">
           <div class="section-header">
-            日志区
+            日志记录
             <div class="log-tabs">
               <div
                 class="log-tab"
@@ -166,10 +166,31 @@
         <div class="floor-container">
           <!-- 左侧区域 -->
           <div class="floor-left">
-            <div class="floor-title">
-              <i class="el-icon-office-building"></i> 作业区域
-            </div>
+            <div class="floor-title">生产线监控</div>
             <div class="floor-image-container">
+              <div class="floor-map-legend">
+                <span class="legend-item">
+                  <i class="legend-dot legend-dot--photo"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">光电</span>
+                    <span class="legend-desc">圆形，触发为红色</span>
+                  </span>
+                </span>
+                <span class="legend-item">
+                  <i class="legend-dot legend-dot--motor"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">电机</span>
+                    <span class="legend-desc">方形，运行为绿色</span>
+                  </span>
+                </span>
+                <span class="legend-item">
+                  <i class="legend-arrow"></i>
+                  <span class="legend-text">
+                    <span class="legend-name">箭头</span>
+                    <span class="legend-desc">输送线物料流向</span>
+                  </span>
+                </span>
+              </div>
               <div class="image-wrapper">
                 <img
                   src="@/assets/changzhou-img/image.png"
@@ -197,16 +218,16 @@
                 <!-- DBW12 光电信号--1 -->
                 <!-- 01001 -->
                 <div
-                  class="marker label-left"
+                  class="marker label-right"
                   :class="{ scanning: photoelectricSignal1.bit0 === '1' }"
                   data-x="600"
-                  data-y="300"
+                  data-y="190"
                   @click="toggleBitValue(photoelectricSignal1, 'bit0')"
                 >
                   <div class="marker-label">01001</div>
                 </div>
                 <!-- 01002 -->
-                <div
+                <!-- <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit1 === '1' }"
                   data-x="640"
@@ -214,83 +235,83 @@
                   @click="toggleBitValue(photoelectricSignal1, 'bit1')"
                 >
                   <div class="marker-label">01002</div>
-                </div>
+                </div> -->
                 <!-- 01013光电1 -->
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit2 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1200"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit2')"
                 >
                   <div class="marker-label">01013-1</div>
                 </div>
                 <!-- 01004 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit3 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="605"
+                  data-y="870"
                   @click="toggleBitValue(photoelectricSignal1, 'bit3')"
                 >
                   <div class="marker-label">01004</div>
                 </div>
                 <!-- 01005 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit4 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="603"
+                  data-y="945"
                   @click="toggleBitValue(photoelectricSignal1, 'bit4')"
                 >
                   <div class="marker-label">01005</div>
                 </div>
                 <!-- 01006 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit5 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="600"
+                  data-y="1030"
                   @click="toggleBitValue(photoelectricSignal1, 'bit5')"
                 >
                   <div class="marker-label">01006</div>
                 </div>
                 <!-- 01007 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit6 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="595"
+                  data-y="1110"
                   @click="toggleBitValue(photoelectricSignal1, 'bit6')"
                 >
                   <div class="marker-label">01007</div>
                 </div>
                 <!-- 01008 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit7 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="590"
+                  data-y="1185"
                   @click="toggleBitValue(photoelectricSignal1, 'bit7')"
                 >
                   <div class="marker-label">01008</div>
                 </div>
                 <!-- 01009 -->
                 <div
-                  class="marker"
+                  class="marker label-right"
                   :class="{ scanning: photoelectricSignal1.bit8 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="700"
+                  data-y="1253"
                   @click="toggleBitValue(photoelectricSignal1, 'bit8')"
                 >
                   <div class="marker-label">01009</div>
                 </div>
                 <!-- 01010 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal1.bit9 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="590"
+                  data-y="1330"
                   @click="toggleBitValue(photoelectricSignal1, 'bit9')"
                 >
                   <div class="marker-label">01010</div>
@@ -299,8 +320,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit10 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="760"
+                  data-y="1400"
                   @click="toggleBitValue(photoelectricSignal1, 'bit10')"
                 >
                   <div class="marker-label">01011</div>
@@ -309,8 +330,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit11 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="860"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit11')"
                 >
                   <div class="marker-label">01012</div>
@@ -319,8 +340,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit12 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1350"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit12')"
                 >
                   <div class="marker-label">01013-2</div>
@@ -329,8 +350,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit13 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1490"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit13')"
                 >
                   <div class="marker-label">01014</div>
@@ -339,8 +360,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit14 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1620"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit14')"
                 >
                   <div class="marker-label">01015</div>
@@ -349,8 +370,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal1.bit15 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1820"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal1, 'bit15')"
                 >
                   <div class="marker-label">01016</div>
@@ -360,8 +381,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit0 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2010"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit0')"
                 >
                   <div class="marker-label">01017</div>
@@ -370,8 +391,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit1 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2190"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit1')"
                 >
                   <div class="marker-label">01018</div>
@@ -380,8 +401,8 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit2 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2368"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit2')"
                 >
                   <div class="marker-label">01019</div>
@@ -390,128 +411,128 @@
                 <div
                   class="marker"
                   :class="{ scanning: photoelectricSignal2.bit3 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2555"
+                  data-y="1402"
                   @click="toggleBitValue(photoelectricSignal2, 'bit3')"
                 >
                   <div class="marker-label">01020</div>
                 </div>
                 <!-- 01021 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit4 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1660"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit4')"
                 >
                   <div class="marker-label">01021</div>
                 </div>
                 <!-- 01022 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit5 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1660"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit5')"
                 >
                   <div class="marker-label">01022</div>
                 </div>
                 <!-- 01023 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit6 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1840"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit6')"
                 >
                   <div class="marker-label">01023</div>
                 </div>
                 <!-- 01024 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit7 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="1840"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit7')"
                 >
                   <div class="marker-label">01024</div>
                 </div>
                 <!-- 01025 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit8 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2025"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit8')"
                 >
                   <div class="marker-label">01025</div>
                 </div>
                 <!-- 01026 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit9 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2025"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit9')"
                 >
                   <div class="marker-label">01026</div>
                 </div>
                 <!-- 01027 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit10 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2210"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit10')"
                 >
                   <div class="marker-label">01027</div>
                 </div>
                 <!-- 01028 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit11 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2210"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit11')"
                 >
                   <div class="marker-label">01028</div>
                 </div>
                 <!-- 01029 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit12 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2390"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit12')"
                 >
                   <div class="marker-label">01029</div>
                 </div>
                 <!-- 01030 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit13 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2390"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit13')"
                 >
                   <div class="marker-label">01030</div>
                 </div>
                 <!-- 01031 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit14 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2575"
+                  data-y="1120"
                   @click="toggleBitValue(photoelectricSignal2, 'bit14')"
                 >
                   <div class="marker-label">01031</div>
                 </div>
                 <!-- 01032 -->
                 <div
-                  class="marker"
+                  class="marker label-left"
                   :class="{ scanning: photoelectricSignal2.bit15 === '1' }"
-                  data-x="640"
-                  data-y="1380"
+                  data-x="2575"
+                  data-y="1530"
                   @click="toggleBitValue(photoelectricSignal2, 'bit15')"
                 >
                   <div class="marker-label">01032</div>
@@ -529,7 +550,7 @@
                 </div>
                 <!-- 01002 -->
                 <div
-                  class="motor-marker marker-show-label label-top"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit1 === '1' }"
                   data-x="650"
                   data-y="260"
@@ -569,7 +590,7 @@
                 </div>
                 <!-- 01006 -->
                 <div
-                  class="motor-marker marker-show-label label-left"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit5 === '1' }"
                   data-x="648"
                   data-y="980"
@@ -589,7 +610,7 @@
                 </div>
                 <!-- 01008 -->
                 <div
-                  class="motor-marker marker-show-label label-left"
+                  class="motor-marker marker-show-label label-right"
                   :class="{ running: motorRunningWord6.bit7 === '1' }"
                   data-x="642"
                   data-y="1140"
@@ -821,26 +842,26 @@
                 <!-- 01030 -->
                 <div
                   class="motor-marker marker-show-label label-top"
-                  :class="{ running: motorRunningWord8.bit12 === '1' }"
+                  :class="{ running: motorRunningWord8.bit14 === '1' }"
                   data-x="2650"
                   data-y="1220"
-                  @click="toggleBitValue(motorRunningWord8, 'bit12')"
+                  @click="toggleBitValue(motorRunningWord8, 'bit14')"
                 >
-                  <div class="marker-label">01029</div>
+                  <div class="marker-label">01031</div>
                 </div>
                 <!-- 01031 -->
                 <div
                   class="motor-marker marker-show-label"
-                  :class="{ running: motorRunningWord8.bit13 === '1' }"
+                  :class="{ running: motorRunningWord8.bit15 === '1' }"
                   data-x="2655"
                   data-y="1420"
-                  @click="toggleBitValue(motorRunningWord8, 'bit13')"
+                  @click="toggleBitValue(motorRunningWord8, 'bit15')"
                 >
-                  <div class="marker-label">01030</div>
+                  <div class="marker-label">01032</div>
                 </div>
                 <!-- DBW10 分拣电机运行信号 -->
                 <!-- 分拣1左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit0 === '1' }"
                   data-x="1080"
@@ -848,9 +869,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit0')"
                 >
                   <div class="marker-label">分拣1左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机1右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit1 === '1' }"
                   data-x="1080"
@@ -858,9 +879,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit1')"
                 >
                   <div class="marker-label">分拣1右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机2左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit2 === '1' }"
                   data-x="1080"
@@ -868,9 +889,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit2')"
                 >
                   <div class="marker-label">分拣2左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机2右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit3 === '1' }"
                   data-x="1080"
@@ -878,9 +899,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit3')"
                 >
                   <div class="marker-label">分拣2右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机3左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit4 === '1' }"
                   data-x="1080"
@@ -888,9 +909,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit4')"
                 >
                   <div class="marker-label">分拣3左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机3右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit5 === '1' }"
                   data-x="1080"
@@ -898,9 +919,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit5')"
                 >
                   <div class="marker-label">分拣3右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机4左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit6 === '1' }"
                   data-x="1080"
@@ -908,9 +929,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit6')"
                 >
                   <div class="marker-label">分拣4左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机4右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit7 === '1' }"
                   data-x="1080"
@@ -918,9 +939,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit7')"
                 >
                   <div class="marker-label">分拣4右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机5左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit8 === '1' }"
                   data-x="1080"
@@ -928,9 +949,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit8')"
                 >
                   <div class="marker-label">分拣5左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机5右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit9 === '1' }"
                   data-x="1080"
@@ -938,9 +959,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit9')"
                 >
                   <div class="marker-label">分拣5右</div>
-                </div>
+                </div> -->
                 <!-- 分拣机6左执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit10 === '1' }"
                   data-x="1080"
@@ -948,9 +969,9 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit10')"
                 >
                   <div class="marker-label">分拣6左</div>
-                </div>
+                </div> -->
                 <!-- 分拣机6右执行 -->
-                <div
+                <!-- <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord10.bit11 === '1' }"
                   data-x="1080"
@@ -958,6 +979,24 @@
                   @click="toggleBitValue(motorRunningWord10, 'bit11')"
                 >
                   <div class="marker-label">分拣6右</div>
+                </div> -->
+                <!-- 输送线流动箭头 -->
+                <div
+                  v-for="(arrow, index) in conveyorArrows"
+                  :key="'conveyor-' + index"
+                  class="marker-with-flow flow-item"
+                  :data-x="arrow.x"
+                  :data-y="arrow.y"
+                  :style="{
+                    width: arrow.width + 'px',
+                    transform: `translate(-50%, -50%) scale(0.5) rotateZ(${arrow.rotation}deg)`
+                  }"
+                >
+                  <div
+                    v-for="item in arrow.arrowCount"
+                    :key="item"
+                    class="conveyor-arrow-item"
+                  ></div>
                 </div>
               </div>
             </div>
@@ -1252,7 +1291,7 @@ export default {
       ],
       // 添加队列位置标识数据
       queueMarkers: [
-        { id: 1, name: '上货区', queueId: 1, x: 760, y: 780 },
+        { id: 1, name: '上货区', queueId: 1, x: 650, y: 780 },
         { id: 2, name: '分拣口1', queueId: 2, x: 1730, y: 1650 },
         { id: 3, name: '分拣口2', queueId: 3, x: 1730, y: 1020 },
         { id: 4, name: '分拣口3', queueId: 4, x: 1910, y: 1650 },
@@ -1266,6 +1305,58 @@ export default {
         { id: 12, name: '分拣口11', queueId: 12, x: 2650, y: 1650 },
         { id: 13, name: '分拣口12', queueId: 13, x: 2650, y: 1020 },
         { id: 14, name: '分拣口13', queueId: 14, x: 2820, y: 1350 }
+      ],
+      // 输送线流动箭头配置（坐标按平面图调整）
+      conveyorArrows: [
+        {
+          x: 390,
+          y: 245,
+          width: 200,
+          rotation: -2,
+          arrowCount: 6
+        },
+        {
+          x: 661,
+          y: 510,
+          width: 300,
+          rotation: 92,
+          arrowCount: 8
+        },
+        {
+          x: 642,
+          y: 1085,
+          width: 300,
+          rotation: 92,
+          arrowCount: 9
+        },
+        {
+          x: 800,
+          y: 1345,
+          width: 130,
+          rotation: -2,
+          arrowCount: 4
+        },
+        {
+          x: 1420,
+          y: 1343,
+          width: 250,
+          rotation: 0,
+          arrowCount: 8
+        },
+        {
+          x: 1920,
+          y: 1345,
+          width: 350,
+          rotation: 0,
+          arrowCount: 10
+        },
+        {
+          x: 2450,
+          y: 1345,
+          width: 350,
+          rotation: 0,
+          arrowCount: 10
+        }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // —— 读取点位（与 读取点位.csv / background.js 一致）——
@@ -1872,7 +1963,7 @@ export default {
         if (!imageWrapper) return;
 
         const markers = imageWrapper.querySelectorAll(
-          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker'
+          '.marker, .marker-with-panel, .marker-with-button, .marker-with-flow, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker'
         );
         const carts = imageWrapper.querySelectorAll('.cart-container');
         const wrapperRect = imageWrapper.getBoundingClientRect();
@@ -2321,17 +2412,38 @@ export default {
 </script>
 <style lang="less" scoped>
 .smart-workshop {
+  --mp-surface: #ffffff;
+  --mp-surface-muted: #eef2f8;
+  --mp-border: #d4deef;
+  --mp-border-light: #dce4f2;
+  --mp-text: #262626;
+  --mp-text-secondary: #8c8c8c;
+  --mp-text-muted: #606266;
+  --mp-accent: #4385ff;
+  --mp-accent-hover: #3e7bfa;
+  --mp-accent-deep: #2f54eb;
+  --mp-accent-bg: rgba(67, 133, 255, 0.08);
+  --mp-accent-bg-hover: rgba(67, 133, 255, 0.14);
+  --mp-accent-border: rgba(67, 133, 255, 0.25);
+  --mp-module-border: rgba(67, 133, 255, 0.42);
+  --mp-module-header-start: #4572ef;
+  --mp-module-header-mid: #5594ff;
+  --mp-module-header-end: #5ad4f6;
+  --mp-module-header-font-size: 17px;
+  --mp-module-header-padding: 9px 13px;
+  --mp-module-header-height: 38px;
+  --mp-shadow: 0 2px 8px rgba(47, 84, 235, 0.08);
+  --mp-shadow-lg: 0 4px 14px rgba(47, 84, 235, 0.1);
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, #83b3de, #ffffff);
+  background: transparent;
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 0;
-  font-family: 'Roboto', sans-serif;
-  overflow: hidden;
   box-sizing: border-box;
+  overflow: hidden;
   user-select: none;
+  color: var(--mp-text);
   .header {
     position: relative;
     width: 100%;
@@ -2384,41 +2496,53 @@ export default {
       overflow: hidden;
       .plc-info-section,
       .operation-panel {
-        background: #052438;
-        padding: 10px;
-        border-radius: 15px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-        color: #f5f5f5;
+        background: var(--mp-surface);
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: var(--mp-shadow);
+        border: 1px solid var(--mp-module-border);
+        color: var(--mp-text);
         box-sizing: border-box;
+        overflow: hidden;
         .section-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          font-size: 22px;
-          color: #0ac5a8;
-          font-weight: 900;
-          margin-bottom: 5px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: var(--mp-module-header-font-size);
+          color: #fff;
+          font-weight: 700;
+          margin: 0;
+          padding: var(--mp-module-header-padding);
+          border-bottom: none;
+          background: linear-gradient(
+            135deg,
+            var(--mp-module-header-start) 0%,
+            var(--mp-module-header-mid) 55%,
+            var(--mp-module-header-end) 100%
+          );
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+          letter-spacing: 0.5px;
           .section-title {
             display: flex;
             align-items: center;
             gap: 10px;
           }
           .el-button {
-            background: rgba(10, 197, 168, 0.2);
-            border: 1px solid rgba(10, 197, 168, 0.3);
-            color: #0ac5a8;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #fff;
             font-size: 12px;
           }
           .el-button:hover {
-            background: rgba(10, 197, 168, 0.3);
-            border-color: rgba(10, 197, 168, 0.5);
+            background: rgba(255, 255, 255, 0.28);
+            border-color: rgba(255, 255, 255, 0.65);
             color: #fff;
           }
         }
         .scrollable-content {
           overflow-y: auto;
+          padding: 10px 12px;
+          box-sizing: border-box;
         }
       }
       .plc-info-section {
@@ -2436,20 +2560,25 @@ export default {
             .data-card-border {
               width: 100%;
               height: 100%;
-              border-radius: 20px;
-              background: linear-gradient(135deg, #2b3d51, #3c4c63);
-              box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+              border-radius: 12px;
+              background: var(--mp-surface-muted);
+              border: 1px solid var(--mp-border);
+              box-shadow: none;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              padding: 0 12px;
+              box-sizing: border-box;
             }
 
             .data-card-border-borderTop {
               font-weight: 400;
-              letter-spacing: 0px;
-              color: rgba(189, 189, 189, 1);
+              letter-spacing: 0;
+              color: var(--mp-text-secondary);
               text-align: left;
-              vertical-align: top;
-              font-size: 13px;
-              line-height: 34px;
-              padding-left: 12px;
+              font-size: 12px;
+              line-height: 16px;
+              margin-bottom: 4px;
             }
             .granient-text {
               background-image: linear-gradient(
@@ -2464,51 +2593,62 @@ export default {
 
             .data-card-border-borderDown {
               font-weight: 700;
-              letter-spacing: 0px;
-              color: rgba(255, 255, 255, 1);
+              letter-spacing: 0;
+              color: var(--mp-text);
               text-align: left;
-              vertical-align: top;
-              font-size: 24px;
-              line-height: 21px;
-              padding-left: 12px;
+              font-size: 15px;
+              line-height: 20px;
               /* 添加省略号效果 */
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
               max-width: 100%;
-              display: block;
             }
           }
         }
       }
       .log-section {
-        background: #052438;
-        padding: 10px;
-        border-radius: 15px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        background: var(--mp-surface);
+        padding: 0;
+        border-radius: 12px;
+        box-shadow: var(--mp-shadow);
+        border: 1px solid var(--mp-module-border);
         height: 257px;
         display: flex;
         flex-direction: column;
         flex: 1;
+        overflow: hidden;
         .section-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0px 0px 8px 0px;
-          color: #0ac5a8;
-          font-size: 22px;
-          font-weight: 900;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding: var(--mp-module-header-padding);
+          color: #fff;
+          font-size: var(--mp-module-header-font-size);
+          font-weight: 700;
+          border-bottom: none;
+          background: linear-gradient(
+            135deg,
+            var(--mp-module-header-start) 0%,
+            var(--mp-module-header-mid) 55%,
+            var(--mp-module-header-end) 100%
+          );
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+          letter-spacing: 0.5px;
           .log-tabs {
             display: flex;
-            gap: 5px;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.08);
+            padding: 3px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
           }
           .log-tab {
             position: relative;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.82);
             cursor: pointer;
-            padding: 5px 15px;
+            padding: 3px 11px;
             border-radius: 4px;
             transition: all 0.3s ease;
             .alarm-badge {
@@ -2528,36 +2668,40 @@ export default {
             }
           }
           .log-tab.active {
-            color: #fff;
-            background: rgba(10, 197, 168, 0.2);
+            color: var(--mp-accent-deep);
+            background: #fff;
+            font-weight: 600;
           }
           .log-tab:hover:not(.active) {
-            color: #0ac5a8;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.16);
           }
         }
         .scrollable-content {
           flex: 1;
           overflow-y: auto;
-          padding: 10px 0;
+          padding: 6px 8px;
+          box-sizing: border-box;
           .log-list {
-            padding: 0 10px;
+            padding: 0;
             width: 100%;
             box-sizing: border-box;
             .log-item {
-              background: rgba(255, 255, 255, 0.03);
+              background: var(--mp-surface-muted);
               border-radius: 4px;
               padding: 10px;
               margin-bottom: 8px;
               cursor: pointer;
               width: 100%;
               box-sizing: border-box;
+              border: 1px solid var(--mp-border);
               .log-time {
                 font-size: 12px;
-                color: rgba(255, 255, 255, 0.4);
+                color: var(--mp-text-secondary);
                 margin-bottom: 6px;
               }
               .log-item-content {
-                color: rgba(255, 255, 255, 0.9);
+                color: var(--mp-text);
                 font-size: 13px;
                 line-height: 1.6;
                 overflow-wrap: break-word;
@@ -2570,11 +2714,12 @@ export default {
               }
             }
             .log-item:hover {
-              background: rgba(255, 255, 255, 0.05);
+              background: #eef2f8;
+              border-color: var(--mp-accent-border);
             }
 
             .log-item.alarm {
-              background: rgba(245, 108, 108, 0.05);
+              background: rgba(245, 108, 108, 0.06);
             }
 
             .log-item.alarm.unread {
@@ -2588,18 +2733,18 @@ export default {
               align-items: center;
               justify-content: center;
               padding: 40px 0;
-              color: rgba(255, 255, 255, 0.6);
+              color: var(--mp-text-secondary);
               i {
                 font-size: 48px;
                 margin-bottom: 16px;
-                color: rgba(255, 255, 255, 0.3);
+                color: #c0c4cc;
               }
               p {
                 font-size: 14px;
                 margin: 0 0 16px 0;
               }
               .el-button {
-                color: #0ac5a8;
+                color: #4385ff;
                 font-size: 14px;
                 i {
                   font-size: 14px;
@@ -2608,7 +2753,7 @@ export default {
                 }
               }
               .el-button:hover {
-                color: #0db196;
+                color: #3e7bfa;
               }
             }
           }
@@ -2622,12 +2767,12 @@ export default {
         }
 
         .scrollable-content::-webkit-scrollbar-thumb {
-          background: rgba(10, 197, 168, 0.2);
+          background: rgba(67, 133, 255, 0.12);
           border-radius: 2px;
         }
 
         .scrollable-content::-webkit-scrollbar-thumb:hover {
-          background: rgba(10, 197, 168, 0.4);
+          background: rgba(67, 133, 255, 0.25);
         }
       }
       .operation-panel {
@@ -2635,17 +2780,18 @@ export default {
           display: flex;
           justify-content: flex-start;
           gap: 8px;
-          margin-top: 5px;
-          padding: 5px;
+          margin-top: 0;
+          padding: 10px 12px;
+          box-sizing: border-box;
           button {
             width: 70px;
             height: 70px;
             font-size: 0.8em;
             color: #fff;
-            background: linear-gradient(135deg, #0ac5a8, #0f6b58);
+            background: linear-gradient(135deg, #4385ff, #2f54eb);
             border: none;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(67, 133, 255, 0.25);
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -2664,13 +2810,30 @@ export default {
             }
           }
           button:hover {
-            background: linear-gradient(135deg, #4caf50, #0f6b58);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #5a9bff, #4385ff);
+            box-shadow: 0 6px 16px rgba(67, 133, 255, 0.35);
           }
           button.pressed {
-            background: linear-gradient(135deg, #4caf50, #2e8b57);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95);
+            transform: scale(0.98);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+          }
+          button.btn-start.pressed {
+            background: linear-gradient(135deg, #52c41a, #237804);
+          }
+          button.btn-start.pressed:hover {
+            background: linear-gradient(135deg, #73d13d, #389e0d);
+          }
+          button.btn-stop.pressed {
+            background: linear-gradient(135deg, #ff4d4f, #a8071a);
+          }
+          button.btn-stop.pressed:hover {
+            background: linear-gradient(135deg, #ff7875, #cf1322);
+          }
+          button.btn-reset.pressed {
+            background: linear-gradient(135deg, #faad14, #d48806);
+          }
+          button.btn-reset.pressed:hover {
+            background: linear-gradient(135deg, #ffc53d, #fa8c16);
           }
         }
       }
@@ -2692,16 +2855,114 @@ export default {
         .floor-left {
           .floor-image-container {
             flex: 1;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 5px;
+            background: #ffffff;
+            padding: 4px 6px 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--mp-border);
             min-height: 0;
-            height: calc(100% - 50px);
+            margin: 0;
+            height: calc(100% - var(--mp-module-header-height));
             position: relative;
+            box-sizing: border-box;
+
+            .floor-map-legend {
+              position: absolute;
+              bottom: 10px;
+              left: 10px;
+              z-index: 20;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              padding: 8px 10px;
+              background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.96) 0%,
+                rgba(245, 248, 252, 0.94) 100%
+              );
+              border: 1px solid var(--mp-border);
+              border-radius: 6px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+              pointer-events: none;
+
+              .legend-item {
+                display: grid;
+                grid-template-columns: 18px 1fr;
+                align-items: center;
+                column-gap: 8px;
+              }
+
+              .legend-text {
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+                line-height: 1.2;
+                min-width: 0;
+              }
+
+              .legend-name {
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--mp-text);
+              }
+
+              .legend-desc {
+                font-size: 10px;
+                color: var(--mp-text-muted, #6b7280);
+              }
+
+              .legend-dot {
+                justify-self: center;
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                font-style: normal;
+
+                &--photo {
+                  border-radius: 50%;
+                  background: rgba(128, 128, 128, 0.85);
+                }
+
+                &--motor {
+                  border-radius: 1px;
+                  background: rgba(128, 128, 128, 0.85);
+                }
+              }
+
+              .legend-arrow {
+                justify-self: center;
+                position: relative;
+                display: inline-block;
+                width: 18px;
+                height: 10px;
+                font-style: normal;
+
+                &::before {
+                  content: '';
+                  position: absolute;
+                  left: 0;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  width: 8px;
+                  height: 6px;
+                  background-color: #4385ff;
+                }
+
+                &::after {
+                  content: '';
+                  position: absolute;
+                  left: 6px;
+                  top: 50%;
+                  transform: translateY(-50%) rotate(45deg);
+                  width: 0;
+                  height: 0;
+                  border-right: 8px solid #4385ff;
+                  border-bottom: 8px solid transparent;
+                }
+              }
+            }
+
             .image-wrapper {
               position: relative;
               width: 100%;
@@ -2730,7 +2991,7 @@ export default {
                 .marker-label {
                   position: absolute;
                   white-space: nowrap;
-                  background: #0ac5a8;
+                  background: #4385ff;
                   color: #fff;
                   padding: 4px 8px;
                   border-radius: 4px;
@@ -2853,6 +3114,17 @@ export default {
                 transform: translateY(-50%);
               }
               /* --- 电机点位样式结束 --- */
+
+              /* 流水线流动箭头容器定位（置于光电/电机之下，避免遮挡点位） */
+              .marker-with-flow {
+                position: absolute;
+                transform: translate(-50%, -50%);
+                z-index: 1;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
 
               /* 带数据面板的标识点样式 */
               .marker-with-panel {
@@ -3084,11 +3356,12 @@ export default {
         }
         .floor-left {
           flex: 1;
-          background: #07293e;
-          padding: 10px;
-          border-radius: 15px;
-          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
-          color: #f5f5f5;
+          background: var(--mp-surface);
+          padding: 0;
+          border-radius: 12px;
+          box-shadow: var(--mp-shadow);
+          border: 1px solid var(--mp-module-border);
+          color: var(--mp-text);
           display: flex;
           flex-direction: column;
           min-height: 0;
@@ -3096,11 +3369,23 @@ export default {
           overflow: hidden;
           box-sizing: border-box;
           .floor-title {
-            font-size: 22px;
-            color: #0ac5a8;
-            font-weight: 900;
-            padding-bottom: 10px;
+            font-size: var(--mp-module-header-font-size);
+            color: #fff;
+            font-weight: 700;
+            padding: var(--mp-module-header-padding);
             flex-shrink: 0;
+            border-bottom: none;
+            background: linear-gradient(
+              135deg,
+              var(--mp-module-header-start) 0%,
+              var(--mp-module-header-mid) 55%,
+              var(--mp-module-header-end) 100%
+            );
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+            letter-spacing: 0.5px;
+            i {
+              margin-right: 6px;
+            }
           }
           .floor-image-container {
             .image-wrapper {
@@ -3208,7 +3493,7 @@ export default {
         cursor: pointer;
         transition: color 0.3s ease;
         font-size: 20px;
-        color: #0ac5a8;
+        color: #7eb8ff;
         font-weight: 900;
         padding-bottom: 12px;
         margin-bottom: 12px;
@@ -3267,13 +3552,13 @@ export default {
 
             .queue:hover {
               background: rgba(48, 65, 85, 1);
-              border-color: rgba(10, 197, 168, 0.5);
+              border-color: rgba(64, 158, 255, 0.45);
               transform: translateX(2px);
             }
 
             .queue.active {
-              background: rgba(10, 197, 168, 0.15);
-              border-color: rgba(10, 197, 168, 0.5);
+              background: rgba(64, 158, 255, 0.14);
+              border-color: rgba(64, 158, 255, 0.45);
             }
           }
           /* 滚动条样式 */
@@ -3323,13 +3608,13 @@ export default {
                 align-items: center;
                 gap: 12px;
                 .el-button {
-                  background: rgba(10, 197, 168, 0.2);
-                  border: 1px solid rgba(10, 197, 168, 0.3);
-                  color: #0ac5a8;
+                  background: rgba(64, 158, 255, 0.18);
+                  border: 1px solid rgba(64, 158, 255, 0.3);
+                  color: #7eb8ff;
                 }
                 .el-button:hover:not(:disabled) {
-                  background: rgba(10, 197, 168, 0.3);
-                  border-color: rgba(10, 197, 168, 0.5);
+                  background: rgba(64, 158, 255, 0.28);
+                  border-color: rgba(64, 158, 255, 0.45);
                   color: #fff;
                 }
                 .tray-total {
@@ -3388,8 +3673,8 @@ export default {
 
                     .tray-batch {
                       font-size: 12px;
-                      color: #0ac5a8;
-                      background: rgba(10, 197, 168, 0.1);
+                      color: #7eb8ff;
+                      background: rgba(64, 158, 255, 0.1);
                       padding: 2px 8px;
                       border-radius: 4px;
                       white-space: nowrap;
@@ -3454,7 +3739,7 @@ export default {
               }
               .tray-item:hover {
                 background: rgba(48, 65, 85, 1);
-                border-color: rgba(10, 197, 168, 0.5);
+                border-color: rgba(64, 158, 255, 0.45);
                 transform: translateX(2px);
                 .tray-actions {
                   opacity: 1;
@@ -3486,7 +3771,7 @@ export default {
                   margin: 0 0 16px 0;
                 }
                 .el-button {
-                  color: #0ac5a8;
+                  color: #7eb8ff;
                   font-size: 14px;
                   i {
                     font-size: 14px;
@@ -3495,7 +3780,7 @@ export default {
                   }
                 }
                 .el-button:hover {
-                  color: #0db196;
+                  color: #6aabf5;
                 }
               }
             }
@@ -3524,12 +3809,12 @@ export default {
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: #0ac5a8;
+        background: #4385ff;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 12px rgba(67, 133, 255, 0.25);
         transition: all 0.3s ease;
         padding: 0;
         span {
@@ -3543,7 +3828,7 @@ export default {
       }
       .section-header:hover {
         transform: scale(1.1);
-        background: #0db196;
+        background: #3e7bfa;
       }
     }
   }
@@ -3570,18 +3855,18 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #0ac5a8;
+  background: #4385ff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 12px rgba(67, 133, 255, 0.25);
   transition: all 0.3s ease;
 }
 
 .test-toggle-btn:hover {
   transform: scale(1.1);
-  background: #0db196;
+  background: #3e7bfa;
 }
 
 .test-toggle-btn i {
@@ -3606,7 +3891,7 @@ export default {
   width: 300px;
   max-height: 80vh; /* 限制最大高度为视窗高度的80% */
   background: rgba(30, 42, 56, 0.98);
-  border: 1px solid rgba(10, 197, 168, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.25);
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   transition: all 0.3s ease;
@@ -3625,12 +3910,12 @@ export default {
 
 .test-panel-header {
   padding: 15px;
-  background: rgba(10, 197, 168, 0.3);
+  background: rgba(64, 158, 255, 0.15);
   border-radius: 15px 15px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #0ac5a8;
+  color: #7eb8ff;
   font-weight: bold;
   pointer-events: auto;
   flex-shrink: 0;
@@ -3654,12 +3939,12 @@ export default {
 }
 
 .test-panel-content::-webkit-scrollbar-thumb {
-  background: rgba(10, 197, 168, 0.3);
+  background: rgba(64, 158, 255, 0.28);
   border-radius: 2px;
 }
 
 .test-panel-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(10, 197, 168, 0.5);
+  background: rgba(64, 158, 255, 0.45);
 }
 
 .test-panel-header i {
@@ -3676,12 +3961,12 @@ export default {
   background: rgba(0, 0, 0, 0.4);
   padding: 10px;
   border-radius: 8px;
-  border: 1px solid rgba(10, 197, 168, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.1);
 }
 
 .test-label {
   display: block;
-  color: #0ac5a8;
+  color: #7eb8ff;
   margin-bottom: 10px;
   font-size: 14px;
   font-weight: bold;
@@ -3696,8 +3981,8 @@ export default {
 
 .position-btn {
   padding: 6px 12px;
-  background: rgba(10, 197, 168, 0.3);
-  border: 1px solid rgba(10, 197, 168, 0.5);
+  background: rgba(64, 158, 255, 0.18);
+  border: 1px solid rgba(64, 158, 255, 0.35);
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
@@ -3706,7 +3991,7 @@ export default {
 }
 
 .position-btn:hover {
-  background: rgba(10, 197, 168, 0.5);
+  background: rgba(64, 158, 255, 0.32);
 }
 
 .position-btn:active {
@@ -3739,9 +4024,9 @@ export default {
 }
 
 .cart-value {
-  background: rgba(10, 197, 168, 0.2);
-  border: 1px solid rgba(10, 197, 168, 0.3);
-  color: #0ac5a8;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
   padding: 2px 8px;
   border-radius: 4px;
   font-weight: bold;
@@ -3763,20 +4048,20 @@ export default {
 }
 
 .cart-position-slider :deep(.el-slider__bar) {
-  background-color: #0ac5a8;
+  background-color: #409eff;
   height: 6px;
 }
 
 .cart-position-slider :deep(.el-slider__button) {
-  border: 2px solid #0ac5a8;
+  border: 2px solid #409eff;
   background-color: #fff;
   width: 20px;
   height: 20px;
 }
 
 .cart-position-slider :deep(.el-slider__button:hover) {
-  border-color: #0ac5a8;
-  box-shadow: 0 0 5px rgba(10, 197, 168, 0.5);
+  border-color: #409eff;
+  box-shadow: 0 0 5px rgba(64, 158, 255, 0.45);
 }
 
 /* 测试添加结束 */
@@ -3816,13 +4101,13 @@ export default {
 
 .qrcode-input :deep(.el-input__inner) {
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(10, 197, 168, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.25);
   color: #fff;
 }
 
 .qrcode-input :deep(.el-input__inner:hover),
 .qrcode-input :deep(.el-input__inner:focus) {
-  border-color: #0ac5a8;
+  border-color: #409eff;
 }
 
 .qrcode-actions {
@@ -3834,14 +4119,14 @@ export default {
 }
 
 .qrcode-actions .el-button {
-  background: rgba(10, 197, 168, 0.2);
-  border: 1px solid rgba(10, 197, 168, 0.3);
-  color: #0ac5a8;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
 }
 
 .qrcode-actions .el-button:hover {
-  background: rgba(10, 197, 168, 0.3);
-  border-color: rgba(10, 197, 168, 0.5);
+  background: rgba(64, 158, 255, 0.28);
+  border-color: rgba(64, 158, 255, 0.45);
   color: #fff;
 }
 
@@ -3852,8 +4137,8 @@ export default {
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__header) {
-  background: rgba(10, 197, 168, 0.1);
-  color: #0ac5a8;
+  background: rgba(64, 158, 255, 0.1);
+  color: #7eb8ff;
   border: none;
   padding: 0 10px;
   height: 32px;
@@ -3864,7 +4149,7 @@ export default {
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__header.is-active) {
-  background: rgba(10, 197, 168, 0.2);
+  background: rgba(64, 158, 255, 0.18);
 }
 
 .plc-test-wrapper :deep(.el-collapse-item__wrap) {
@@ -3902,7 +4187,7 @@ export default {
   line-height: 24px;
   padding: 0 5px;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(10, 197, 168, 0.3);
+  border: 1px solid rgba(64, 158, 255, 0.25);
   color: #fff;
 }
 
@@ -3951,15 +4236,15 @@ export default {
 }
 
 .upload-area-actions .el-button {
-  background: rgba(10, 197, 168, 0.2);
-  border: 1px solid rgba(10, 197, 168, 0.3);
-  color: #0ac5a8;
+  background: rgba(64, 158, 255, 0.14);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  color: #7eb8ff;
   width: 100%;
 }
 
 .upload-area-actions .el-button:hover:not(:disabled) {
-  background: rgba(10, 197, 168, 0.3);
-  border-color: rgba(10, 197, 168, 0.5);
+  background: rgba(64, 158, 255, 0.28);
+  border-color: rgba(64, 158, 255, 0.45);
   color: #fff;
 }
 
@@ -3987,7 +4272,7 @@ export default {
 
 .quantity-title {
   font-size: 14px;
-  color: #0ac5a8;
+  color: #7eb8ff;
   font-weight: bold;
 }
 
@@ -4004,7 +4289,7 @@ export default {
   background: rgba(30, 42, 56, 0.8);
   border-radius: 4px;
   padding: 8px;
-  border: 1px solid rgba(10, 197, 168, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.1);
   margin-bottom: 5px;
 
   .quantity-label {
@@ -4015,7 +4300,7 @@ export default {
 
   .quantity-value {
     font-size: 14px;
-    color: #0ac5a8;
+    color: #7eb8ff;
     font-weight: bold;
     min-width: 30px;
     text-align: center;
@@ -4032,7 +4317,7 @@ export default {
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      background: rgba(10, 197, 168, 0.3);
+      background: rgba(64, 158, 255, 0.18);
       border: none;
       border-radius: 4px;
       color: #fff;
@@ -4048,9 +4333,9 @@ export default {
       }
 
       &.plus {
-        background: rgba(10, 197, 168, 0.5);
+        background: rgba(64, 158, 255, 0.32);
         &:hover {
-          background: rgba(10, 197, 168, 0.7);
+          background: rgba(64, 158, 255, 0.48);
         }
       }
 
@@ -4123,13 +4408,63 @@ export default {
   .arrow-icon {
     cursor: pointer;
     transition: all 0.3s ease;
-    color: #0ac5a8;
+    color: #7eb8ff;
     font-size: 16px;
 
     &:hover {
       color: #fff;
       transform: scale(1.1);
     }
+  }
+}
+
+/* 流动箭头（scoped 根级；配色与页面 --mp-accent 主题一致） */
+.conveyor-arrow-item {
+  position: relative;
+  display: inline-block;
+  width: 45px;
+  height: 34px;
+}
+.conveyor-arrow-item::before {
+  content: '';
+  display: inline-block;
+  position: relative;
+  width: 20px;
+  height: 16px;
+  background-color: #4385ff;
+}
+.conveyor-arrow-item::after {
+  content: '';
+  position: relative;
+  top: 4px;
+  right: 12px;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-right: 24px solid #4385ff;
+  border-bottom: 24px solid transparent;
+  transform: rotate(45deg);
+}
+
+.flow-item {
+  height: 34px;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  backface-visibility: hidden;
+  .conveyor-arrow-item {
+    position: relative;
+    animation: carousel 1s linear infinite;
+    will-change: transform;
+  }
+}
+
+@keyframes carousel {
+  0% {
+    transform: translateX(-45px) translateZ(0);
+  }
+  100% {
+    transform: translateX(0px) translateZ(0);
   }
 }
 </style>

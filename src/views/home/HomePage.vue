@@ -1,119 +1,114 @@
 <template>
   <div class="homePage">
-    <div class="maskDiv">
-      <div class="maskDiv-top">
-        <div class="maskDiv-top-left" @dblclick="maxWindow">
+    <div class="app-shell">
+      <!-- 顶部标题栏 -->
+      <header class="title-bar">
+        <div class="title-bar-drag" @dblclick="maxWindow">
           <img
             src="../../../build/icons/64x64.png"
-            style="width: 38px; height: 38px"
+            class="title-bar-logo"
+            alt="logo"
           />
-          <div style="margin-left: 10px; height: 100%">
-            <div class="maskDiv-top-left-top-title">码垛智能分拣系统</div>
-            <div class="maskDiv-top-left-top-title2">weight-records</div>
+          <div class="title-bar-text">
+            <span class="title-bar-name">码垛智能分拣系统</span>
+            <!-- <span class="title-bar-sub">weight-records</span> -->
           </div>
         </div>
-        <div class="maskDiv-top-mid">
-          <el-menu
-            :default-active="activeIndex"
-            class="el-menu-demo"
-            mode="horizontal"
-            @select="handleSelect"
-          >
-            <el-menu-item index="1">首页</el-menu-item>
-            <el-menu-item index="2">业务处理</el-menu-item>
-            <el-menu-item index="3" v-if="userRole === 'ADMIN'"
-              >用户管理</el-menu-item
-            >
-            <el-menu-item index="5">关于</el-menu-item>
-          </el-menu>
-        </div>
-        <div class="version-view">
-          <div
-            class="el-divider el-divider--vertical"
-            style="margin-right: 15px"
-          ></div>
-          <div class="version-container">
-            <div class="version-number">
-              <!-- <i class="el-icon-caret-bottom"></i> -->
-              V1.1.0
-            </div>
+        <div class="title-bar-actions">
+          <span class="version-tag">V1.1.0</span>
+          <div class="win-btn" @click="minWindow">
+            <i class="el-icon-minus"></i>
           </div>
-          <el-dropdown
-            trigger="click"
-            style="line-height: 0"
-            @command="setCommand"
-          >
+          <div class="win-btn" @click="maxWindow">
             <i
-              class="el-icon-setting"
-              style="font-size: 18px; margin-right: 14px"
+              :class="
+                windowSize === 'unmax-window'
+                  ? 'el-icon-full-screen'
+                  : 'el-icon-copy-document'
+              "
             ></i>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item icon="el-icon-full-screen" command="full_screen"
-                >全屏/取消全屏&nbsp;&nbsp;Ctrl+F11</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-dropdown
-            trigger="click"
-            @command="handelCommand"
-            style="line-height: 0"
+          </div>
+          <div
+            class="win-btn win-btn--close"
+            @click="closewindow"
+            v-if="userRole === 'ADMIN'"
           >
-            <el-avatar
-              :src="require('./img/header.png')"
-              size="small"
-              style="margin-right: 10px"
-            ></el-avatar>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item
-                icon="el-icon-key"
-                command="updatePassword"
-                v-if="userRole !== 'ADMIN'"
-                >修改密码</el-dropdown-item
-              >
-              <el-dropdown-item
-                icon="el-icon-upload2"
-                command="logout"
-                v-if="userRole === 'ADMIN'"
-                >退出登录</el-dropdown-item
-              >
-            </el-dropdown-menu>
-          </el-dropdown>
-          <div class="el-divider el-divider--vertical"></div>
+            <i class="el-icon-close"></i>
+          </div>
         </div>
-        <div class="maskDiv-top-min" @click="minWindow">
-          <i
-            class="el-icon-minus"
-            style="font-size: 18px; font-weight: 600"
-          ></i>
-        </div>
-        <div class="maskDiv-top-max" @click="maxWindow">
-          <i
-            :class="
-              windowSize === 'unmax-window'
-                ? 'el-icon-full-screen'
-                : 'el-icon-copy-document'
-            "
-            style="font-size: 18px; font-weight: 600"
-          ></i>
-        </div>
-        <div
-          class="maskDiv-top-close"
-          @click="closewindow"
-          v-if="userRole === 'ADMIN'"
-        >
-          <i
-            class="el-icon-close"
-            style="font-size: 18px; font-weight: 600"
-          ></i>
-        </div>
-      </div>
-      <div class="maskDiv-down">
-        <StatusMonitor></StatusMonitor>
-        <keep-alive>
-          <router-view />
-        </keep-alive>
+      </header>
+
+      <div class="app-body">
+        <!-- 微信式左侧导航栏 -->
+        <aside class="side-nav">
+          <nav class="side-nav-menu">
+            <div
+              v-for="item in navItems"
+              :key="item.index"
+              class="nav-item"
+              :class="{ 'is-active': activeIndex === item.index }"
+              @click="handleSelect(item.index)"
+            >
+              <div class="nav-item-icon">
+                <i :class="item.icon"></i>
+              </div>
+              <span class="nav-item-label">{{ item.label }}</span>
+            </div>
+          </nav>
+
+          <div class="side-nav-footer">
+            <el-dropdown trigger="click" placement="top" @command="setCommand">
+              <div class="footer-btn" title="设置">
+                <i class="el-icon-setting"></i>
+              </div>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  icon="el-icon-full-screen"
+                  command="full_screen"
+                >
+                  全屏/取消全屏&nbsp;&nbsp;Ctrl+F11
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <el-dropdown
+              trigger="click"
+              placement="top"
+              @command="handelCommand"
+            >
+              <div class="footer-avatar">
+                <el-avatar
+                  :src="require('./img/header.png')"
+                  :size="32"
+                ></el-avatar>
+              </div>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  icon="el-icon-key"
+                  command="updatePassword"
+                  v-if="userRole !== 'ADMIN'"
+                  >修改密码</el-dropdown-item
+                >
+                <el-dropdown-item
+                  icon="el-icon-upload2"
+                  command="logout"
+                  v-if="userRole === 'ADMIN'"
+                  >退出登录</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-panel">
+          <StatusMonitor></StatusMonitor>
+          <keep-alive>
+            <router-view />
+          </keep-alive>
+        </main>
       </div>
     </div>
+
     <el-dialog
       title="修改密码"
       :visible.sync="dialogFormVisible"
@@ -168,10 +163,28 @@ export default {
       userRole: ''
     };
   },
+  computed: {
+    navItems() {
+      const items = [
+        { index: '1', label: '首页', icon: 'el-icon-s-home' },
+        { index: '2', label: '业务', icon: 'el-icon-s-operation' },
+        {
+          index: '3',
+          label: '用户',
+          icon: 'el-icon-user-solid',
+          isAdminShow: true
+        },
+        { index: '5', label: '关于', icon: 'el-icon-info' }
+      ];
+      return items.filter(
+        (item) => !item.isAdminShow || this.userRole === 'ADMIN'
+      );
+    }
+  },
   watch: {},
-  computed: {},
   methods: {
     handleSelect(key, keyPath) {
+      this.activeIndex = key;
       switch (key) {
         // welcomPage
         case '1':
@@ -362,125 +375,273 @@ export default {
   mounted() {}
 };
 </script>
+
 <style lang="less" scoped>
 .homePage {
+  --hp-surface: #ffffff;
+  --hp-surface-muted: #eef2f8;
+  --hp-border: #d4deef;
+  --hp-text: #262626;
+  --hp-text-secondary: #8c8c8c;
+  --hp-accent: #4385ff;
+  --hp-accent-hover: #3e7bfa;
+  --hp-accent-deep: #2f54eb;
+  --hp-accent-bg: rgba(67, 133, 255, 0.1);
+  --hp-accent-bg-active: rgba(67, 133, 255, 0.18);
+  --hp-sidebar-width: 68px;
+  --hp-titlebar-height: 38px;
+
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #e3e9f3 0%, #eef2f7 50%, #f5f7fa 100%);
-  .maskDiv {
+
+  .app-shell {
     width: 100%;
     height: 100%;
-    opacity: 1;
-    background: transparent;
-    &-top {
-      height: 55px;
-      width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── 顶部标题栏 ── */
+  .title-bar {
+    height: var(--hp-titlebar-height);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--hp-surface);
+    border-bottom: 1px solid var(--hp-border);
+    user-select: none;
+
+    &-drag {
+      flex: 1;
+      height: 100%;
       display: flex;
       align-items: center;
-      border-radius: 0px 0px 10px 10px;
-      background: rgba(255, 255, 255, 1);
-      &-left {
-        flex: 1;
-        height: 100%;
-        -webkit-app-region: drag;
-        text-align: left;
-        display: flex;
-        align-items: center;
-        padding-left: 10px;
-        &-top-title {
-          font-size: 16px;
-          font-weight: 550;
-          letter-spacing: 0px;
-          color: rgba(28, 28, 40, 1);
-          text-align: left;
-          vertical-align: top;
-          height: 30px;
-          display: flex;
-          align-items: flex-end;
-        }
-        &-top-title2 {
-          font-size: 14px;
-          font-weight: 400;
-          letter-spacing: 1.2px;
-          color: rgba(70, 91, 101, 1);
-          text-align: left;
-          vertical-align: top;
-          height: 20px;
-          display: flex;
-          align-items: flex-start;
-        }
+      padding-left: 12px;
+      -webkit-app-region: drag;
+      cursor: default;
+    }
+
+    &-logo {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    &-text {
+      margin-left: 8px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    &-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--hp-text);
+      white-space: nowrap;
+    }
+
+    &-sub {
+      font-size: 11px;
+      color: var(--hp-text-secondary);
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+    }
+
+    &-actions {
+      display: flex;
+      align-items: center;
+      -webkit-app-region: no-drag;
+    }
+
+    .version-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--hp-accent-deep);
+      background: rgba(47, 84, 235, 0.06);
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-right: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .win-btn {
+      width: 40px;
+      height: var(--hp-titlebar-height);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--hp-text);
+      font-size: 14px;
+      transition: background 0.15s;
+
+      &:hover {
+        background: #eeeeee;
       }
-      &-min,
-      &-close,
-      &-max {
-        height: 45px;
-        width: 45px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        -webkit-app-region: no-drag;
-      }
-      &-min:hover,
-      &-max:hover {
-        background-color: #eeeeee;
-      }
-      &-close:hover {
-        background-color: #f8635f;
+
+      &--close:hover {
+        background: #f8635f;
         color: #fff;
       }
-      .version-view {
-        height: 100%;
-        display: inline-flex;
-        align-items: center;
-        vertical-align: text-bottom;
-        cursor: pointer;
-        .version-container {
-          height: 20px;
-          margin-right: 11px;
-          display: inline-flex;
-          align-items: center;
-          font-size: 13px;
-          border-radius: 25px;
-          background-color: rgba(47, 84, 235, 0.050980392156862744);
-          .version-number {
-            height: 20px;
-            line-height: 20px;
-            padding: 0 10px;
-            color: #2f54eb;
-            font-weight: 600;
-            letter-spacing: 1px;
-          }
-        }
-        .el-divider--vertical {
-          display: inline-block;
-          width: 1px;
-          height: 1.5rem;
-          margin: 0 8px;
-          vertical-align: middle;
-          position: relative;
-        }
-      }
-      ::v-deep .el-menu--horizontal > .el-menu-item {
-        margin-right: 30px;
-        color: #000000;
-        font-size: 13px;
-        font-weight: 500;
-        height: 55px;
-        line-height: 60px;
-      }
-      ::v-deep .el-menu--horizontal > .el-menu-item.is-active {
-        border-bottom: 2px solid #3e7bfa;
-      }
-    }
-    &-down {
-      width: 100%;
-      height: calc(100% - 55px);
     }
   }
+
+  /* ── 主体区域 ── */
+  .app-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── 微信式左侧导航 ── */
+  .side-nav {
+    width: var(--hp-sidebar-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--hp-surface);
+    border-right: 1px solid var(--hp-border);
+    user-select: none;
+
+    &-menu {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0 8px;
+      gap: 3px;
+      overflow-y: auto;
+    }
+
+    &-footer {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 0 14px;
+      border-top: 1px solid var(--hp-border);
+    }
+  }
+
+  .nav-item {
+    width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 9px 0 7px;
+    border-radius: 9px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s, color 0.2s;
+
+    &-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 7px;
+      font-size: 19px;
+      color: var(--hp-text-secondary);
+      transition: color 0.2s, background 0.2s;
+    }
+
+    &-label {
+      font-size: 11px;
+      color: var(--hp-text-secondary);
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    &:hover {
+      background: var(--hp-accent-bg);
+
+      .nav-item-icon {
+        color: var(--hp-accent);
+      }
+
+      .nav-item-label {
+        color: var(--hp-accent-hover);
+      }
+    }
+
+    &.is-active {
+      background: var(--hp-accent-bg-active);
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 26px;
+        border-radius: 0 3px 3px 0;
+        background: linear-gradient(180deg, #4572ef, #5ad4f6);
+      }
+
+      .nav-item-icon {
+        color: var(--hp-accent);
+        background: rgba(67, 133, 255, 0.12);
+      }
+
+      .nav-item-label {
+        color: var(--hp-accent-deep);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .footer-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 17px;
+    color: var(--hp-text-secondary);
+    transition: background 0.2s, color 0.2s;
+
+    &:hover {
+      background: var(--hp-accent-bg);
+      color: var(--hp-accent);
+    }
+  }
+
+  .footer-avatar {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 2px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--hp-accent-bg);
+    }
+  }
+
+  /* ── 主内容区 ── */
+  .main-panel {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
   ::v-deep {
     .el-drawer__wrapper {
-      height: calc(100% - 57px);
-      top: 57px;
+      height: calc(100% - var(--hp-titlebar-height));
+      top: var(--hp-titlebar-height);
       bottom: auto;
     }
     .v-modal {
