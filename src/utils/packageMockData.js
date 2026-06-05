@@ -4,6 +4,7 @@
 const MOCK_PACKAGE_TEMPLATES = [
   {
     packageNo: 'KRRM04321276',
+    packageSize: 'large',
     customerSource: 'AE海运',
     packageCreateTime: '2026-05-14 11:32:47',
     sourceWarehouse: '威海心怡优选分拨仓',
@@ -31,6 +32,7 @@ const MOCK_PACKAGE_TEMPLATES = [
   },
   {
     packageNo: 'KRV2VDIR00000041',
+    packageSize: 'small',
     customerSource: 'AE海运',
     packageCreateTime: '2026-05-14 17:23:34',
     sourceWarehouse: 'TRAN_STORE_30320880',
@@ -58,6 +60,7 @@ const MOCK_PACKAGE_TEMPLATES = [
   },
   {
     packageNo: 'KRRM04320531',
+    packageSize: 'large',
     customerSource: 'AE海运',
     packageCreateTime: '2026-05-14 10:33:37',
     sourceWarehouse: '威海心怡优选分拨仓',
