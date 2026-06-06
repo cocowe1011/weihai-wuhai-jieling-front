@@ -1925,6 +1925,22 @@ export default {
   },
   mounted() {
     this.initializeMarkers();
+    this.loadQueueInfoFromDatabase();
+    // 数据加载完成后创建监听（跳过 id 为 1-5 的队列）
+    this._queueWatchers = []; // 保存 watcher 取消函数
+    this._queueInitDone = false; // 初始化标记，跳过首次赋值触发的watch
+    this.$nextTick(() => {
+      this.queues.forEach((queue, index) => {
+        const unwatch = this.$watch(`queues.${index}.trayInfo`, {
+          handler(newVal, oldVal) {
+            if (!this._queueInitDone) return;
+            this.updateQueueInfo(queue.id);
+          },
+          deep: true
+        });
+        this._queueWatchers.push(unwatch);
+      });
+    });
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -2952,6 +2968,63 @@ export default {
         return value; // 非负数保持不变
       }
     },
+    // 更新数据库队列信息
+    updateQueueInfo(id) {
+      const param = {
+        id: id,
+        trayInfo: JSON.stringify(this.queues[id - 1].trayInfo)
+      };
+      HttpUtil.post('/queue_info/update', param).catch((err) => {
+        this.$message.error(err);
+      });
+    },
+    // 从数据库加载队列信息
+    loadQueueInfoFromDatabase() {
+      HttpUtil.post('/queue_info/queryQueueList', {})
+        .then((res) => {
+          if (res.data && res.data.length > 0) {
+            // 遍历数据库返回的队列信息
+            res.data.forEach((queueData) => {
+              const queueId = queueData.id;
+              const queueIndex = queueId - 1; // 数组索引从0开始，队列ID从1开始
+
+              // 确保队列索引有效
+              if (queueIndex >= 0 && queueIndex < this.queues.length) {
+                try {
+                  // 解析托盘信息JSON字符串
+                  const trayInfo = queueData.trayInfo
+                    ? JSON.parse(queueData.trayInfo)
+                    : [];
+                  // 赋值给对应的队列
+                  this.queues[queueIndex].trayInfo = Array.isArray(trayInfo)
+                    ? trayInfo
+                    : [];
+                  this.addLog(
+                    `已加载队列${queueData.queueName || queueId}的托盘信息，共${
+                      this.queues[queueIndex].trayInfo.length
+                    }个托盘`
+                  );
+                } catch (error) {
+                  console.error(`解析队列${queueId}的托盘信息失败:`, error);
+                  this.queues[queueIndex].trayInfo = [];
+                  this.addLog(`队列${queueId}托盘信息解析失败，已重置为空`);
+                }
+              }
+            });
+            this.addLog('队列信息加载完成');
+          } else {
+            this.addLog('数据库中暂无队列信息');
+          }
+        })
+        .catch((err) => {
+          console.error('加载队列信息失败:', err);
+          this.$message.error('加载队列信息失败: ' + err);
+          this.addLog('队列信息加载失败');
+        })
+        .finally(() => {
+          this._queueInitDone = true;
+        });
+    },
     // 切换到报警日志时清除未读状态
     switchToAlarmLog() {
       this.activeLogType = 'alarm';
@@ -2963,6 +3036,15 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.updateMarkerPositions);
+    // 取消队列监听器
+    if (this._queueWatchers && this._queueWatchers.length > 0) {
+      this._queueWatchers.forEach((unwatch) => {
+        if (typeof unwatch === 'function') {
+          unwatch();
+        }
+      });
+      this._queueWatchers = [];
+    }
   }
 };
 </script>

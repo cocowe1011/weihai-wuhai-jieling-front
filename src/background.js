@@ -555,7 +555,7 @@ var variables = {
   W_DBW102_BIT15: 'DB1001,X103.7' // 备用
 };
 
-var writeStrArr = [0, 0, 0, 0, 0, 0, 0, 0];
+var writeStrArr = [0, 0, 0, 0];
 var writeAddArr = [
   'W_DBW0', // WCS看门狗心跳
   'W_DBW2', // WCS-全线启动
