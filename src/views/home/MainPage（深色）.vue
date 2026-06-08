@@ -1657,13 +1657,13 @@ export default {
       this.sortPort05TrayId = values.DBB420 ?? '';
       this.sortPort06TrayId = values.DBB450 ?? '';
       this.sortPort07TrayId = values.DBB480 ?? '';
-      this.sortPort08TrayId = values.DBB520 ?? '';
-      this.sortPort09TrayId = values.DBB550 ?? '';
-      this.sortPort10TrayId = values.DBB580 ?? '';
-      this.sortPort11TrayId = values.DBB610 ?? '';
-      this.sortPort12TrayId = values.DBB640 ?? '';
-      this.sortPort13TrayId = values.DBB670 ?? '';
-      this.spareTrayId = values.DBB700 ?? '';
+      this.sortPort08TrayId = values.DBB510 ?? '';
+      this.sortPort09TrayId = values.DBB540 ?? '';
+      this.sortPort10TrayId = values.DBB570 ?? '';
+      this.sortPort11TrayId = values.DBB600 ?? '';
+      this.sortPort12TrayId = values.DBB630 ?? '';
+      this.sortPort13TrayId = values.DBB660 ?? '';
+      this.spareTrayId = values.DBB690 ?? '';
     });
   },
   methods: {

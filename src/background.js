@@ -463,13 +463,41 @@ function conPLC() {
           conn.addItems('DBB420'); // 分拣口05进货ID
           conn.addItems('DBB450'); // 分拣口06进货ID
           conn.addItems('DBB480'); // 分拣口07进货ID
-          conn.addItems('DBB520'); // 分拣口08进货ID
-          conn.addItems('DBB550'); // 分拣口09进货ID
-          conn.addItems('DBB580'); // 分拣口10进货ID
-          conn.addItems('DBB610'); // 分拣口11进货ID
-          conn.addItems('DBB640'); // 分拣口12进货ID
-          conn.addItems('DBB670'); // 分拣口13进货ID
-          conn.addItems('DBB700'); // 备用
+          conn.addItems('DBB510'); // 分拣口08进货ID
+          conn.addItems('DBB540'); // 分拣口09进货ID
+          conn.addItems('DBB570'); // 分拣口10进货ID
+          conn.addItems('DBB600'); // 分拣口11进货ID
+          conn.addItems('DBB630'); // 分拣口12进货ID
+          conn.addItems('DBB660'); // 分拣口13进货ID
+          conn.addItems('DBB690'); // 备用
+          // 各皮带工位虚拟ID（DB1001.DBB750-1139）
+          conn.addItems('DBB750'); // M1008工位ID
+          conn.addItems('DBB780'); // M1009工位ID
+          conn.addItems('DBB810'); // M1010工位ID
+          conn.addItems('DBB840'); // M1011工位ID
+          conn.addItems('DBB870'); // M1012工位ID
+          conn.addItems('DBB900'); // M1013工位ID
+          conn.addItems('DBB930'); // M1014工位ID
+          conn.addItems('DBB960'); // M1015工位ID
+          conn.addItems('DBB990'); // M1016工位ID
+          conn.addItems('DBB1020'); // M1017工位ID
+          conn.addItems('DBB1050'); // M1018工位ID
+          conn.addItems('DBB1080'); // M1019工位ID
+          conn.addItems('DBB1110'); // M1020工位ID
+          // 各皮带工位目的地（DB1001.DBW1200-1224）
+          conn.addItems('DBW1200'); // M1008目的地
+          conn.addItems('DBW1202'); // M1009目的地
+          conn.addItems('DBW1204'); // M1010目的地
+          conn.addItems('DBW1206'); // M1011目的地
+          conn.addItems('DBW1208'); // M1012目的地
+          conn.addItems('DBW1210'); // M1013目的地
+          conn.addItems('DBW1212'); // M1014目的地
+          conn.addItems('DBW1214'); // M1015目的地
+          conn.addItems('DBW1216'); // M1016目的地
+          conn.addItems('DBW1218'); // M1017目的地
+          conn.addItems('DBW1220'); // M1018目的地
+          conn.addItems('DBW1222'); // M1019目的地
+          conn.addItems('DBW1224'); // M1020目的地
           setInterval(() => {
             conn.readAllItems(valuesReady);
           }, 200);
@@ -519,13 +547,41 @@ var variables = {
   DBB420: 'DB1001,C420.30', // 分拣口05进货ID
   DBB450: 'DB1001,C450.30', // 分拣口06进货ID
   DBB480: 'DB1001,C480.30', // 分拣口07进货ID
-  DBB520: 'DB1001,C520.30', // 分拣口08进货ID
-  DBB550: 'DB1001,C550.30', // 分拣口09进货ID
-  DBB580: 'DB1001,C580.30', // 分拣口10进货ID
-  DBB610: 'DB1001,C610.30', // 分拣口11进货ID
-  DBB640: 'DB1001,C640.30', // 分拣口12进货ID
-  DBB670: 'DB1001,C670.30', // 分拣口13进货ID
-  DBB700: 'DB1001,C700.30', // 备用
+  DBB510: 'DB1001,C510.30', // 分拣口08进货ID
+  DBB540: 'DB1001,C540.30', // 分拣口09进货ID
+  DBB570: 'DB1001,C570.30', // 分拣口10进货ID
+  DBB600: 'DB1001,C600.30', // 分拣口11进货ID
+  DBB630: 'DB1001,C630.30', // 分拣口12进货ID
+  DBB660: 'DB1001,C660.30', // 分拣口13进货ID
+  DBB690: 'DB1001,C690.30', // 备用
+  // —— 各皮带工位虚拟ID（DB1001.DBB750-1139，每段 char(30)）——
+  DBB750: 'DB1001,C750.30', // M1008工位ID
+  DBB780: 'DB1001,C780.30', // M1009工位ID
+  DBB810: 'DB1001,C810.30', // M1010工位ID
+  DBB840: 'DB1001,C840.30', // M1011工位ID
+  DBB870: 'DB1001,C870.30', // M1012工位ID
+  DBB900: 'DB1001,C900.30', // M1013工位ID
+  DBB930: 'DB1001,C930.30', // M1014工位ID
+  DBB960: 'DB1001,C960.30', // M1015工位ID
+  DBB990: 'DB1001,C990.30', // M1016工位ID
+  DBB1020: 'DB1001,C1020.30', // M1017工位ID
+  DBB1050: 'DB1001,C1050.30', // M1018工位ID
+  DBB1080: 'DB1001,C1080.30', // M1019工位ID
+  DBB1110: 'DB1001,C1110.30', // M1020工位ID
+  // —— 各皮带工位目的地（DB1001.DBW1200-1224，INT）——
+  DBW1200: 'DB1001,INT1200', // M1008目的地
+  DBW1202: 'DB1001,INT1202', // M1009目的地
+  DBW1204: 'DB1001,INT1204', // M1010目的地
+  DBW1206: 'DB1001,INT1206', // M1011目的地
+  DBW1208: 'DB1001,INT1208', // M1012目的地
+  DBW1210: 'DB1001,INT1210', // M1013目的地
+  DBW1212: 'DB1001,INT1212', // M1014目的地
+  DBW1214: 'DB1001,INT1214', // M1015目的地
+  DBW1216: 'DB1001,INT1216', // M1016目的地
+  DBW1218: 'DB1001,INT1218', // M1017目的地
+  DBW1220: 'DB1001,INT1220', // M1018目的地
+  DBW1222: 'DB1001,INT1222', // M1019目的地
+  DBW1224: 'DB1001,INT1224', // M1020目的地
   // —— 写入（写入点位.csv / DB1001）——
   W_DBW0: 'DB1001,INT0', // WCS看门狗心跳
   W_DBW2: 'DB1001,INT2', // WCS-全线启动（系统在线）

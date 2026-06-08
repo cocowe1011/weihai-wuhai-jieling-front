@@ -203,6 +203,11 @@
                   v-for="marker in queueMarkers"
                   :key="marker.id"
                   class="queue-marker"
+                  :class="{
+                    'queue-marker--locked':
+                      queues.find((q) => q.id === marker.queueId)?.isLock ===
+                      '1'
+                  }"
                   :data-x="marker.x"
                   :data-y="marker.y"
                   @click="handleQueueMarkerClick(marker.queueId)"
@@ -213,6 +218,15 @@
                         ?.length || 0
                     }}</span>
                     <span class="queue-marker-name">{{ marker.name }}</span>
+                  </div>
+                  <div
+                    v-if="
+                      queues.find((q) => q.id === marker.queueId)?.isLock ===
+                      '1'
+                    "
+                    class="queue-marker-lock-overlay"
+                  >
+                    <i class="el-icon-lock"></i>
                   </div>
                 </div>
                 <!-- DBW12 光电信号--1 -->
@@ -998,6 +1012,106 @@
                     class="conveyor-arrow-item"
                   ></div>
                 </div>
+                <!-- 六面扫扫码上货面板 -->
+                <div class="marker-with-panel" data-x="300" data-y="1250">
+                  <div
+                    class="data-panel"
+                    :class="['position-top', { 'always-show': true }]"
+                  >
+                    <div class="data-panel-content">
+                      <div class="data-panel-row">
+                        <span class="data-panel-label">六面扫条码：</span>
+                        <span>{{ lastProcessedBarcode || '--' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 工位虚拟ID与目的地信息汇总面板（01008~01020） -->
+                <div class="marker-with-panel" data-x="2850" data-y="350">
+                  <div
+                    class="data-panel"
+                    :class="['position-left', { 'always-show': true }]"
+                    style="width: 550px"
+                  >
+                    <div class="data-panel-header">输送线工位信息面板</div>
+                    <div class="data-panel-content">
+                      <div class="scan-groups-grid">
+                        <!-- 第一行：M1008 ~ M1012 -->
+                        <div class="scan-group-row">
+                          <div
+                            class="scan-group with-watermark"
+                            v-for="num in [1008, 1009, 1010, 1011, 1012]"
+                            :key="'belt-' + num"
+                          >
+                            <div class="group-watermark">M{{ num }}</div>
+                            <div class="group-items">
+                              <div class="scan-item">
+                                <span class="scan-label">ID</span>
+                                <span class="scan-value">{{
+                                  beltStationIds['M' + num] || '--'
+                                }}</span>
+                              </div>
+                              <div class="scan-item">
+                                <span class="scan-label">目的地</span>
+                                <span class="scan-value">{{
+                                  beltStationDests['M' + num] || '--'
+                                }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 第二行：M1013 ~ M1017 -->
+                        <div class="scan-group-row">
+                          <div
+                            class="scan-group with-watermark"
+                            v-for="num in [1013, 1014, 1015, 1016, 1017]"
+                            :key="'belt-' + num"
+                          >
+                            <div class="group-watermark">M{{ num }}</div>
+                            <div class="group-items">
+                              <div class="scan-item">
+                                <span class="scan-label">ID</span>
+                                <span class="scan-value">{{
+                                  beltStationIds['M' + num] || '--'
+                                }}</span>
+                              </div>
+                              <div class="scan-item">
+                                <span class="scan-label">目的地</span>
+                                <span class="scan-value">{{
+                                  beltStationDests['M' + num] || '--'
+                                }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 第三行：M1018 ~ M1020 -->
+                        <div class="scan-group-row">
+                          <div
+                            class="scan-group with-watermark"
+                            v-for="num in [1018, 1019, 1020]"
+                            :key="'belt-' + num"
+                          >
+                            <div class="group-watermark">M{{ num }}</div>
+                            <div class="group-items">
+                              <div class="scan-item">
+                                <span class="scan-label">ID</span>
+                                <span class="scan-value">{{
+                                  beltStationIds['M' + num] || '--'
+                                }}</span>
+                              </div>
+                              <div class="scan-item">
+                                <span class="scan-label">目的地</span>
+                                <span class="scan-value">{{
+                                  beltStationDests['M' + num] || '--'
+                                }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1048,6 +1162,28 @@
                 <span class="tray-count">{{
                   queue.trayInfo?.length || 0
                 }}</span>
+                <!-- AGV状态标签 -->
+                <el-tag
+                  v-if="queue.trayStatus === '0'"
+                  size="mini"
+                  type="warning"
+                  style="margin-left: 4px"
+                  >等待AGV</el-tag
+                >
+                <el-tag
+                  v-else-if="queue.trayStatus === '1'"
+                  size="mini"
+                  type="info"
+                  style="margin-left: 4px"
+                  >AGV取货完成，等待空托返回</el-tag
+                >
+                <el-tag
+                  v-else-if="queue.trayStatus === '2'"
+                  size="mini"
+                  type="success"
+                  style="margin-left: 4px"
+                  >空托已返回，解锁中</el-tag
+                >
               </div>
             </div>
 
@@ -1227,6 +1363,51 @@
               </el-button>
             </div>
           </div>
+          <!-- DBW18 分拣口呼叫空托测试 -->
+          <div class="test-section">
+            <span class="test-label">DBW18 分拣口呼叫空托(AGV):</span>
+            <div class="qrcode-test-container qrcode-btn-grid">
+              <el-button size="small" @click="triggerEmptyTraySignal(1)">
+                口1
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(2)">
+                口2
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(3)">
+                口3
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(4)">
+                口4
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(5)">
+                口5
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(6)">
+                口6
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(7)">
+                口7
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(8)">
+                口8
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(9)">
+                口9
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(10)">
+                口10
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(11)">
+                口11
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(12)">
+                口12
+              </el-button>
+              <el-button size="small" @click="triggerEmptyTraySignal(13)">
+                口13
+              </el-button>
+            </div>
+          </div>
           <!-- DBB300-729 分拣口进货ID测试 -->
           <div class="test-section">
             <span class="test-label">DBB300-729 分拣口进货ID:</span>
@@ -1361,6 +1542,7 @@
 
 <script>
 import HttpUtil from '@/utils/HttpUtil';
+import HttpUtilMcs from '@/utils/HttpUtilMcs';
 import moment from 'moment';
 import { ipcRenderer } from 'electron';
 import OrderQueryDialog from '@/components/OrderQueryDialog.vue';
@@ -1501,67 +1683,93 @@ export default {
         {
           id: 2,
           queueName: '分拣口1',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 3,
           queueName: '分拣口2',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 4,
           queueName: '分拣口3',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 5,
           queueName: '分拣口4',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 6,
           queueName: '分拣口5',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 7,
           queueName: '分拣口6',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 8,
           queueName: '分拣口7',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 9,
           queueName: '分拣口8',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 10,
           queueName: '分拣口9',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 11,
           queueName: '分拣口10',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 12,
           queueName: '分拣口11',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 13,
           queueName: '分拣口12',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         },
         {
           id: 14,
           queueName: '分拣口13',
-          trayInfo: []
+          trayInfo: [],
+          trayStatus: '',
+          isLock: ''
         }
       ],
       // 添加队列位置标识数据
@@ -1813,7 +2021,41 @@ export default {
       sortPort11TrayId: '',
       sortPort12TrayId: '',
       sortPort13TrayId: '',
-      spareTrayId: ''
+      spareTrayId: '',
+      // 各皮带工位虚拟ID（DB1001.DBB750-1139）01008~01020）
+      beltStationIds: {
+        M1008: '',
+        M1009: '',
+        M1010: '',
+        M1011: '',
+        M1012: '',
+        M1013: '',
+        M1014: '',
+        M1015: '',
+        M1016: '',
+        M1017: '',
+        M1018: '',
+        M1019: '',
+        M1020: ''
+      },
+      // 各皮带工位目的地（DB1001.DBW1200-1224）
+      beltStationDests: {
+        M1008: 0,
+        M1009: 0,
+        M1010: 0,
+        M1011: 0,
+        M1012: 0,
+        M1013: 0,
+        M1014: 0,
+        M1015: 0,
+        M1016: 0,
+        M1017: 0,
+        M1018: 0,
+        M1019: 0,
+        M1020: 0
+      },
+      // AGV/MCS轮询定时器
+      mcsPollingTimer: null
     };
   },
   computed: {
@@ -1921,6 +2163,46 @@ export default {
       if (newVal === '1' && oldVal === '0') {
         this.handleSortPortEntrySuccess(13);
       }
+    },
+    // DBW18 分拣口呼叫空托 上升沿检测（bit0~bit12 对应分拣口1~13）
+    'wcsDockWord18.bit0'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(1);
+    },
+    'wcsDockWord18.bit1'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(2);
+    },
+    'wcsDockWord18.bit2'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(3);
+    },
+    'wcsDockWord18.bit3'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(4);
+    },
+    'wcsDockWord18.bit4'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(5);
+    },
+    'wcsDockWord18.bit5'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(6);
+    },
+    'wcsDockWord18.bit6'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(7);
+    },
+    'wcsDockWord18.bit7'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(8);
+    },
+    'wcsDockWord18.bit8'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(9);
+    },
+    'wcsDockWord18.bit9'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(10);
+    },
+    'wcsDockWord18.bit10'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(11);
+    },
+    'wcsDockWord18.bit11'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(12);
+    },
+    'wcsDockWord18.bit12'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') this.handleEmptyTraySignal(13);
     }
   },
   mounted() {
@@ -1931,7 +2213,7 @@ export default {
     this._queueInitDone = false; // 初始化标记，跳过首次赋值触发的watch
     this.$nextTick(() => {
       this.queues.forEach((queue, index) => {
-        const unwatch = this.$watch(`queues.${index}.trayInfo`, {
+        const unwatch = this.$watch(`queues.${index}`, {
           handler(newVal, oldVal) {
             if (!this._queueInitDone) return;
             this.updateQueueInfo(queue.id);
@@ -1941,6 +2223,8 @@ export default {
         this._queueWatchers.push(unwatch);
       });
     });
+    // 启动 MCS/AGV 队列状态轮询
+    this.startMcsPolling();
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -2118,13 +2402,43 @@ export default {
       this.sortPort05TrayId = values.DBB420 ?? '';
       this.sortPort06TrayId = values.DBB450 ?? '';
       this.sortPort07TrayId = values.DBB480 ?? '';
-      this.sortPort08TrayId = values.DBB520 ?? '';
-      this.sortPort09TrayId = values.DBB550 ?? '';
-      this.sortPort10TrayId = values.DBB580 ?? '';
-      this.sortPort11TrayId = values.DBB610 ?? '';
-      this.sortPort12TrayId = values.DBB640 ?? '';
-      this.sortPort13TrayId = values.DBB670 ?? '';
-      this.spareTrayId = values.DBB700 ?? '';
+      this.sortPort08TrayId = values.DBB510 ?? '';
+      this.sortPort09TrayId = values.DBB540 ?? '';
+      this.sortPort10TrayId = values.DBB570 ?? '';
+      this.sortPort11TrayId = values.DBB600 ?? '';
+      this.sortPort12TrayId = values.DBB630 ?? '';
+      this.sortPort13TrayId = values.DBB660 ?? '';
+      this.spareTrayId = values.DBB690 ?? '';
+
+      // 各皮带工位虚拟ID（DB1001.DBB750-1139）
+      this.beltStationIds.M1008 = values.DBB750 ?? '';
+      this.beltStationIds.M1009 = values.DBB780 ?? '';
+      this.beltStationIds.M1010 = values.DBB810 ?? '';
+      this.beltStationIds.M1011 = values.DBB840 ?? '';
+      this.beltStationIds.M1012 = values.DBB870 ?? '';
+      this.beltStationIds.M1013 = values.DBB900 ?? '';
+      this.beltStationIds.M1014 = values.DBB930 ?? '';
+      this.beltStationIds.M1015 = values.DBB960 ?? '';
+      this.beltStationIds.M1016 = values.DBB990 ?? '';
+      this.beltStationIds.M1017 = values.DBB1020 ?? '';
+      this.beltStationIds.M1018 = values.DBB1050 ?? '';
+      this.beltStationIds.M1019 = values.DBB1080 ?? '';
+      this.beltStationIds.M1020 = values.DBB1110 ?? '';
+
+      // 各皮带工位目的地（DB1001.DBW1200-1224）
+      this.beltStationDests.M1008 = values.DBW1200 ?? 0;
+      this.beltStationDests.M1009 = values.DBW1202 ?? 0;
+      this.beltStationDests.M1010 = values.DBW1204 ?? 0;
+      this.beltStationDests.M1011 = values.DBW1206 ?? 0;
+      this.beltStationDests.M1012 = values.DBW1208 ?? 0;
+      this.beltStationDests.M1013 = values.DBW1210 ?? 0;
+      this.beltStationDests.M1014 = values.DBW1212 ?? 0;
+      this.beltStationDests.M1015 = values.DBW1214 ?? 0;
+      this.beltStationDests.M1016 = values.DBW1216 ?? 0;
+      this.beltStationDests.M1017 = values.DBW1218 ?? 0;
+      this.beltStationDests.M1018 = values.DBW1220 ?? 0;
+      this.beltStationDests.M1019 = values.DBW1222 ?? 0;
+      this.beltStationDests.M1020 = values.DBW1224 ?? 0;
     });
   },
   methods: {
@@ -2374,6 +2688,152 @@ export default {
       );
       this.$message.success(`大包 ${entryId} 已进入${targetQueue.queueName}`);
     },
+    // ========== AGV/MCS 相关方法 ==========
+    // DBW18空托信号上升沿触发：锁定分拣口 + 发PLC禁止进货 + 调MCS通知AGV取货
+    async handleEmptyTraySignal(portNo) {
+      const queueIndex = portNo; // queues[1]=分拣口1, ..., queues[13]=分拣口13
+      const queue = this.queues[queueIndex];
+      if (!queue) {
+        this.addLog(`分拣口${portNo}空托信号无效，队列不存在`);
+        return;
+      }
+      // 已锁定的分拣口不重复处理
+      if (queue.isLock === '1') {
+        this.addLog(`分拣口${portNo}已锁定，忽略重复空托信号`);
+        return;
+      }
+      this.addLog(`分拣口${portNo}收到空托信号，开始锁定并通知AGV取货`);
+
+      // 1. 发送PLC分拣口禁止进货命令 DB1001.DBW102 对应位
+      // 构建禁止进货位值：将对应bit置1
+      let dbw102Value = 0;
+      for (let i = 1; i <= 13; i++) {
+        const q = this.queues[i];
+        if (q && (q.isLock === '1' || i === queueIndex)) {
+          dbw102Value |= 1 << (i - 1);
+        }
+      }
+      ipcRenderer.send('writeSingleValueToPLC', 'W_DBW102', dbw102Value);
+      this.addLog(
+        `已发送PLC禁止进货命令 DBW102=${dbw102Value}（分拣口${portNo}）`
+      );
+
+      // 2. 锁定队列
+      queue.isLock = '1';
+      queue.trayStatus = '0';
+
+      // 3. 调用MCS接口通知AGV取货
+      try {
+        // 队列有多少包就生成多少个bindList
+        const bindList = (queue.trayInfo || []).map((tray) => {
+          const pkgNo = tray.packageNo || '';
+          return {
+            materialCategoryCode: 'M1',
+            materialDataCode: pkgNo,
+            attributeList: [
+              { attributeCode: 'weight', attributeValue: '0' },
+              { attributeCode: 'trackingNumber', attributeValue: pkgNo }
+            ]
+          };
+        });
+        const mcsPayload = {
+          // 任务id，生成不重复的时间戳
+          signalId: String(Date.now()),
+          // 触发源类型固定：2-工位
+          signalSourceType: 2,
+          // 信号值（任务类型），固定2
+          signalTriggerValue: 2,
+          // 触发源（下料点点位编号，1~13的分拣口编号）
+          signalSourceValues: [String(portNo)],
+          // 载具类型，固定T1
+          carrierTypeCode: 'T1',
+          materialBind: { bindList }
+        };
+        const res = await HttpUtilMcs.post(
+          '/mcs/api/v2/task/receiveSignal',
+          mcsPayload
+        );
+        this.addLog(`MCS接口调用成功，分拣口${portNo}，通知AGV取货`);
+      } catch (err) {
+        console.error('MCS接口调用失败:', err);
+        this.addLog(
+          `MCS接口调用失败，分拣口${portNo}，原因：${
+            err.message || '网络错误'
+          }`,
+          'alarm'
+        );
+        // 即使MCS调用失败也保持锁定状态，等待手动处理
+      }
+      // AGV状态已通过队列watcher自动同步后端，无需手动调用
+    },
+    // 启动 MCS/AGV 队列状态轮询
+    startMcsPolling() {
+      if (this.mcsPollingTimer) {
+        clearInterval(this.mcsPollingTimer);
+      }
+      // 立即执行一次，然后每5秒轮询
+      this.pollQueueAgvStatus();
+      this.mcsPollingTimer = setInterval(this.pollQueueAgvStatus, 5000);
+    },
+    // 停止 MCS/AGV 轮询
+    stopMcsPolling() {
+      if (this.mcsPollingTimer) {
+        clearInterval(this.mcsPollingTimer);
+        this.mcsPollingTimer = null;
+      }
+    },
+    // 轮询队列AGV状态（只查trayStatus/isLock）
+    pollQueueAgvStatus() {
+      HttpUtil.post('/queue_info/queryQueueList', {})
+        .then((res) => {
+          if (!res.data || !res.data.length) return;
+          res.data.forEach((queueData) => {
+            const queueId = queueData.id;
+            const queueIndex = queueId - 1;
+            if (queueIndex < 1 || queueIndex >= this.queues.length) return; // 跳过上货区(id=1)
+            const queue = this.queues[queueIndex];
+            const dbTrayStatus = queueData.trayStatus || '';
+
+            // 检测状态变化：后端trayStatus变为"1"（AGV已取货完成）→ 只更新显示
+            if (queue.trayStatus === '0' && dbTrayStatus === '1') {
+              this.addLog(`分拣口${queueIndex} AGV取货完成，等待空托盘返回`);
+            }
+            // 检测状态变化：后端trayStatus变为"2"（AGV已送空托盘回来）→ 前端执行解锁
+            if (
+              (queue.trayStatus === '0' || queue.trayStatus === '1') &&
+              dbTrayStatus === '2' &&
+              queue.isLock === '1'
+            ) {
+              this.addLog(
+                `分拣口${queueIndex} AGV空托盘已返回，前端执行解锁，允许再次进货`
+              );
+              // 解除PLC禁止进货命令
+              this.clearPlcForbidPort(queueIndex);
+              // 前端解锁：清空所有AGV状态，watcher自动同步后端
+              queue.isLock = '';
+              queue.trayStatus = '';
+            } else {
+              // 其他情况同步后端trayStatus到前端
+              queue.trayStatus = dbTrayStatus;
+            }
+          });
+        })
+        .catch((err) => {
+          console.error('轮询队列AGV状态失败:', err);
+        });
+    },
+    // 解除PLC某分拣口的禁止进货命令（将该分拣口对应的DBW102位清零）
+    clearPlcForbidPort(queueIndex) {
+      let dbw102Value = 0;
+      for (let i = 1; i <= 13; i++) {
+        const q = this.queues[i];
+        if (q && q.isLock === '1' && i !== queueIndex) {
+          dbw102Value |= 1 << (i - 1);
+        }
+      }
+      ipcRenderer.send('writeSingleValueToPLC', 'W_DBW102', dbw102Value);
+      this.addLog(`已解除分拣口${queueIndex}禁止进货，DBW102=${dbw102Value}`);
+    },
     // 分拣口分配算法
     allocateSortPort(packageSize) {
       // 根据包裹大小过滤可用分拣口（排除异常口）
@@ -2386,6 +2846,10 @@ export default {
       for (const port of candidates) {
         const queueId = port.portNo + 1;
         const portQueue = this.queues.find((q) => q.id === queueId);
+        // 已锁定的分拣口不参与分配（AGV取货中或已锁定）
+        if (portQueue && portQueue.isLock === '1') {
+          continue;
+        }
         const portQueueCount = portQueue ? portQueue.trayInfo.length : 0;
         // 上货区中已分配该口目的地的包裹数量
         const loadingQueueCount = this.queues[0].trayInfo.filter(
@@ -2419,16 +2883,33 @@ export default {
         this.addLog(`DBW20.${bitKey} 已恢复为 0`);
       }, 1000);
     },
+    // 手动模拟 DBW18 分拣口呼叫空托信号（测试用）
+    triggerEmptyTraySignal(portNo) {
+      const bitKey = `bit${portNo - 1}`;
+      this.wcsDockWord18[bitKey] = '1';
+      this.addLog(
+        `手动触发 DBW18.${bitKey} = 1（分拣口${portNo}呼叫空托/AGV，1秒后恢复）`
+      );
+      setTimeout(() => {
+        this.wcsDockWord18[bitKey] = '0';
+        this.addLog(`DBW18.${bitKey} 已恢复为 0`);
+      }, 1000);
+    },
     // 构建目的地编码
     buildDestinationCode(machineNo, direction, sequenceNo, isLast) {
+      // 新规则：固定4位编码，废弃流水号逻辑
+      // 非最后一件货：machineNo * 1000 + direction * 100 + 0
+      // 最后一件货：machineNo * 1000 + direction * 100 + 10（第三位写1）
       if (isLast) {
-        // 最后一件（3位码）：machineNo * 100 + direction * 10 + 1
-        // 例：3号机向下最后一件 = 311
-        return machineNo * 100 + direction * 10 + 1;
+        // 最后一件货：1100 + direction*100 + 10
+        // 例：1号机向下最后一件 = 1110，1号机向上最后一件 = 1210
+        // 例：3号机向下最后一件 = 3110
+        return machineNo * 1000 + direction * 100 + 10;
       } else {
-        // 普通货物（4位码）：machineNo * 1000 + direction * 100 + sequenceNo
-        // 例：3号机向下第1件 = 3101
-        return machineNo * 1000 + direction * 100 + sequenceNo;
+        // 普通货物：1100 + direction*100 + 0
+        // 例：1号机向下 = 1100，1号机向上 = 1200
+        // 例：3号机向下 = 3100
+        return machineNo * 1000 + direction * 100 + 0;
       }
     },
     changeQueueExpanded() {
@@ -2968,14 +3449,20 @@ export default {
         return value; // 非负数保持不变
       }
     },
-    // 更新数据库队列信息
+    // 更新数据库队列信息（trayInfo + AGV状态字段）
     updateQueueInfo(id) {
+      const queue = this.queues[id - 1];
       const param = {
         id: id,
-        trayInfo: JSON.stringify(this.queues[id - 1].trayInfo)
+        trayInfo: JSON.stringify(queue.trayInfo)
       };
+      // 分拣口队列（id >= 2）额外同步AGV状态字段
+      if (id >= 2) {
+        param.trayStatus = queue.trayStatus || '';
+        param.isLock = queue.isLock || '';
+      }
       HttpUtil.post('/queue_info/update', param).catch((err) => {
-        this.$message.error(err);
+        console.error('更新队列信息失败:', err);
       });
     },
     // 从数据库加载队列信息
@@ -2999,6 +3486,12 @@ export default {
                   this.queues[queueIndex].trayInfo = Array.isArray(trayInfo)
                     ? trayInfo
                     : [];
+                  // 加载AGV状态字段
+                  if (queueIndex >= 1) {
+                    this.queues[queueIndex].trayStatus =
+                      queueData.trayStatus || '';
+                    this.queues[queueIndex].isLock = queueData.isLock || '';
+                  }
                   this.addLog(
                     `已加载队列${queueData.queueName || queueId}的托盘信息，共${
                       this.queues[queueIndex].trayInfo.length
@@ -3045,6 +3538,8 @@ export default {
       });
       this._queueWatchers = [];
     }
+    // 清除 MCS/AGV 轮询定时器
+    this.stopMcsPolling();
   }
 };
 </script>
@@ -3841,6 +4336,78 @@ export default {
                       background-color: #0ac5a8; /* 选中时背景色 */
                       border-color: #0ac5a8; /* 选中时边框色 */
                     }
+
+                    /* 扫码分组网格布局 */
+                    .scan-groups-grid {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 12px;
+                    }
+
+                    .scan-group-row {
+                      display: grid;
+                      grid-template-columns: repeat(5, 1fr);
+                      gap: 10px;
+                    }
+
+                    .scan-group {
+                      background: rgba(64, 158, 255, 0.08);
+                      border: 1px solid rgba(64, 158, 255, 0.2);
+                      border-left: 3px solid #409eff;
+                      border-radius: 6px;
+                      padding: 10px 12px;
+                    }
+
+                    .scan-group.with-watermark {
+                      position: relative;
+                      overflow: hidden;
+                    }
+
+                    .group-watermark {
+                      position: absolute;
+                      top: 50%;
+                      left: 50%;
+                      transform: translate(-50%, -50%);
+                      font-size: 30px;
+                      font-weight: 900;
+                      color: rgba(64, 158, 255, 0.4);
+                      pointer-events: none;
+                      user-select: none;
+                      z-index: 0;
+                      letter-spacing: -1px;
+                    }
+
+                    .group-items {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 4px;
+                      position: relative;
+                      z-index: 1;
+                    }
+
+                    .scan-item {
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      padding: 3px 0;
+                    }
+
+                    .scan-label {
+                      font-size: 12px;
+                      color: rgba(255, 255, 255, 0.7);
+                    }
+
+                    .scan-value {
+                      font-size: 12px;
+                      color: rgba(255, 255, 255, 0.95);
+                      font-weight: 500;
+                      text-align: right;
+                      flex: 1;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                      max-width: 80px;
+                    }
                   }
                 }
 
@@ -4076,6 +4643,27 @@ export default {
 
               .special-queue .queue-marker-name {
                 color: #ffffff !important;
+              }
+
+              .queue-marker--locked {
+                border-color: rgba(245, 108, 108, 0.7) !important;
+                background: rgba(60, 20, 20, 0.85) !important;
+              }
+
+              .queue-marker-lock-overlay {
+                position: absolute;
+                top: -6px;
+                right: -6px;
+                width: 16px;
+                height: 16px;
+                background: #f56c6c;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                color: #fff;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
               }
 
               .special-queue:hover {
