@@ -3,7 +3,7 @@
     <!-- 内容区包装器 -->
     <div class="content-wrapper">
       <!-- 左侧面板 -->
-      <div class="side-info-panel">
+      <div class="side-info-panel" v-show="false">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
           <div class="section-header">当前扫码包裹信息</div>
@@ -1027,26 +1027,28 @@
                   </div>
                 </div>
                 <!-- 工位虚拟ID与目的地信息汇总面板（01008~01020） -->
-                <div class="marker-with-panel" data-x="2850" data-y="350">
+                <div class="marker-with-panel" data-x="2950" data-y="150">
                   <div
                     class="data-panel"
                     :class="['position-left', { 'always-show': true }]"
-                    style="width: 550px"
+                    style="width: 850px"
                   >
                     <div class="data-panel-header">输送线工位信息面板</div>
                     <div class="data-panel-content">
                       <div class="scan-groups-grid">
-                        <!-- 第一行：M1008 ~ M1012 -->
+                        <!-- 第一行：M1008 ~ M1014 -->
                         <div class="scan-group-row">
                           <div
                             class="scan-group with-watermark"
-                            v-for="num in [1008, 1009, 1010, 1011, 1012]"
+                            v-for="num in [
+                              1008, 1009, 1010, 1011, 1012, 1013, 1014
+                            ]"
                             :key="'belt-' + num"
                           >
                             <div class="group-watermark">M{{ num }}</div>
                             <div class="group-items">
                               <div class="scan-item">
-                                <span class="scan-label">ID</span>
+                                <span class="scan-label">虚拟ID</span>
                                 <span class="scan-value">{{
                                   beltStationIds['M' + num] || '--'
                                 }}</span>
@@ -1060,41 +1062,17 @@
                             </div>
                           </div>
                         </div>
-                        <!-- 第二行：M1013 ~ M1017 -->
+                        <!-- 第二行：M1015 ~ M1020 -->
                         <div class="scan-group-row">
                           <div
                             class="scan-group with-watermark"
-                            v-for="num in [1013, 1014, 1015, 1016, 1017]"
+                            v-for="num in [1015, 1016, 1017, 1018, 1019, 1020]"
                             :key="'belt-' + num"
                           >
                             <div class="group-watermark">M{{ num }}</div>
                             <div class="group-items">
                               <div class="scan-item">
-                                <span class="scan-label">ID</span>
-                                <span class="scan-value">{{
-                                  beltStationIds['M' + num] || '--'
-                                }}</span>
-                              </div>
-                              <div class="scan-item">
-                                <span class="scan-label">目的地</span>
-                                <span class="scan-value">{{
-                                  beltStationDests['M' + num] || '--'
-                                }}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!-- 第三行：M1018 ~ M1020 -->
-                        <div class="scan-group-row">
-                          <div
-                            class="scan-group with-watermark"
-                            v-for="num in [1018, 1019, 1020]"
-                            :key="'belt-' + num"
-                          >
-                            <div class="group-watermark">M{{ num }}</div>
-                            <div class="group-items">
-                              <div class="scan-item">
-                                <span class="scan-label">ID</span>
+                                <span class="scan-label">虚拟ID</span>
                                 <span class="scan-value">{{
                                   beltStationIds['M' + num] || '--'
                                 }}</span>
@@ -2224,7 +2202,7 @@ export default {
       });
     });
     // 启动 MCS/AGV 队列状态轮询
-    this.startMcsPolling();
+    // this.startMcsPolling();
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -4346,7 +4324,7 @@ export default {
 
                     .scan-group-row {
                       display: grid;
-                      grid-template-columns: repeat(5, 1fr);
+                      grid-template-columns: repeat(7, 1fr);
                       gap: 10px;
                     }
 
