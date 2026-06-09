@@ -3,7 +3,7 @@
     <!-- 内容区包装器 -->
     <div class="content-wrapper">
       <!-- 左侧面板 -->
-      <div class="side-info-panel" v-show="false">
+      <div class="side-info-panel">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
           <div class="section-header">当前扫码包裹信息</div>
@@ -225,6 +225,7 @@
                       '1'
                     "
                     class="queue-marker-lock-overlay"
+                    @click.stop="handleUnlockQueue(marker.queueId)"
                   >
                     <i class="el-icon-lock"></i>
                   </div>
@@ -1027,14 +1028,14 @@
                   </div>
                 </div>
                 <!-- 工位虚拟ID与目的地信息汇总面板（01008~01020） -->
-                <div class="marker-with-panel" data-x="2950" data-y="150">
+                <div class="marker-with-panel" data-x="2900" data-y="350">
                   <div
                     class="data-panel"
                     :class="['position-left', { 'always-show': true }]"
-                    style="width: 850px"
+                    style="width: 800px"
                   >
-                    <div class="data-panel-header">输送线工位信息面板</div>
-                    <div class="data-panel-content">
+                    <div class="data-panel-header">输送线数据看板</div>
+                    <div class="data-panel-content" style="padding-top: 5px">
                       <div class="scan-groups-grid">
                         <!-- 第一行：M1008 ~ M1014 -->
                         <div class="scan-group-row">
@@ -1082,6 +1083,64 @@
                                 <span class="scan-value">{{
                                   beltStationDests['M' + num] || '--'
                                 }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 分割线 -->
+                        <div class="panel-divider"></div>
+                        <!-- 分拣口卡片第一行：1~7 -->
+                        <div class="scan-group-row">
+                          <div
+                            class="scan-group with-watermark sort-port-card"
+                            v-for="port in [1, 2, 3, 4, 5, 6, 7]"
+                            :key="'sort-port-' + port"
+                          >
+                            <div class="group-watermark">{{ port }}</div>
+                            <div class="group-items">
+                              <div class="scan-item">
+                                <span class="scan-label">进货ID</span>
+                                <span class="scan-value">{{
+                                  sortPortPurchaseIds[port] || '--'
+                                }}</span>
+                              </div>
+                              <div class="scan-item">
+                                <span class="scan-label">呼叫AGV</span>
+                                <button
+                                  class="port-send-btn"
+                                  title="发送呼叫"
+                                  @click="callAgv(port)"
+                                >
+                                  <i class="el-icon-s-promotion"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 分拣口卡片第二行：8~13 -->
+                        <div class="scan-group-row">
+                          <div
+                            class="scan-group with-watermark sort-port-card"
+                            v-for="port in [8, 9, 10, 11, 12, 13]"
+                            :key="'sort-port-' + port"
+                          >
+                            <div class="group-watermark">{{ port }}</div>
+                            <div class="group-items">
+                              <div class="scan-item">
+                                <span class="scan-label">进货ID</span>
+                                <span class="scan-value">{{
+                                  sortPortPurchaseIds[port] || '--'
+                                }}</span>
+                              </div>
+                              <div class="scan-item">
+                                <span class="scan-label">呼叫AGV</span>
+                                <button
+                                  class="port-send-btn"
+                                  title="发送呼叫"
+                                  @click="callAgv(port)"
+                                >
+                                  <i class="el-icon-s-promotion"></i>
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -2047,6 +2106,23 @@ export default {
     },
     selectedQueue() {
       return this.queues[this.selectedQueueIndex];
+    },
+    sortPortPurchaseIds() {
+      return {
+        1: this.sortPort01TrayId,
+        2: this.sortPort02TrayId,
+        3: this.sortPort03TrayId,
+        4: this.sortPort04TrayId,
+        5: this.sortPort05TrayId,
+        6: this.sortPort06TrayId,
+        7: this.sortPort07TrayId,
+        8: this.sortPort08TrayId,
+        9: this.sortPort09TrayId,
+        10: this.sortPort10TrayId,
+        11: this.sortPort11TrayId,
+        12: this.sortPort12TrayId,
+        13: this.sortPort13TrayId
+      };
     }
   },
   watch: {
@@ -2667,20 +2743,40 @@ export default {
       this.$message.success(`大包 ${entryId} 已进入${targetQueue.queueName}`);
     },
     // ========== AGV/MCS 相关方法 ==========
+    // 手动呼叫AGV：弹出确认后执行空托信号流程
+    callAgv(portNo) {
+      this.$confirm('本操作会呼叫AGV取货，并锁定分拣口，是否继续？', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.handleEmptyTraySignal(portNo, true);
+        })
+        .catch(() => {
+          this.$message.info('已取消呼叫AGV');
+        });
+    },
     // DBW18空托信号上升沿触发：锁定分拣口 + 发PLC禁止进货 + 调MCS通知AGV取货
-    async handleEmptyTraySignal(portNo) {
+    // isManual=true 表示手动呼叫，日志不输出"空托信号"相关字眼
+    async handleEmptyTraySignal(portNo, isManual = false) {
       const queueIndex = portNo; // queues[1]=分拣口1, ..., queues[13]=分拣口13
       const queue = this.queues[queueIndex];
+      const srcLabel = isManual ? '手动呼叫' : '空托信号';
       if (!queue) {
-        this.addLog(`分拣口${portNo}空托信号无效，队列不存在`);
+        this.addLog(`分拣口${portNo}${srcLabel}无效，队列不存在`);
         return;
       }
       // 已锁定的分拣口不重复处理
       if (queue.isLock === '1') {
-        this.addLog(`分拣口${portNo}已锁定，忽略重复空托信号`);
+        this.addLog(`分拣口${portNo}已锁定，忽略重复${srcLabel}`);
         return;
       }
-      this.addLog(`分拣口${portNo}收到空托信号，开始锁定并通知AGV取货`);
+      this.addLog(
+        `分拣口${portNo}${
+          isManual ? '手动' : '收到空托信号'
+        }呼叫AGV，开始锁定并通知取货`
+      );
 
       // 1. 发送PLC分拣口禁止进货命令 DB1001.DBW102 对应位
       // 构建禁止进货位值：将对应bit置1
@@ -3389,6 +3485,23 @@ export default {
         this.selectedQueueIndex = queueIndex;
         this.showTrays(queueIndex);
       }
+    },
+    // 点击锁图标解锁队列
+    handleUnlockQueue(queueId) {
+      const queue = this.queues.find((q) => q.id === queueId);
+      if (!queue) return;
+      this.$confirm(`确定要解锁队列「${queue.queueName}」吗？`, '解锁确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.$set(queue, 'isLock', '0');
+          // watcher 会自动触发 updateQueueInfo，无需手动调用
+          this.addLog(`队列「${queue.queueName}」已解锁`, 'running');
+          this.$message.success(`队列「${queue.queueName}」已解锁`);
+        })
+        .catch(() => {});
     },
     // 添加新的日志方法
     addLog(message, type = 'running') {
@@ -4325,7 +4438,7 @@ export default {
                     .scan-group-row {
                       display: grid;
                       grid-template-columns: repeat(7, 1fr);
-                      gap: 10px;
+                      gap: 6px;
                     }
 
                     .scan-group {
@@ -4333,7 +4446,7 @@ export default {
                       border: 1px solid rgba(64, 158, 255, 0.2);
                       border-left: 3px solid #409eff;
                       border-radius: 6px;
-                      padding: 10px 12px;
+                      padding: 6px 8px;
                     }
 
                     .scan-group.with-watermark {
@@ -4341,12 +4454,34 @@ export default {
                       overflow: hidden;
                     }
 
+                    .sort-port-card {
+                      background: rgba(120, 150, 200, 0.08);
+                      border-color: rgba(120, 150, 200, 0.2);
+                      border-left-color: #7896c8;
+
+                      .group-watermark {
+                        color: rgba(120, 150, 200, 0.35);
+                      }
+
+                      .port-send-btn {
+                        background: rgba(120, 150, 200, 0.1);
+                        border-color: rgba(120, 150, 200, 0.3);
+                        color: #8aa8d0;
+
+                        &:hover {
+                          background: rgba(120, 150, 200, 0.2);
+                          border-color: rgba(120, 150, 200, 0.5);
+                          color: #a8c0e0;
+                        }
+                      }
+                    }
+
                     .group-watermark {
                       position: absolute;
                       top: 50%;
                       left: 50%;
                       transform: translate(-50%, -50%);
-                      font-size: 30px;
+                      font-size: 22px;
                       font-weight: 900;
                       color: rgba(64, 158, 255, 0.4);
                       pointer-events: none;
@@ -4358,7 +4493,7 @@ export default {
                     .group-items {
                       display: flex;
                       flex-direction: column;
-                      gap: 4px;
+                      gap: 2px;
                       position: relative;
                       z-index: 1;
                     }
@@ -4367,16 +4502,16 @@ export default {
                       display: flex;
                       justify-content: space-between;
                       align-items: center;
-                      padding: 3px 0;
+                      padding: 1px 0;
                     }
 
                     .scan-label {
-                      font-size: 12px;
+                      font-size: 11px;
                       color: rgba(255, 255, 255, 0.7);
                     }
 
                     .scan-value {
-                      font-size: 12px;
+                      font-size: 11px;
                       color: rgba(255, 255, 255, 0.95);
                       font-weight: 500;
                       text-align: right;
@@ -4385,6 +4520,39 @@ export default {
                       text-overflow: ellipsis;
                       white-space: nowrap;
                       max-width: 80px;
+                    }
+
+                    .panel-divider {
+                      height: 1px;
+                      background: linear-gradient(
+                        90deg,
+                        transparent 0%,
+                        rgba(64, 158, 255, 0.4) 20%,
+                        rgba(64, 158, 255, 0.4) 80%,
+                        transparent 100%
+                      );
+                      margin: 0;
+                    }
+
+                    .port-send-btn {
+                      background: rgba(64, 158, 255, 0.15);
+                      border: 1px solid rgba(64, 158, 255, 0.4);
+                      color: rgba(64, 158, 255, 0.9);
+                      border-radius: 3px;
+                      padding: 2px 6px;
+                      font-size: 14px;
+                      cursor: pointer;
+                      transition: all 0.2s;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      line-height: 1;
+                    }
+
+                    .port-send-btn:hover {
+                      background: rgba(64, 158, 255, 0.3);
+                      border-color: rgba(64, 158, 255, 0.6);
+                      color: #409eff;
                     }
                   }
                 }
@@ -4642,6 +4810,13 @@ export default {
                 font-size: 10px;
                 color: #fff;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+                cursor: pointer;
+                z-index: 10;
+              }
+
+              .queue-marker-lock-overlay:hover {
+                background: #e6413e;
+                transform: scale(1.2);
               }
 
               .special-queue:hover {
