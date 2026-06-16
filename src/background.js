@@ -331,7 +331,7 @@ app.on('ready', () => {
       const jarPath = path.join(
         __static,
         './jarlib',
-        'stacking-weight-record-middle.jar'
+        'weigao-cainiao-record-middle.jar'
       );
 
       // 优化的Java启动参数 - 针对启动速度优化
