@@ -192,6 +192,7 @@ global.sharedObject = {
   userInfo: {}
 };
 let mainWindow = null;
+let zoomFactor = 1.0; // 全局缩放比例，各处复用
 app.on('ready', () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -209,7 +210,8 @@ app.on('ready', () => {
   });
 
   // 读取缩放配置并应用到主窗口
-  const zoomFactor = readZoomConfig();
+  zoomFactor = readZoomConfig();
+  // 页面加载完成时应用缩放
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.setZoomFactor(zoomFactor);
   });
@@ -242,6 +244,10 @@ app.on('ready', () => {
         width: screen.getPrimaryDisplay().workAreaSize.width,
         height: screen.getPrimaryDisplay().workAreaSize.height
       });
+      // Windows下setBounds可能异步重置zoomFactor，延迟确保缩放生效
+      setTimeout(() => {
+        mainWindow.webContents.setZoomFactor(zoomFactor);
+      }, 200);
     } else {
       // 太几把坑了，windows系统setSize center方法失效 必须先mainWindow.unmaximize()
       mainWindow.unmaximize();
