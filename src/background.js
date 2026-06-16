@@ -31,6 +31,43 @@ var appTray = null;
 let closeStatus = false;
 var conn = new nodes7();
 
+// 读取缩放配置文件
+// 配置文件位于 D://weihai-cainiao-front/config/zoom.json（升级不覆盖）
+// 修改 zoomFactor 值后需重启应用生效
+function readZoomConfig() {
+  const configDir = 'D://weihai-cainiao-front/config';
+  const configPath = path.join(configDir, 'zoom.json');
+  logger.info('缩放配置文件路径: ' + configPath);
+  try {
+    if (fs.existsSync(configPath)) {
+      const configData = fs.readFileSync(configPath, 'utf-8');
+      const config = JSON.parse(configData);
+      if (typeof config.zoomFactor === 'number') {
+        logger.info('应用缩放比例: ' + config.zoomFactor);
+        return config.zoomFactor;
+      }
+    }
+  } catch (error) {
+    logger.error('读取缩放配置失败: ' + error.message);
+  }
+  // 配置不存在或无效，创建默认配置文件（确保目录存在）
+  const defaultConfig = { zoomFactor: 1.0 }; // 修改此值可调整缩放
+  try {
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    fs.writeFileSync(
+      configPath,
+      JSON.stringify(defaultConfig, null, 2),
+      'utf-8'
+    );
+    logger.info('已创建默认缩放配置文件: ' + configPath);
+  } catch (error) {
+    logger.error('创建默认缩放配置失败: ' + error.message);
+  }
+  return 1.0;
+}
+
 // 记录日志的辅助函数
 function logToFile(message) {
   const timestamp = new Date().toLocaleString();
@@ -169,6 +206,12 @@ app.on('ready', () => {
       webSecurity: false
     },
     icon: './build/icons/icon.ico'
+  });
+
+  // 读取缩放配置并应用到主窗口
+  const zoomFactor = readZoomConfig();
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow.webContents.setZoomFactor(zoomFactor);
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
