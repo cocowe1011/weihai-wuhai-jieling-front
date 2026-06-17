@@ -31,37 +31,30 @@ var appTray = null;
 let closeStatus = false;
 var conn = new nodes7();
 
-// 读取缩放配置文件
-// 配置文件位于 D://weihai-cainiao-front/config/zoom.json（升级不覆盖）
-// 修改 zoomFactor 值后需重启应用生效
+// 读取缩放配置文件（D://weihai-cainiao-front/config/zoom.json，升级不覆盖）
 function readZoomConfig() {
   const configDir = 'D://weihai-cainiao-front/config';
   const configPath = path.join(configDir, 'zoom.json');
-  logger.info('缩放配置文件路径: ' + configPath);
   try {
     if (fs.existsSync(configPath)) {
-      const configData = fs.readFileSync(configPath, 'utf-8');
-      const config = JSON.parse(configData);
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
       if (typeof config.zoomFactor === 'number') {
-        logger.info('应用缩放比例: ' + config.zoomFactor);
+        logger.info('缩放配置: ' + config.zoomFactor);
         return config.zoomFactor;
       }
     }
   } catch (error) {
     logger.error('读取缩放配置失败: ' + error.message);
   }
-  // 配置不存在或无效，创建默认配置文件（确保目录存在）
-  const defaultConfig = { zoomFactor: 1.0 }; // 修改此值可调整缩放
+  // 配置不存在，创建默认文件
+  const defaultConfig = { zoomFactor: 1.0 };
   try {
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
+    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(
       configPath,
       JSON.stringify(defaultConfig, null, 2),
       'utf-8'
     );
-    logger.info('已创建默认缩放配置文件: ' + configPath);
   } catch (error) {
     logger.error('创建默认缩放配置失败: ' + error.message);
   }
@@ -192,7 +185,7 @@ global.sharedObject = {
   userInfo: {}
 };
 let mainWindow = null;
-let zoomFactor = 1.0; // 全局缩放比例，各处复用
+let zoomFactor = 1.0;
 app.on('ready', () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -209,23 +202,16 @@ app.on('ready', () => {
     icon: './build/icons/icon.ico'
   });
 
-  // 读取缩放配置并应用到主窗口
+  // 缩放配置读取与应用
   zoomFactor = readZoomConfig();
-  // 页面加载完成时应用缩放
-  mainWindow.webContents.on('did-finish-load', () => {
-    mainWindow.webContents.setZoomFactor(zoomFactor);
-  });
-  // 窗口大小/状态变化时重新应用缩放（Windows下resize/maximize会重置zoomFactor）
-  let resizeTimer = null;
-  const reapplyZoom = () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      mainWindow.webContents.setZoomFactor(zoomFactor);
-    }, 200);
-  };
-  mainWindow.on('resize', reapplyZoom);
-  mainWindow.on('maximize', reapplyZoom);
-  mainWindow.on('unmaximize', reapplyZoom);
+  // 使用CSS zoom属性设置缩放（DOM样式，不会被Windows窗口变化重置）
+  function applyZoom() {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    mainWindow.webContents
+      .executeJavaScript(`document.documentElement.style.zoom = ${zoomFactor};`)
+      .catch(() => {});
+  }
+  mainWindow.webContents.on('did-finish-load', applyZoom);
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
