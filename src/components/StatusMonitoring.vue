@@ -159,19 +159,28 @@ export default {
         };
 
         oDiv.onmousedown = (e) => {
+          // 只响应左键，右键/中键不触发拖拽
+          if (e.button !== 0) return;
+          // 先清理可能残留的上一轮拖拽状态（防止多次 mousedown 累积泄漏）
+          if (oDiv._currentEndDrag) {
+            oDiv._currentEndDrag();
+          }
+
           const disX = e.clientX - oDiv.offsetLeft;
           const disY = e.clientY - oDiv.offsetTop;
 
-          oDiv.style.cursor = 'grabbing';
+          oDiv.style.cursor = 'move';
           oDiv.style.zIndex = '9999';
-          oDiv.style.transition = 'none'; // 性能关键点：关闭过渡
+          oDiv.style.transition = 'none';
 
           const endDrag = () => {
             document.onmousemove = null;
             document.onmouseup = null;
             window.removeEventListener('mouseup', endDrag);
+            window.removeEventListener('blur', endDrag);
+            document.removeEventListener('contextmenu', endDrag);
             oDiv._currentEndDrag = null;
-            oDiv.style.cursor = 'grab';
+            oDiv.style.cursor = 'move';
             oDiv.style.transition = 'border-color 0.3s';
             updatePercent();
           };
@@ -210,6 +219,10 @@ export default {
 
           document.onmouseup = endDrag;
           window.addEventListener('mouseup', endDrag);
+          // 窗口失焦保底：Alt+Tab / 点击其他窗口时自动停止拖拽
+          window.addEventListener('blur', endDrag);
+          // 右键保底：拖拽过程中右键点击时停止拖拽
+          document.addEventListener('contextmenu', endDrag);
         };
       },
       // 2. 解绑钩子 (防止内存泄漏)
@@ -223,6 +236,8 @@ export default {
           document.onmousemove = null;
           document.onmouseup = null;
           window.removeEventListener('mouseup', el._currentEndDrag);
+          window.removeEventListener('blur', el._currentEndDrag);
+          document.removeEventListener('contextmenu', el._currentEndDrag);
           delete el._currentEndDrag;
         }
         delete el._percentX;
@@ -439,7 +454,7 @@ export default {
   background-color: #1f2d3d;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  cursor: grab;
+  cursor: move;
   user-select: none;
   overflow: hidden;
   transition: border-color 0.3s;
