@@ -1021,7 +1021,17 @@
                   >
                     <div class="data-panel-content">
                       <div class="data-panel-row">
-                        <span class="data-panel-label">六面扫条码：</span>
+                        <span class="data-panel-label">
+                          <span
+                            class="status-dot"
+                            :style="{
+                              backgroundColor: sixScanSocketConnected
+                                ? '#67c23a'
+                                : '#f56c6c'
+                            }"
+                          ></span>
+                          六面扫条码：
+                        </span>
                         <span>{{ lastProcessedBarcode || '--' }}</span>
                       </div>
                     </div>
@@ -1599,6 +1609,11 @@ export default {
       sixScanBarcode: '',
       lastProcessedBarcode: '',
       sixScanProcessing: false,
+      // 六面扫Socket连接状态
+      sixScanSocketConnected: false,
+      // 六面扫条码是否有效（单一条码为有效，[NoRead]和多码为无效）
+      // 启动时无有效扫描，初始为 false
+      sixScanBarcodeValid: false,
       // 分拣口配置（1-9大件，10-11小件，12-13异常口）
       sortPortConfig: [
         {
@@ -2131,15 +2146,73 @@ export default {
       if (!barcode) {
         return;
       }
-      if (barcode === this.lastProcessedBarcode) {
-        this.addLog(`六面扫条码重复，跳过：${barcode}`);
+
+      // NoRead 判断
+      if (barcode === 'NoRead') {
+        this.sixScanBarcodeValid = false;
+        this.nowScanTrayInfo = {};
+        this.addLog(
+          `六面扫未读到条码（${this.lastProcessedBarcode}），报警：条码无效，不发送目的地`,
+          'alarm'
+        );
         return;
       }
+
+      // 多码判断
+      const parts = barcode.split(',');
+      if (parts.length > 1) {
+        this.sixScanBarcodeValid = false;
+        this.nowScanTrayInfo = {};
+        this.addLog(
+          `六面扫读到多个条码（${this.lastProcessedBarcode}），报警：条码无效，不发送目的地`,
+          'alarm'
+        );
+        return;
+      }
+
+      // 单码重复检测：先查上货区队列中是否已有同 packageNo 的条目
+      const existingIndex = this.queues[0].trayInfo.findIndex(
+        (item) => item.packageNo === barcode
+      );
+      if (existingIndex !== -1) {
+        // 已入队，用新扫码数据替换老信息
+        const packageInfo = mockPackageByBarcode(barcode);
+        const oldItem = this.queues[0].trayInfo[existingIndex];
+        this.queues[0].trayInfo.splice(existingIndex, 1, {
+          ...oldItem,
+          packageNo: packageInfo.packageNo,
+          trayTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+          businessNo: packageInfo.businessNo,
+          customerSource: packageInfo.customerSource,
+          batchNo: packageInfo.batchNo,
+          destinationCountry: packageInfo.destinationCountry,
+          channel: packageInfo.channel
+        });
+        this.addLog(
+          `六面扫条码重复，已替换队列中老信息：${barcode} -> 大包号：${packageInfo.packageNo}`
+        );
+        // 同步更新当前展示信息
+        this.nowScanTrayInfo = packageInfo;
+        this.sixScanBarcodeValid = true;
+        if (this.selectedQueueIndex === 0) {
+          this.showTrays(0);
+        }
+        return;
+      }
+
+      // 未入队但已缓存在 nowScanTrayInfo 中，更新缓存
+      if (this.nowScanTrayInfo.barcode === barcode) {
+        const packageInfo = mockPackageByBarcode(barcode);
+        this.nowScanTrayInfo = packageInfo;
+        this.addLog(`六面扫条码重复，已更新缓存信息：${barcode}`);
+        return;
+      }
+
+      this.sixScanBarcodeValid = true;
       this.addLog(`六面扫识别条码：${barcode}`);
       // 仅mock数据并缓存到nowScanTrayInfo，等待DBW16.bit0信号
       const packageInfo = mockPackageByBarcode(barcode);
       this.nowScanTrayInfo = packageInfo; // 直接存完整包裹信息（含packageSize等字段）
-      this.lastProcessedBarcode = barcode;
       this.addLog(
         `已缓存包裹信息，大包号：${packageInfo.packageNo}，大小：${
           packageInfo.packageSize || '未知'
@@ -2279,6 +2352,19 @@ export default {
     });
     // 启动 MCS/AGV 队列状态轮询
     // this.startMcsPolling();
+    // 六面扫Socket连接状态监听
+    ipcRenderer.on('sixScanSocketStatus', (event, connected) => {
+      this.sixScanSocketConnected = connected;
+      if (connected) {
+        this.addLog('六面扫Socket已连接');
+      } else {
+        this.addLog('六面扫Socket连接断开', 'alarm');
+      }
+    });
+    // 六面扫条码数据监听
+    ipcRenderer.on('sixScanBarcodeData', (event, rawBarcode) => {
+      this.handleSixScanSocketData(rawBarcode);
+    });
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -2496,6 +2582,19 @@ export default {
     });
   },
   methods: {
+    // 处理六面扫Socket发来的条码数据
+    handleSixScanSocketData(rawBarcode) {
+      const rawStr = (rawBarcode || '').trim();
+      // 始终显示原始数据到面板，由 watch 统一判断
+      this.lastProcessedBarcode = rawStr;
+
+      // 提取方括号内容，赋值给 sixScanBarcode 触发 watch 统一处理
+      let innerContent = rawStr;
+      if (rawStr.startsWith('[') && rawStr.endsWith(']')) {
+        innerContent = rawStr.slice(1, -1);
+      }
+      this.sixScanBarcode = innerContent.trim();
+    },
     async handleSixScanUpload(barcode) {
       if (this.sixScanProcessing) {
         this.addLog('六面扫上货处理中，请稍候');
@@ -2555,6 +2654,14 @@ export default {
     },
     // 目的地请求处理入口（DBW16.bit0上升沿触发）
     async handleDestinationRequest() {
+      // 检查条码是否有效（NoRead/多码时不发送目的地）
+      if (!this.sixScanBarcodeValid) {
+        this.addLog(
+          '收到目的地请求信号，但当前六面扫条码无效（NoRead或多码），拒绝发送目的地',
+          'alarm'
+        );
+        return;
+      }
       // 检查是否有缓存的包裹信息
       if (
         !this.nowScanTrayInfo ||
@@ -2654,6 +2761,9 @@ export default {
         this.$message.success(
           `大包 ${packageInfo.packageNo} 已分配至分拣口${port.portNo}`
         );
+        // 处理成功后清空缓存，防止PLC重复信号导致同一包裹重复处理
+        this.nowScanTrayInfo = {};
+        this.sixScanBarcodeValid = false;
       } catch (error) {
         console.error('目的地请求处理失败:', error);
         this.$message.error(`目的地请求处理失败：${error.message || '请重试'}`);
@@ -3513,13 +3623,14 @@ export default {
         unread: type === 'alarm'
       };
 
-      if (type === 'running') {
-        this.runningLogs.unshift(log);
-        // 保持日志数量在合理范围内
-        if (this.runningLogs.length > 100) {
-          this.runningLogs.pop();
-        }
-      } else {
+      // 只要是日志就往运行日志中添加
+      this.runningLogs.unshift(log);
+      // 保持日志数量在合理范围内
+      if (this.runningLogs.length > 100) {
+        this.runningLogs.pop();
+      }
+
+      if (type === 'alarm') {
         this.alarmLogs.unshift(log);
         if (this.alarmLogs.length > 100) {
           this.alarmLogs.pop();
@@ -4378,6 +4489,14 @@ export default {
                   }
                   .data-panel-content {
                     font-size: 12px;
+                    .status-dot {
+                      display: inline-block;
+                      width: 6px;
+                      height: 6px;
+                      border-radius: 50%;
+                      margin-right: 4px;
+                      vertical-align: middle;
+                    }
                     .data-panel-row {
                       display: flex;
                       justify-content: space-between;

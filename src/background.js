@@ -27,6 +27,7 @@ logger.transports.file.file = app.getPath('userData') + '/app.log';
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const net = require('net');
 var appTray = null;
 let closeStatus = false;
 var conn = new nodes7();
@@ -355,6 +356,87 @@ app.on('ready', () => {
     }, 500);
   }
   setAppTray();
+
+  // ===== 创建六面扫Socket客户端连接 =====
+  // 六面扫作为Socket Server，我们是Client主动连接
+  const sixScanClient = new net.Socket();
+  const SIX_SCAN_HOST = '192.168.4.227';
+  const SIX_SCAN_PORT = 2002;
+  let sixScanReconnectTimer = null;
+  const SIX_SCAN_RECONNECT_INTERVAL = 3000; // 3秒重连
+
+  sixScanClient.on('error', (err) => {
+    logger.error(`六面扫Socket连接错误: ${err.message}`);
+    // 失败了也不要影响其他流程
+  });
+
+  // 用 connect 事件监听连接成功（包括首次和重连），而不是 connect() 的回调
+  // 回调只会在首次 connect() 调用时触发一次，重连时不会触发
+  sixScanClient.on('connect', () => {
+    logger.info(`六面扫Socket已连接: ${SIX_SCAN_HOST}:${SIX_SCAN_PORT}`);
+    // 每次连接成功后重新开启TCP KeepAlive，因为重连会创建新的TCP handle
+    sixScanClient.setKeepAlive(true, 60000);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('sixScanSocketStatus', true);
+    }
+    // 连接成功后清除重连定时器
+    if (sixScanReconnectTimer) {
+      clearInterval(sixScanReconnectTimer);
+      sixScanReconnectTimer = null;
+    }
+  });
+
+  sixScanClient.on('close', () => {
+    logger.info('六面扫Socket连接断开，准备重连');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('sixScanSocketStatus', false);
+    }
+    // 断开后启动定时重连
+    if (!sixScanReconnectTimer) {
+      sixScanReconnectTimer = setInterval(() => {
+        logger.info('六面扫Socket尝试重连...');
+        try {
+          sixScanClient.connect(SIX_SCAN_PORT, SIX_SCAN_HOST);
+        } catch (e) {
+          logger.error(`六面扫Socket重连异常: ${e.message}`);
+        }
+      }, SIX_SCAN_RECONNECT_INTERVAL);
+    }
+  });
+
+  // 首次连接（不带回调，连接成功由 connect 事件统一处理）
+  try {
+    sixScanClient.connect(SIX_SCAN_PORT, SIX_SCAN_HOST);
+  } catch (e) {
+    logger.error(`六面扫Socket首次连接失败: ${e.message}`);
+  }
+
+  sixScanClient.on('data', (data) => {
+    try {
+      const barcodeStr = data.toString().trim();
+      logger.info(`六面扫收到数据: ${barcodeStr}`);
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('sixScanBarcodeData', barcodeStr);
+      }
+    } catch (e) {
+      logger.error(`六面扫Socket数据解析异常: ${e.message}`);
+    }
+  });
+
+  // 应用退出前清理六面扫Socket资源
+  app.on('before-quit', () => {
+    logger.info('应用退出，清理六面扫Socket连接');
+    if (sixScanReconnectTimer) {
+      clearInterval(sixScanReconnectTimer);
+      sixScanReconnectTimer = null;
+    }
+    try {
+      sixScanClient.destroy();
+    } catch (e) {
+      // 忽略销毁异常
+    }
+  });
+
   if (process.env.NODE_ENV === 'production') {
     try {
       const javaPath = path.join(
