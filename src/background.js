@@ -215,6 +215,17 @@ app.on('ready', () => {
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.setZoomFactor(zoomFactor);
   });
+  // 窗口大小/状态变化时重新应用缩放（Windows下resize/maximize会重置zoomFactor）
+  let resizeTimer = null;
+  const reapplyZoom = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      mainWindow.webContents.setZoomFactor(zoomFactor);
+    }, 200);
+  };
+  mainWindow.on('resize', reapplyZoom);
+  mainWindow.on('maximize', reapplyZoom);
+  mainWindow.on('unmaximize', reapplyZoom);
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
@@ -244,10 +255,6 @@ app.on('ready', () => {
         width: screen.getPrimaryDisplay().workAreaSize.width,
         height: screen.getPrimaryDisplay().workAreaSize.height
       });
-      // Windows下setBounds可能异步重置zoomFactor，延迟确保缩放生效
-      setTimeout(() => {
-        mainWindow.webContents.setZoomFactor(zoomFactor);
-      }, 200);
     } else {
       // 太几把坑了，windows系统setSize center方法失效 必须先mainWindow.unmaximize()
       mainWindow.unmaximize();
