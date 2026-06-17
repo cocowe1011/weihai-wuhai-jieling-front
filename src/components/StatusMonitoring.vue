@@ -166,8 +166,30 @@ export default {
           oDiv.style.zIndex = '9999';
           oDiv.style.transition = 'none'; // 性能关键点：关闭过渡
 
+          const endDrag = () => {
+            document.onmousemove = null;
+            document.onmouseup = null;
+            window.removeEventListener('mouseup', endDrag);
+            oDiv._currentEndDrag = null;
+            oDiv.style.cursor = 'grab';
+            oDiv.style.transition = 'border-color 0.3s';
+            updatePercent();
+          };
+
+          // 存到元素上，unbind 时可清理进行中的拖拽
+          oDiv._currentEndDrag = endDrag;
+
           document.onmousemove = (e) => {
-            // 使用 requestAnimationFrame 优化视觉帧率（可选，目前逻辑足够简单也可不用）
+            // 鼠标离开可视区域时自动结束拖拽，防止窗口外松开后拖拽状态未释放
+            if (
+              e.clientX < 0 ||
+              e.clientX > document.documentElement.clientWidth ||
+              e.clientY < 0 ||
+              e.clientY > document.documentElement.clientHeight
+            ) {
+              endDrag();
+              return;
+            }
             let left = e.clientX - disX;
             let top = e.clientY - disY;
 
@@ -186,13 +208,8 @@ export default {
             oDiv.style.top = top + 'px';
           };
 
-          document.onmouseup = () => {
-            document.onmousemove = null;
-            document.onmouseup = null;
-            oDiv.style.cursor = 'grab';
-            oDiv.style.transition = 'border-color 0.3s'; // 恢复样式过渡
-            updatePercent();
-          };
+          document.onmouseup = endDrag;
+          window.addEventListener('mouseup', endDrag);
         };
       },
       // 2. 解绑钩子 (防止内存泄漏)
@@ -201,6 +218,15 @@ export default {
           window.removeEventListener('resize', el._resizeHandler);
           delete el._resizeHandler;
         }
+        // 清理进行中的拖拽状态
+        if (el._currentEndDrag) {
+          document.onmousemove = null;
+          document.onmouseup = null;
+          window.removeEventListener('mouseup', el._currentEndDrag);
+          delete el._currentEndDrag;
+        }
+        delete el._percentX;
+        delete el._percentY;
       }
     }
   },
@@ -220,6 +246,7 @@ export default {
       customWriteBool: true,
       readFilter: '',
       isWriting: false,
+      cancelWriteTimer: null, // 取消写入的定时器，防止内存泄漏
       writeDataPollingTimer: null // 轮询定时器
     };
   },
@@ -261,6 +288,7 @@ export default {
           clearTimeout(this.warningTimeOut);
         }
         this.warningTimeOut = setTimeout(() => {
+          if (this._isDestroyed) return;
           this.plcStatus = false;
           if (this.$route.path != '/login') {
             this.$message.error('PLC连接中断');
@@ -280,6 +308,7 @@ export default {
   },
   // 3. 组件销毁清理
   beforeDestroy() {
+    this._isDestroyed = true;
     // 清理 IPC 监听器
     if (this.ipcHandler) {
       ipcRenderer.removeListener('receivedMsg', this.ipcHandler);
@@ -292,6 +321,11 @@ export default {
     }
     // 清除轮询定时器
     this.stopWriteDataPolling();
+    // 清除取消写入定时器
+    if (this.cancelWriteTimer) {
+      clearTimeout(this.cancelWriteTimer);
+      this.cancelWriteTimer = null;
+    }
   },
   methods: {
     openPlcPanel() {
@@ -377,9 +411,10 @@ export default {
           await this.refreshWriteData();
           this.$message.success('写入指令已发送');
           // 2秒后取消写入并关闭loading
-          setTimeout(() => {
+          this.cancelWriteTimer = setTimeout(() => {
             ipcRenderer.send('cancelWriteToPLC', address);
             this.isWriting = false;
+            this.cancelWriteTimer = null;
           }, 2000);
         }
       } catch (error) {

@@ -38,27 +38,28 @@ function readZoomConfig() {
   try {
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      if (typeof config.zoomFactor === 'number') {
-        logger.info('缩放配置: ' + config.zoomFactor);
-        return config.zoomFactor;
-      }
+      // 非数字值(如""、null)原样返回，由渲染进程判断是否执行缩放
+      return config.zoomFactor;
     }
   } catch (error) {
     logger.error('读取缩放配置失败: ' + error.message);
   }
-  // 配置不存在，创建默认文件
-  const defaultConfig = { zoomFactor: 1.0 };
-  try {
-    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
-    fs.writeFileSync(
-      configPath,
-      JSON.stringify(defaultConfig, null, 2),
-      'utf-8'
-    );
-  } catch (error) {
-    logger.error('创建默认缩放配置失败: ' + error.message);
+  // 配置文件不存在时才创建默认文件
+  if (!fs.existsSync(configPath)) {
+    const defaultConfig = { zoomFactor: null };
+    try {
+      if (!fs.existsSync(configDir))
+        fs.mkdirSync(configDir, { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify(defaultConfig, null, 2),
+        'utf-8'
+      );
+    } catch (error) {
+      logger.error('创建默认缩放配置失败: ' + error.message);
+    }
   }
-  return 1.0;
+  return null;
 }
 
 // 记录日志的辅助函数
@@ -182,10 +183,10 @@ if (!gotTheLock) {
 }
 
 global.sharedObject = {
-  userInfo: {}
+  userInfo: {},
+  zoomFactor: null
 };
 let mainWindow = null;
-let zoomFactor = 1.0;
 app.on('ready', () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -202,16 +203,9 @@ app.on('ready', () => {
     icon: './build/icons/icon.ico'
   });
 
-  // 缩放配置读取与应用
-  zoomFactor = readZoomConfig();
-  // 使用CSS zoom属性设置缩放（DOM样式，不会被Windows窗口变化重置）
-  function applyZoom() {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    mainWindow.webContents
-      .executeJavaScript(`document.documentElement.style.zoom = ${zoomFactor};`)
-      .catch(() => {});
-  }
-  mainWindow.webContents.on('did-finish-load', applyZoom);
+  // 缩放：readZoomConfig原样返回配置值，渲染进程判断typeof==='number'才执行
+  const zoomFactor = readZoomConfig();
+  global.sharedObject.zoomFactor = zoomFactor;
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

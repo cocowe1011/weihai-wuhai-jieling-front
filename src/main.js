@@ -14,6 +14,31 @@ Vue.use(ElementUI); //全局注入element
 Vue.prototype.$axios = axios;
 axios.defaults.timeout = 20000;
 
+// 缩放：zoomFactor为数字型才执行缩放（如0.6），非数字型(如"")不缩放
+const { webFrame, remote } = require('electron');
+const zoomFactor = remote.getGlobal('sharedObject').zoomFactor;
+
+if (typeof zoomFactor === 'number') {
+  webFrame.setZoomFactor(zoomFactor);
+  let rafId = null;
+  let checkStart = 0;
+  window.addEventListener('resize', () => {
+    webFrame.setZoomFactor(zoomFactor);
+    checkStart = Date.now();
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(function check() {
+      if (Date.now() - checkStart > 5000) {
+        rafId = null;
+        return;
+      }
+      if (Math.abs(webFrame.getZoomFactor() - zoomFactor) > 0.01) {
+        webFrame.setZoomFactor(zoomFactor);
+      }
+      rafId = requestAnimationFrame(check);
+    });
+  });
+}
+
 new Vue({
   router,
   store,
