@@ -854,7 +854,7 @@
                 >
                   <div class="marker-label">01030</div>
                 </div>
-                <!-- 01030 -->
+                <!-- 01031 -->
                 <div
                   class="motor-marker marker-show-label label-top"
                   :class="{ running: motorRunningWord8.bit14 === '1' }"
@@ -864,7 +864,7 @@
                 >
                   <div class="marker-label">01031</div>
                 </div>
-                <!-- 01031 -->
+                <!-- 01032 -->
                 <div
                   class="motor-marker marker-show-label"
                   :class="{ running: motorRunningWord8.bit15 === '1' }"
