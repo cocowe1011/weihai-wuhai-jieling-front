@@ -1014,10 +1014,11 @@
                   ></div>
                 </div>
                 <!-- 六面扫扫码上货面板 -->
-                <div class="marker-with-panel" data-x="300" data-y="1250">
+                <div class="marker-with-panel" data-x="1150" data-y="1200">
                   <div
                     class="data-panel"
                     :class="['position-top', { 'always-show': true }]"
+                    style="width: 210px"
                   >
                     <div class="data-panel-content">
                       <div class="data-panel-row">
@@ -1032,7 +1033,9 @@
                           ></span>
                           六面扫条码：
                         </span>
-                        <span>{{ lastProcessedBarcode || '--' }}</span>
+                        <span class="barcode-value">{{
+                          lastProcessedBarcode || '--'
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -1598,6 +1601,14 @@ import {
   toOrderInfoPayload,
   toScanDisplayInfo
 } from '@/utils/packageMockData';
+
+const net = require('net');
+
+// 六面扫TCP连接配置
+const SIX_SCAN_HOST = '192.168.4.227';
+const SIX_SCAN_PORT = 2002;
+const SIX_SCAN_RECONNECT_DELAY = 3000; // 3秒重连
+
 export default {
   name: 'MainPage',
   components: {
@@ -2352,19 +2363,8 @@ export default {
     });
     // 启动 MCS/AGV 队列状态轮询
     // this.startMcsPolling();
-    // 六面扫Socket连接状态监听
-    ipcRenderer.on('sixScanSocketStatus', (event, connected) => {
-      this.sixScanSocketConnected = connected;
-      if (connected) {
-        this.addLog('六面扫Socket已连接');
-      } else {
-        this.addLog('六面扫Socket连接断开', 'alarm');
-      }
-    });
-    // 六面扫条码数据监听
-    ipcRenderer.on('sixScanBarcodeData', (event, rawBarcode) => {
-      this.handleSixScanSocketData(rawBarcode);
-    });
+    // 六面扫TCP直连（不再通过background.js中转）
+    this.connectSixScan();
     ipcRenderer.on('receivedMsg', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -2582,11 +2582,95 @@ export default {
     });
   },
   methods: {
+    // 六面扫TCP直连（在渲染进程直接建立Socket，不通过background.js中转）
+    connectSixScan() {
+      this._sixScanDestroyed = false;
+      this._doConnectSixScan();
+    },
+    _doConnectSixScan() {
+      if (this._sixScanDestroyed) return;
+      // 先清除已有的重连定时器，防止多个定时器并存
+      if (this._sixScanReconnectTimer) {
+        clearTimeout(this._sixScanReconnectTimer);
+        this._sixScanReconnectTimer = null;
+      }
+      // 先解绑旧socket所有事件监听，再销毁，防止旧close回调异步污染新连接
+      if (this._sixScanSocket) {
+        const oldSocket = this._sixScanSocket;
+        this._sixScanSocket = null; // 先置空，避免旧close回调覆盖
+        oldSocket.removeAllListeners();
+        oldSocket.destroy();
+      }
+      const socket = new net.Socket();
+      socket.setEncoding('utf8');
+
+      socket.on('connect', () => {
+        this.sixScanSocketConnected = true;
+        socket.setKeepAlive(true, 60000);
+        this.addLog(`六面扫Socket已连接 ${SIX_SCAN_HOST}:${SIX_SCAN_PORT}`);
+        // 清除重连定时器
+        if (this._sixScanReconnectTimer) {
+          clearTimeout(this._sixScanReconnectTimer);
+          this._sixScanReconnectTimer = null;
+        }
+      });
+
+      socket.on('data', (data) => {
+        try {
+          const barcodeStr = (data || '').toString().trim();
+          if (barcodeStr) {
+            this.addLog(`六面扫收到数据: ${barcodeStr}`);
+            this.handleSixScanSocketData(barcodeStr);
+          }
+        } catch (e) {
+          this.addLog(`六面扫数据解析异常: ${e.message}`, 'alarm');
+        }
+      });
+
+      socket.on('close', () => {
+        this.sixScanSocketConnected = false;
+        // 只有当前socket才是触发源，防止旧socket的close回调污染新引用
+        if (this._sixScanSocket === socket) {
+          this._sixScanSocket = null;
+        }
+        if (!this._sixScanDestroyed) {
+          this.addLog('六面扫Socket连接断开，准备重连', 'alarm');
+          this._sixScanReconnectTimer = setTimeout(() => {
+            this._doConnectSixScan();
+          }, SIX_SCAN_RECONNECT_DELAY);
+        }
+      });
+
+      socket.on('error', (err) => {
+        this.addLog(`六面扫连接错误: ${err.message}`, 'alarm');
+        this.sixScanSocketConnected = false;
+      });
+
+      this._sixScanSocket = socket;
+      try {
+        socket.connect(SIX_SCAN_PORT, SIX_SCAN_HOST);
+      } catch (e) {
+        this.addLog(`六面扫首次连接异常: ${e.message}`, 'alarm');
+      }
+    },
+    // 断开六面扫Socket，清理资源
+    disconnectSixScan() {
+      this._sixScanDestroyed = true;
+      if (this._sixScanReconnectTimer) {
+        clearTimeout(this._sixScanReconnectTimer);
+        this._sixScanReconnectTimer = null;
+      }
+      if (this._sixScanSocket) {
+        this._sixScanSocket.removeAllListeners();
+        this._sixScanSocket.destroy();
+        this._sixScanSocket = null;
+      }
+    },
     // 处理六面扫Socket发来的条码数据
     handleSixScanSocketData(rawBarcode) {
       const rawStr = (rawBarcode || '').trim();
-      // 始终显示原始数据到面板，由 watch 统一判断
-      this.lastProcessedBarcode = rawStr;
+      // 始终显示原始数据到面板（去掉首尾方括号），由 watch 统一判断
+      this.lastProcessedBarcode = rawStr.replace(/^\[|\]$/g, '');
 
       // 提取方括号内容，赋值给 sixScanBarcode 触发 watch 统一处理
       let innerContent = rawStr;
@@ -3742,6 +3826,8 @@ export default {
     }
     // 清除 MCS/AGV 轮询定时器
     this.stopMcsPolling();
+    // 断开六面扫Socket连接
+    this.disconnectSixScan();
   }
 };
 </script>
@@ -4495,15 +4581,27 @@ export default {
                       height: 6px;
                       border-radius: 50%;
                       margin-right: 4px;
-                      vertical-align: middle;
                     }
                     .data-panel-row {
                       display: flex;
                       justify-content: space-between;
+                      align-items: center;
                       color: rgba(255, 255, 255, 0.9);
                       .data-panel-label {
                         color: rgba(255, 255, 255, 0.6);
                         font-size: 12px;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                        margin-right: 6px;
+                        display: inline-flex;
+                        align-items: center;
+                      }
+                      .barcode-value {
+                        flex: 1;
+                        min-width: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                       }
                     }
                     /* 新增：复选框组样式 */
