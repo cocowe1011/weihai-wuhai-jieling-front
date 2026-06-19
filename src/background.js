@@ -31,9 +31,9 @@ var appTray = null;
 let closeStatus = false;
 var conn = new nodes7();
 
-// 读取缩放配置文件（D://weihai-cainiao-front/config/zoom.json，升级不覆盖）
+// 读取缩放配置文件（D://weihai-wuhai-jieling-front/config/zoom.json，升级不覆盖）
 function readZoomConfig() {
-  const configDir = 'D://weihai-cainiao-front/config';
+  const configDir = 'D://weihai-wuhai-jieling-front/config';
   const configPath = path.join(configDir, 'zoom.json');
   try {
     if (fs.existsSync(configPath)) {
@@ -66,7 +66,7 @@ function readZoomConfig() {
 function logToFile(message) {
   const timestamp = new Date().toLocaleString();
   const logPath =
-    'D://weihai-cainiao-front/log/' +
+    'D://weihai-wuhai-jieling-front/log/' +
     new Date().toLocaleDateString().replaceAll('/', '-') +
     'runlog.txt';
   fs.appendFile(logPath, `[${timestamp}] ${message}\n`, (err) => {
@@ -105,11 +105,11 @@ function flushLogBuffer() {
   if (logBuffer.length === 0) return;
 
   const logPath =
-    'D://weihai-cainiao-front/log/' +
+    'D://weihai-wuhai-jieling-front/log/' +
     (new Date().toLocaleDateString() + '.txt').replaceAll('/', '-');
 
   // 确保日志目录存在
-  const logDir = 'D://weihai-cainiao-front/log';
+  const logDir = 'D://weihai-wuhai-jieling-front/log';
   if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir, { recursive: true });
   }
@@ -368,7 +368,7 @@ app.on('ready', () => {
       const jarPath = path.join(
         __static,
         './jarlib',
-        'weigao-cainiao-record-middle.jar'
+        'weihai-wuhai-jieling-record-middle.jar'
       );
 
       // 优化的Java启动参数 - 针对启动速度优化
@@ -383,7 +383,7 @@ app.on('ready', () => {
         '-XX:+UseG1GC', // 使用G1垃圾收集器
         '-XX:MaxGCPauseMillis=200', // 最大GC停顿时间
         '-XX:+HeapDumpOnOutOfMemoryError', // 内存溢出时导出堆转储
-        '-XX:HeapDumpPath=D://weihai-cainiao-front/dump', // 堆转储文件路径
+        '-XX:HeapDumpPath=D://weihai-wuhai-jieling-front/dump', // 堆转储文件路径
 
         // 启动速度优化 - 减少JIT编译开销
         '-XX:+TieredCompilation', // 分层编译
@@ -395,7 +395,7 @@ app.on('ready', () => {
 
         // 错误处理
         '-XX:+ExitOnOutOfMemoryError', // 发生OOM时退出
-        '-XX:ErrorFile=D://weihai-cainiao-front/log/hs_err_%p.log', // JVM错误日志
+        '-XX:ErrorFile=D://weihai-wuhai-jieling-front/log/hs_err_%p.log', // JVM错误日志
         // 编码
         '-Dfile.encoding=UTF-8',
         // 应用参数
@@ -403,8 +403,8 @@ app.on('ready', () => {
         jarPath
       ];
       // 确保日志目录存在
-      const logDir = 'D://weihai-cainiao-front/log';
-      const dumpDir = 'D://weihai-cainiao-front/dump';
+      const logDir = 'D://weihai-wuhai-jieling-front/log';
+      const dumpDir = 'D://weihai-wuhai-jieling-front/dump';
       if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir, { recursive: true });
       }

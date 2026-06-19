@@ -19,8 +19,8 @@ module.exports = defineConfig({
     electronBuilder: {
       nodeIntegration: true,
       builderOptions: {
-        productName: 'weihai-cainiao-front', //生成exe的名字
-        appId: 'weihai-cainiao-front', //包名
+        productName: 'weihai-wuhai-jieling-front', //生成exe的名字
+        appId: 'weihai-wuhai-jieling-front', //包名
         copyright: 'wl', //版权信息,
         nsis: {
           oneClick: false, // 是否一键安装
@@ -31,7 +31,7 @@ module.exports = defineConfig({
           installerHeaderIcon: './build/icons/icon.ico', // 安装时头部图标
           createDesktopShortcut: true, // 是否创建桌面图标
           createStartMenuShortcut: true, // 是否创建开始菜单图标
-          shortcutName: '分拣系统', // 快捷方式名称
+          shortcutName: 'WCS', // 快捷方式名称
           runAfterFinish: false //是否安装完成后运行
         },
         win: {
