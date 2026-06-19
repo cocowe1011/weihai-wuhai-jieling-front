@@ -1458,9 +1458,9 @@
               </el-button>
             </div>
           </div>
-          <!-- DBB300-729 分拣口进货ID测试 -->
+          <!-- DBB298-717 分拣口进货ID测试 -->
           <div class="test-section">
-            <span class="test-label">DBB300-729 分拣口进货ID:</span>
+            <span class="test-label">DBB298-DBB658 分拣口进货ID:</span>
             <div class="qrcode-test-container qrcode-input-grid">
               <div class="qrcode-input-group">
                 <div class="qrcode-label">口1:</div>
@@ -2084,8 +2084,7 @@ export default {
       sortPort11TrayId: '',
       sortPort12TrayId: '',
       sortPort13TrayId: '',
-      spareTrayId: '',
-      // 各皮带工位虚拟ID（DB1001.DBB750-1139）01008~01020）
+      // 各皮带工位虚拟ID（DB1000.DBB748-1137）01008~01020）
       beltStationIds: {
         M1008: '',
         M1009: '',
@@ -2535,50 +2534,49 @@ export default {
       this.wcsFeedbackWord20.bit14 = getBit(word20, 6);
 
       // 反馈WCS写虚拟ID
-      this.sortPort01TrayId = values.DBB300 ?? '';
-      this.sortPort02TrayId = values.DBB330 ?? '';
-      this.sortPort03TrayId = values.DBB360 ?? '';
-      this.sortPort04TrayId = values.DBB390 ?? '';
-      this.sortPort05TrayId = values.DBB420 ?? '';
-      this.sortPort06TrayId = values.DBB450 ?? '';
-      this.sortPort07TrayId = values.DBB480 ?? '';
-      this.sortPort08TrayId = values.DBB510 ?? '';
-      this.sortPort09TrayId = values.DBB540 ?? '';
-      this.sortPort10TrayId = values.DBB570 ?? '';
-      this.sortPort11TrayId = values.DBB600 ?? '';
-      this.sortPort12TrayId = values.DBB630 ?? '';
-      this.sortPort13TrayId = values.DBB660 ?? '';
-      this.spareTrayId = values.DBB690 ?? '';
+      this.sortPort01TrayId = values.DBB298 ?? '';
+      this.sortPort02TrayId = values.DBB328 ?? '';
+      this.sortPort03TrayId = values.DBB358 ?? '';
+      this.sortPort04TrayId = values.DBB388 ?? '';
+      this.sortPort05TrayId = values.DBB418 ?? '';
+      this.sortPort06TrayId = values.DBB448 ?? '';
+      this.sortPort07TrayId = values.DBB478 ?? '';
+      this.sortPort08TrayId = values.DBB508 ?? '';
+      this.sortPort09TrayId = values.DBB538 ?? '';
+      this.sortPort10TrayId = values.DBB568 ?? '';
+      this.sortPort11TrayId = values.DBB598 ?? '';
+      this.sortPort12TrayId = values.DBB628 ?? '';
+      this.sortPort13TrayId = values.DBB658 ?? '';
 
-      // 各皮带工位虚拟ID（DB1001.DBB750-1139）
-      this.beltStationIds.M1008 = values.DBB750 ?? '';
-      this.beltStationIds.M1009 = values.DBB780 ?? '';
-      this.beltStationIds.M1010 = values.DBB810 ?? '';
-      this.beltStationIds.M1011 = values.DBB840 ?? '';
-      this.beltStationIds.M1012 = values.DBB870 ?? '';
-      this.beltStationIds.M1013 = values.DBB900 ?? '';
-      this.beltStationIds.M1014 = values.DBB930 ?? '';
-      this.beltStationIds.M1015 = values.DBB960 ?? '';
-      this.beltStationIds.M1016 = values.DBB990 ?? '';
-      this.beltStationIds.M1017 = values.DBB1020 ?? '';
-      this.beltStationIds.M1018 = values.DBB1050 ?? '';
-      this.beltStationIds.M1019 = values.DBB1080 ?? '';
-      this.beltStationIds.M1020 = values.DBB1110 ?? '';
+      // 各皮带工位虚拟ID（DB1000.DBB748-1108）
+      this.beltStationIds.M1008 = values.DBB748 ?? '';
+      this.beltStationIds.M1009 = values.DBB778 ?? '';
+      this.beltStationIds.M1010 = values.DBB808 ?? '';
+      this.beltStationIds.M1011 = values.DBB838 ?? '';
+      this.beltStationIds.M1012 = values.DBB868 ?? '';
+      this.beltStationIds.M1013 = values.DBB898 ?? '';
+      this.beltStationIds.M1014 = values.DBB928 ?? '';
+      this.beltStationIds.M1015 = values.DBB958 ?? '';
+      this.beltStationIds.M1016 = values.DBB988 ?? '';
+      this.beltStationIds.M1017 = values.DBB1018 ?? '';
+      this.beltStationIds.M1018 = values.DBB1048 ?? '';
+      this.beltStationIds.M1019 = values.DBB1078 ?? '';
+      this.beltStationIds.M1020 = values.DBB1108 ?? '';
 
-      // 各皮带工位目的地（DB1001.DBW1200-1224）
-      this.beltStationDests.M1008 = values.DBW1200 ?? 0;
-      this.beltStationDests.M1009 = values.DBW1202 ?? 0;
-      this.beltStationDests.M1010 = values.DBW1204 ?? 0;
-      this.beltStationDests.M1011 = values.DBW1206 ?? 0;
-      this.beltStationDests.M1012 = values.DBW1208 ?? 0;
-      this.beltStationDests.M1013 = values.DBW1210 ?? 0;
-      this.beltStationDests.M1014 = values.DBW1212 ?? 0;
-      this.beltStationDests.M1015 = values.DBW1214 ?? 0;
-      this.beltStationDests.M1016 = values.DBW1216 ?? 0;
-      this.beltStationDests.M1017 = values.DBW1218 ?? 0;
-      this.beltStationDests.M1018 = values.DBW1220 ?? 0;
-      this.beltStationDests.M1019 = values.DBW1222 ?? 0;
-      this.beltStationDests.M1020 = values.DBW1224 ?? 0;
+      // 各皮带工位目的地（DB1000.DBW1198-1222）
+      this.beltStationDests.M1008 = values.DBW1198 ?? 0;
+      this.beltStationDests.M1009 = values.DBW1200 ?? 0;
+      this.beltStationDests.M1010 = values.DBW1202 ?? 0;
+      this.beltStationDests.M1011 = values.DBW1204 ?? 0;
+      this.beltStationDests.M1012 = values.DBW1206 ?? 0;
+      this.beltStationDests.M1013 = values.DBW1208 ?? 0;
+      this.beltStationDests.M1014 = values.DBW1210 ?? 0;
+      this.beltStationDests.M1015 = values.DBW1212 ?? 0;
+      this.beltStationDests.M1016 = values.DBW1214 ?? 0;
+      this.beltStationDests.M1017 = values.DBW1216 ?? 0;
+      this.beltStationDests.M1018 = values.DBW1218 ?? 0;
+      this.beltStationDests.M1019 = values.DBW1220 ?? 0;
+      this.beltStationDests.M1020 = values.DBW1222 ?? 0;
     });
   },
   methods: {
