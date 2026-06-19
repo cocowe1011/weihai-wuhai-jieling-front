@@ -449,93 +449,61 @@ export default {
       selectedQueueIndex: 0,
       isDragging: false,
       queues: [
-        {
-          id: 1,
-          queueName: '上货区',
-          trayInfo: []
-        },
-        {
-          id: 2,
-          queueName: '分拣口1',
-          trayInfo: []
-        },
-        {
-          id: 3,
-          queueName: '分拣口2',
-          trayInfo: []
-        },
-        {
-          id: 4,
-          queueName: '分拣口3',
-          trayInfo: []
-        },
-        {
-          id: 5,
-          queueName: '分拣口4',
-          trayInfo: []
-        },
-        {
-          id: 6,
-          queueName: '分拣口5',
-          trayInfo: []
-        },
-        {
-          id: 7,
-          queueName: '分拣口6',
-          trayInfo: []
-        },
-        {
-          id: 8,
-          queueName: '分拣口7',
-          trayInfo: []
-        },
-        {
-          id: 9,
-          queueName: '分拣口8',
-          trayInfo: []
-        },
-        {
-          id: 10,
-          queueName: '分拣口9',
-          trayInfo: []
-        },
-        {
-          id: 11,
-          queueName: '分拣口10',
-          trayInfo: []
-        },
-        {
-          id: 12,
-          queueName: '分拣口11',
-          trayInfo: []
-        },
-        {
-          id: 13,
-          queueName: '分拣口12',
-          trayInfo: []
-        },
-        {
-          id: 14,
-          queueName: '分拣口13',
-          trayInfo: []
-        }
+        { id: 1, queueName: '上货区', trayInfo: [] },
+        { id: 2, queueName: '灭菌1', trayInfo: [] },
+        { id: 3, queueName: '灭菌2', trayInfo: [] },
+        { id: 4, queueName: '灭菌3', trayInfo: [] },
+        { id: 5, queueName: '灭菌4', trayInfo: [] },
+        { id: 6, queueName: '灭菌5', trayInfo: [] },
+        { id: 7, queueName: '灭菌6', trayInfo: [] },
+        { id: 8, queueName: '灭菌7', trayInfo: [] },
+        { id: 9, queueName: '灭菌8', trayInfo: [] },
+        { id: 10, queueName: '灭菌9', trayInfo: [] },
+        { id: 11, queueName: '1015', trayInfo: [] },
+        { id: 12, queueName: '输送线', trayInfo: [] },
+        { id: 13, queueName: '解析1', trayInfo: [] },
+        { id: 14, queueName: '解析2', trayInfo: [] },
+        { id: 15, queueName: '解析3', trayInfo: [] },
+        { id: 16, queueName: '解析4', trayInfo: [] },
+        { id: 17, queueName: '解析5', trayInfo: [] },
+        { id: 18, queueName: '解析6', trayInfo: [] },
+        { id: 19, queueName: '解析7', trayInfo: [] },
+        { id: 20, queueName: '解析8', trayInfo: [] },
+        { id: 21, queueName: '解析9', trayInfo: [] },
+        { id: 22, queueName: '解析10', trayInfo: [] },
+        { id: 23, queueName: '解析11', trayInfo: [] },
+        { id: 24, queueName: '解析12', trayInfo: [] },
+        { id: 25, queueName: '解析13', trayInfo: [] },
+        { id: 26, queueName: '解析14', trayInfo: [] }
       ],
       // 添加队列位置标识数据
       queueMarkers: [
         { id: 1, name: '上货区', queueId: 1, x: 1325, y: 1350 },
-        { id: 2, name: '分拣口1', queueId: 2, x: 2500, y: 1530 },
-        { id: 3, name: '分拣口2', queueId: 3, x: 1325, y: 1230 },
-        { id: 4, name: '分拣口3', queueId: 4, x: 1050, y: 1065 },
-        { id: 5, name: '分拣口4', queueId: 5, x: 1050, y: 845 },
-        { id: 6, name: '分拣口5', queueId: 6, x: 1050, y: 645 },
-        { id: 7, name: '分拣口6', queueId: 7, x: 1610, y: 1065 },
-        { id: 8, name: '分拣口7', queueId: 8, x: 1610, y: 845 },
-        { id: 9, name: '分拣口8', queueId: 9, x: 1610, y: 645 },
-        { id: 10, name: '分拣口9', queueId: 10, x: 2190, y: 1065 },
-        { id: 11, name: '分拣口10', queueId: 11, x: 2190, y: 845 },
-        { id: 12, name: '分拣口11', queueId: 12, x: 2190, y: 645 },
-        { id: 13, name: '分拣口12', queueId: 13, x: 2070, y: 480 },
-        { id: 14, name: '分拣口13', queueId: 14, x: 2070, y: 320 }
+        { id: 2, name: '灭菌1', queueId: 2, x: 2500, y: 1530 },
+        { id: 3, name: '灭菌2', queueId: 3, x: 1325, y: 1230 },
+        { id: 4, name: '灭菌3', queueId: 4, x: 1050, y: 1065 },
+        { id: 5, name: '灭菌4', queueId: 5, x: 1050, y: 845 },
+        { id: 6, name: '灭菌5', queueId: 6, x: 1050, y: 645 },
+        { id: 7, name: '灭菌6', queueId: 7, x: 1610, y: 1065 },
+        { id: 8, name: '灭菌7', queueId: 8, x: 1610, y: 845 },
+        { id: 9, name: '灭菌8', queueId: 9, x: 1610, y: 645 },
+        { id: 10, name: '灭菌9', queueId: 10, x: 2190, y: 1065 },
+        { id: 11, name: '1015', queueId: 11, x: 2190, y: 845 },
+        { id: 12, name: '输送线', queueId: 12, x: 640, y: 1380 },
+        { id: 13, name: '解析1', queueId: 13, x: 2190, y: 645 },
+        { id: 14, name: '解析2', queueId: 14, x: 2070, y: 480 },
+        { id: 15, name: '解析3', queueId: 15, x: 2070, y: 320 },
+        { id: 16, name: '解析4', queueId: 16, x: 640, y: 1380 },
+        { id: 17, name: '解析5', queueId: 17, x: 640, y: 1380 },
+        { id: 18, name: '解析6', queueId: 18, x: 640, y: 1380 },
+        { id: 19, name: '解析7', queueId: 19, x: 640, y: 1380 },
+        { id: 20, name: '解析8', queueId: 20, x: 640, y: 1380 },
+        { id: 21, name: '解析9', queueId: 21, x: 640, y: 1380 },
+        { id: 22, name: '解析10', queueId: 22, x: 640, y: 1380 },
+        { id: 23, name: '解析11', queueId: 23, x: 640, y: 1380 },
+        { id: 24, name: '解析12', queueId: 24, x: 640, y: 1380 },
+        { id: 25, name: '解析13', queueId: 25, x: 640, y: 1380 },
+        { id: 26, name: '解析14', queueId: 26, x: 640, y: 1380 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // A线电机运行信号-读取PLC
@@ -1662,7 +1630,7 @@ export default {
 
             .floor-map-legend {
               position: absolute;
-              bottom: 10px;
+              top: 10px;
               left: 10px;
               z-index: 20;
               display: flex;
