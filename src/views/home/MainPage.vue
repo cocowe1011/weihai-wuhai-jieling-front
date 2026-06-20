@@ -183,13 +183,13 @@
                     <span class="legend-desc">方形，运行为绿色</span>
                   </span>
                 </span>
-                <span class="legend-item">
+                <!-- <span class="legend-item">
                   <i class="legend-arrow"></i>
                   <span class="legend-text">
                     <span class="legend-name">箭头</span>
                     <span class="legend-desc">输送线物料流向</span>
                   </span>
-                </span>
+                </span> -->
               </div>
               <div class="image-wrapper">
                 <img
@@ -202,7 +202,7 @@
                 <div
                   v-for="marker in queueMarkers"
                   :key="marker.id"
-                  class="queue-marker"
+                  class="queue-marker queue-marker--narrow"
                   :data-x="marker.x"
                   :data-y="marker.y"
                   @click="handleQueueMarkerClick(marker.queueId)"
@@ -214,6 +214,18 @@
                     }}</span>
                     <span class="queue-marker-name">{{ marker.name }}</span>
                   </div>
+                </div>
+                <!-- 小车元素 -->
+                <div
+                  v-for="cart in carts"
+                  :key="cart.name"
+                  class="cart-container"
+                  :data-cart-id="cart.id"
+                  :data-x="cart.x"
+                  :data-y="cart.y"
+                  :data-width="cart.width"
+                >
+                  <img :src="cart.image" :alt="cart.name" class="cart-image" />
                 </div>
               </div>
             </div>
@@ -394,6 +406,36 @@
           <i class="el-icon-close" @click.stop="showTestPanel = false"></i>
         </div>
         <div class="test-panel-content">
+          <div class="test-section">
+            <span class="test-label">小车位置测试:</span>
+            <div class="cart-position-test-container">
+              <div
+                v-for="cartId in 5"
+                :key="'cart-slider-' + cartId"
+                class="cart-position-group"
+              >
+                <div class="cart-position-label">
+                  <span
+                    >小车{{ cartId }} ({{
+                      cartPlcRanges['cart' + cartId].min
+                    }}-{{ cartPlcRanges['cart' + cartId].max }}):</span
+                  >
+                  <span class="cart-value">{{
+                    cartPositionValues['cart' + cartId]
+                  }}</span>
+                </div>
+                <div class="cart-position-slider-container">
+                  <el-slider
+                    v-model="cartPositionValues['cart' + cartId]"
+                    :min="cartPlcRanges['cart' + cartId].min"
+                    :max="cartPlcRanges['cart' + cartId].max"
+                    :step="1"
+                    class="cart-position-slider"
+                  ></el-slider>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- 添加扫码测试部分 -->
           <div class="test-section">
             <span class="test-label">扫码信息测试:</span>
@@ -478,32 +520,32 @@ export default {
       ],
       // 添加队列位置标识数据
       queueMarkers: [
-        { id: 1, name: '上货区', queueId: 1, x: 1325, y: 1350 },
-        { id: 2, name: '灭菌1', queueId: 2, x: 2500, y: 1530 },
-        { id: 3, name: '灭菌2', queueId: 3, x: 1325, y: 1230 },
-        { id: 4, name: '灭菌3', queueId: 4, x: 1050, y: 1065 },
-        { id: 5, name: '灭菌4', queueId: 5, x: 1050, y: 845 },
-        { id: 6, name: '灭菌5', queueId: 6, x: 1050, y: 645 },
-        { id: 7, name: '灭菌6', queueId: 7, x: 1610, y: 1065 },
-        { id: 8, name: '灭菌7', queueId: 8, x: 1610, y: 845 },
-        { id: 9, name: '灭菌8', queueId: 9, x: 1610, y: 645 },
-        { id: 10, name: '灭菌9', queueId: 10, x: 2190, y: 1065 },
-        { id: 11, name: '1015', queueId: 11, x: 2190, y: 845 },
-        { id: 12, name: '输送线', queueId: 12, x: 640, y: 1380 },
-        { id: 13, name: '解析1', queueId: 13, x: 2190, y: 645 },
-        { id: 14, name: '解析2', queueId: 14, x: 2070, y: 480 },
-        { id: 15, name: '解析3', queueId: 15, x: 2070, y: 320 },
-        { id: 16, name: '解析4', queueId: 16, x: 640, y: 1380 },
-        { id: 17, name: '解析5', queueId: 17, x: 640, y: 1380 },
-        { id: 18, name: '解析6', queueId: 18, x: 640, y: 1380 },
-        { id: 19, name: '解析7', queueId: 19, x: 640, y: 1380 },
-        { id: 20, name: '解析8', queueId: 20, x: 640, y: 1380 },
-        { id: 21, name: '解析9', queueId: 21, x: 640, y: 1380 },
-        { id: 22, name: '解析10', queueId: 22, x: 640, y: 1380 },
-        { id: 23, name: '解析11', queueId: 23, x: 640, y: 1380 },
-        { id: 24, name: '解析12', queueId: 24, x: 640, y: 1380 },
-        { id: 25, name: '解析13', queueId: 25, x: 640, y: 1380 },
-        { id: 26, name: '解析14', queueId: 26, x: 640, y: 1380 }
+        { id: 1, name: '上货', queueId: 1, x: 1050, y: 1200 },
+        { id: 2, name: '灭菌1', queueId: 2, x: 105, y: 1600 },
+        { id: 3, name: '灭菌2', queueId: 3, x: 252, y: 1600 },
+        { id: 4, name: '灭菌3', queueId: 4, x: 385, y: 1600 },
+        { id: 5, name: '灭菌4', queueId: 5, x: 630, y: 755 },
+        { id: 6, name: '灭菌5', queueId: 6, x: 775, y: 755 },
+        { id: 7, name: '灭菌6', queueId: 7, x: 895, y: 755 },
+        { id: 8, name: '灭菌7', queueId: 8, x: 1035, y: 755 },
+        { id: 9, name: '灭菌8', queueId: 9, x: 1155, y: 755 },
+        { id: 10, name: '灭菌9', queueId: 10, x: 1300, y: 755 },
+        { id: 11, name: '1015', queueId: 11, x: 535, y: 755 },
+        { id: 12, name: '输送线', queueId: 12, x: 2415, y: 550 },
+        { id: 13, name: '解析1', queueId: 13, x: 1475, y: 1430 },
+        { id: 14, name: '解析2', queueId: 14, x: 1540, y: 1430 },
+        { id: 15, name: '解析3', queueId: 15, x: 1615, y: 1430 },
+        { id: 16, name: '解析4', queueId: 16, x: 1680, y: 1430 },
+        { id: 17, name: '解析5', queueId: 17, x: 1745, y: 1430 },
+        { id: 18, name: '解析6', queueId: 18, x: 1810, y: 1430 },
+        { id: 19, name: '解析7', queueId: 19, x: 1885, y: 1430 },
+        { id: 20, name: '解析8', queueId: 20, x: 1950, y: 1430 },
+        { id: 21, name: '解析9', queueId: 21, x: 2015, y: 1430 },
+        { id: 22, name: '解析10', queueId: 22, x: 2080, y: 1430 },
+        { id: 23, name: '解析11', queueId: 23, x: 2150, y: 1430 },
+        { id: 24, name: '解析12', queueId: 24, x: 2215, y: 1430 },
+        { id: 25, name: '解析13', queueId: 25, x: 2280, y: 1430 },
+        { id: 26, name: '解析14', queueId: 26, x: 2345, y: 1430 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // A线电机运行信号-读取PLC
@@ -527,6 +569,72 @@ export default {
         bit7: '0', // A-8#光电
         bit8: '0', // A-9#光电
         bit9: '0' // A-10#光电
+      },
+      carts: [
+        {
+          id: 1,
+          name: '小车1',
+          x: 112,
+          y: 1175,
+          width: 100,
+          image: require('@/assets/changzhou-img/cart1.png')
+        },
+        {
+          id: 2,
+          name: '小车2',
+          x: 535,
+          y: 1090,
+          width: 90,
+          image: require('@/assets/changzhou-img/cart2.png')
+        },
+        {
+          id: 3,
+          name: '小车3',
+          x: 535,
+          y: 465,
+          width: 95,
+          image: require('@/assets/changzhou-img/cart3.png')
+        },
+        {
+          id: 4,
+          name: '小车4',
+          x: 1493,
+          y: 1065,
+          width: 90,
+          image: require('@/assets/changzhou-img/cart4.png')
+        },
+        {
+          id: 5,
+          name: '小车5',
+          x: 1493,
+          y: 1800,
+          width: 80,
+          image: require('@/assets/changzhou-img/cart5.png')
+        }
+      ],
+      // 小车位置数值-读取PLC（待 background.js 注册对应 DBW 后启用 receivedMsg 赋值）
+      cartPositionValues: {
+        cart1: 0,
+        cart2: 0,
+        cart3: 0,
+        cart4: 0,
+        cart5: 0
+      },
+      // 小车 x 轴行走范围（地图坐标，可按实际轨道调整）
+      cartXRanges: {
+        cart1: { min: 112, max: 900 },
+        cart2: { min: 535, max: 1300 },
+        cart3: { min: 535, max: 1295 },
+        cart4: { min: 1493, max: 2317 },
+        cart5: { min: 1493, max: 2317 }
+      },
+      // 小车 PLC 数值范围配置
+      cartPlcRanges: {
+        cart1: { min: 0, max: 3000 },
+        cart2: { min: 0, max: 3000 },
+        cart3: { min: 0, max: 3000 },
+        cart4: { min: 0, max: 3000 },
+        cart5: { min: 0, max: 3000 }
       }
     };
   },
@@ -572,7 +680,23 @@ export default {
       this.aLinePhotoelectricSignal.bit9 = getBit(word8, 1);
     });
   },
-  watch: {},
+  watch: {
+    'cartPositionValues.cart1'(newVal) {
+      this.updateCartPositionByValue(1, newVal);
+    },
+    'cartPositionValues.cart2'(newVal) {
+      this.updateCartPositionByValue(2, newVal);
+    },
+    'cartPositionValues.cart3'(newVal) {
+      this.updateCartPositionByValue(3, newVal);
+    },
+    'cartPositionValues.cart4'(newVal) {
+      this.updateCartPositionByValue(4, newVal);
+    },
+    'cartPositionValues.cart5'(newVal) {
+      this.updateCartPositionByValue(5, newVal);
+    }
+  },
   methods: {
     changeQueueExpanded() {
       this.isQueueExpanded = !this.isQueueExpanded;
@@ -1111,6 +1235,54 @@ export default {
       } else {
         return value; // 非负数保持不变
       }
+    },
+    updateCartPositionByValue(cartId, value) {
+      const cart = this.carts.find((c) => c.id === cartId);
+      if (!cart) return;
+      const xRange = this.cartXRanges[`cart${cartId}`];
+      const plcRange = this.cartPlcRanges[`cart${cartId}`];
+      if (!xRange || !plcRange) return;
+      if (value < plcRange.min) value = plcRange.min;
+      if (value > plcRange.max) value = plcRange.max;
+      const ratio = (value - plcRange.min) / (plcRange.max - plcRange.min);
+      cart.x = Math.round(xRange.min + (xRange.max - xRange.min) * ratio);
+      this.$nextTick(() => {
+        this.updateCartPositionOnly(cartId);
+      });
+    },
+    updateCartPositionOnly(cartId) {
+      const images = document.querySelectorAll('.floor-image');
+      images.forEach((image) => {
+        const imageWrapper = image.parentElement;
+        if (!imageWrapper) return;
+
+        const cart = imageWrapper.querySelector(
+          `.cart-container[data-cart-id="${cartId}"]`
+        );
+        if (!cart) return;
+
+        const cartData = this.carts.find((c) => c.id === cartId);
+        if (!cartData) return;
+
+        const wrapperRect = imageWrapper.getBoundingClientRect();
+        const displayedWidth = image.width;
+        const displayedHeight = image.height;
+        const scaleX = displayedWidth / image.naturalWidth;
+        const scaleY = displayedHeight / image.naturalHeight;
+        const imageOffsetX = (wrapperRect.width - displayedWidth) / 2;
+        const imageOffsetY = (wrapperRect.height - displayedHeight) / 2;
+
+        const x = cartData.x;
+        const y = cartData.y;
+        const width = cartData.width;
+        if (!isNaN(x) && !isNaN(y)) {
+          cart.style.left = `${imageOffsetX + x * scaleX}px`;
+          cart.style.top = `${imageOffsetY + y * scaleY}px`;
+          if (!isNaN(width)) {
+            cart.style.width = `${width * scaleX}px`;
+          }
+        }
+      });
     },
     // 从数据库加载队列信息
     loadQueueInfoFromDatabase() {
@@ -2325,6 +2497,22 @@ export default {
                     font-size: 14px;
                     font-weight: bold;
                     color: #409eff;
+                  }
+                }
+              }
+              .queue-marker--narrow {
+                padding: 8px 2px;
+                min-width: auto;
+                .queue-marker-content {
+                  .queue-marker-name {
+                    width: 2em;
+                    line-height: 1.3;
+                    word-break: break-all;
+                    text-align: center;
+                  }
+                  .queue-marker-count {
+                    line-height: 1.2;
+                    margin-bottom: 2px;
                   }
                 }
               }
