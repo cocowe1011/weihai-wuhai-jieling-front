@@ -840,7 +840,18 @@ export default {
     initializeMarkers() {
       this.$nextTick(() => {
         this.updateMarkerPositions();
-        window.addEventListener('resize', this.updateMarkerPositions);
+        // 监听容器尺寸变化（窗口缩放、侧边栏收缩/展开均会触发）
+        const container = this.$el.querySelector('.floor-image-container');
+        if (container && typeof ResizeObserver !== 'undefined') {
+          this._resizeObserver = new ResizeObserver(() => {
+            if (this._resizeRaf) cancelAnimationFrame(this._resizeRaf);
+            this._resizeRaf = requestAnimationFrame(() => {
+              this._resizeRaf = null;
+              this.updateMarkerPositions();
+            });
+          });
+          this._resizeObserver.observe(container);
+        }
       });
     },
     updateMarkerPositions() {
@@ -1338,7 +1349,14 @@ export default {
     }
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.updateMarkerPositions);
+    if (this._resizeRaf) {
+      cancelAnimationFrame(this._resizeRaf);
+      this._resizeRaf = null;
+    }
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
   }
 };
 </script>
