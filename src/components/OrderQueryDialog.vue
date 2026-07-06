@@ -8,37 +8,38 @@
     append-to-body
     class="order-query-dialog"
   >
-    <!-- 查询条件（与 OrderInfo PO / 分页 DTO 字段对应） -->
+    <!-- 查询条件 -->
     <div class="query-form">
       <div class="query-item">
-        <label>上货日期：</label>
-        <el-date-picker
-          v-model="queryForm.productionDate"
-          type="date"
-          placeholder="选择日期"
-          value-format="yyyy-MM-dd"
+        <label>订单编号：</label>
+        <el-input
+          v-model="queryForm.orderId"
+          placeholder="订单编号"
           clearable
-          style="width: 160px"
+          style="width: 180px"
+        ></el-input>
+      </div>
+      <div class="query-item">
+        <label>订单名称：</label>
+        <el-input
+          v-model="queryForm.orderName"
+          placeholder="订单名称"
+          clearable
+          style="width: 180px"
+        ></el-input>
+      </div>
+      <div class="query-item">
+        <label>订单状态：</label>
+        <el-select
+          v-model="queryForm.orderStatus"
+          placeholder="全部"
+          clearable
+          style="width: 140px"
         >
-        </el-date-picker>
-      </div>
-      <div class="query-item">
-        <label>大包号：</label>
-        <el-input
-          v-model="queryForm.packageNo"
-          placeholder="大包号"
-          style="width: 170px"
-          clearable
-        ></el-input>
-      </div>
-      <div class="query-item">
-        <label>业务编号：</label>
-        <el-input
-          v-model="queryForm.businessNo"
-          placeholder="业务编号"
-          style="width: 170px"
-          clearable
-        ></el-input>
+          <el-option label="未开始" :value="0"></el-option>
+          <el-option label="执行中" :value="1"></el-option>
+          <el-option label="已完成" :value="2"></el-option>
+        </el-select>
       </div>
       <div class="query-item query-actions">
         <el-button type="primary" @click="handleSearch" :loading="loading">
@@ -69,90 +70,99 @@
         max-height="400px"
       >
         <el-table-column
-          prop="insertTime"
-          label="上货时间"
-          width="170"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="packageNo"
-          label="大包号"
-          width="150"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="customerSource"
-          label="客户来源"
-          min-width="100"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="batchNo"
-          label="批次号"
-          min-width="140"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="trayStatus"
-          label="流转状态"
-          width="110"
-          align="center"
-        >
-          <template slot-scope="scope">
-            <el-tag
-              :type="getTrayStatusType(scope.row.trayStatus)"
-              size="small"
-            >
-              {{ getTrayStatusText(scope.row.trayStatus) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="channel"
-          label="渠道"
-          min-width="160"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="destinationCountry"
-          label="目的国"
-          width="90"
-          show-overflow-tooltip
-        ></el-table-column>
-        <el-table-column
-          prop="sourceWarehouse"
-          label="来源仓"
+          prop="orderId"
+          label="订单编号"
           width="140"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-          prop="chargeWeight"
-          label="计费重"
-          width="100"
+          prop="orderName"
+          label="订单名称"
+          min-width="150"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-          prop="actualQty"
-          label="实际件数"
+          prop="batchNo"
+          label="批号"
+          width="120"
+          show-overflow-tooltip
+        ></el-table-column>
+        <el-table-column
+          prop="productName"
+          label="产品名称"
+          min-width="120"
+          show-overflow-tooltip
+        ></el-table-column>
+        <el-table-column
+          prop="processName"
+          label="工艺名称"
+          min-width="120"
+          show-overflow-tooltip
+        ></el-table-column>
+        <el-table-column
+          prop="orderQuantity"
+          label="订单数量"
           width="90"
-          show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-          prop="businessNo"
-          label="业务编号"
+          prop="loadedQuantity"
+          label="已上货"
+          width="80"
+        ></el-table-column>
+        <el-table-column
+          prop="destination"
+          label="目的地"
+          width="80"
+        ></el-table-column>
+        <el-table-column prop="analysisTime" label="解析时间" width="90">
+          <template slot-scope="scope">
+            {{
+              scope.row.analysisTime != null
+                ? scope.row.analysisTime + 'h'
+                : '--'
+            }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="orderStatus"
+          label="状态"
+          width="90"
+          align="center"
+        >
+          <template slot-scope="scope">
+            <el-tag
+              :type="getStatusTagType(scope.row.orderStatus)"
+              size="small"
+            >
+              {{ getStatusText(scope.row.orderStatus) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="createTime"
+          label="创建时间"
           width="160"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column
-          prop="packageStatus"
-          label="包裹状态"
+          prop="createrName"
+          label="创建人"
           width="90"
-          show-overflow-tooltip
+        ></el-table-column>
+        <el-table-column
+          prop="executorName"
+          label="执行人"
+          width="90"
+        ></el-table-column>
+        <el-table-column
+          prop="finisherName"
+          label="完成人"
+          width="90"
         ></el-table-column>
         <el-table-column
           prop="finishTime"
-          label="送达WMS时间"
-          width="170"
+          label="完成时间"
+          width="160"
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column label="操作" width="150" fixed="right" align="center">
@@ -202,50 +212,38 @@
           label-width="100px"
           size="small"
         >
-          <el-form-item label="大包号">
-            <el-input v-model="editForm.packageNo" clearable></el-input>
+          <el-form-item label="订单编号">
+            <el-input v-model="editForm.orderId" clearable></el-input>
           </el-form-item>
-          <el-form-item label="客户来源">
-            <el-input v-model="editForm.customerSource" clearable></el-input>
+          <el-form-item label="订单名称">
+            <el-input v-model="editForm.orderName" clearable></el-input>
           </el-form-item>
-          <el-form-item label="目的国">
-            <el-input
-              v-model="editForm.destinationCountry"
-              clearable
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="批次号">
+          <el-form-item label="批号">
             <el-input v-model="editForm.batchNo" clearable></el-input>
           </el-form-item>
-          <el-form-item label="流转状态">
+          <el-form-item label="产品名称">
+            <el-input v-model="editForm.productName" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="工艺名称">
+            <el-input v-model="editForm.processName" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="订单数量">
+            <el-input-number
+              v-model="editForm.orderQuantity"
+              :min="0"
+              style="width: 100%"
+            ></el-input-number>
+          </el-form-item>
+          <el-form-item label="订单状态">
             <el-select
-              v-model="editForm.trayStatus"
+              v-model="editForm.orderStatus"
               placeholder="请选择"
               style="width: 100%"
             >
-              <el-option label="已上货" value="1"></el-option>
-              <el-option label="分拣" value="2"></el-option>
-              <el-option label="AGV运输中" value="3"></el-option>
-              <el-option label="已送达WMS" value="4"></el-option>
+              <el-option label="未开始" :value="0"></el-option>
+              <el-option label="执行中" :value="1"></el-option>
+              <el-option label="已完成" :value="2"></el-option>
             </el-select>
-          </el-form-item>
-          <el-form-item label="计费重">
-            <el-input v-model="editForm.chargeWeight" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="实际件数">
-            <el-input v-model="editForm.actualQty" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="来源仓">
-            <el-input v-model="editForm.sourceWarehouse" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="渠道">
-            <el-input v-model="editForm.channel" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="业务编号">
-            <el-input v-model="editForm.businessNo" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="包裹状态">
-            <el-input v-model="editForm.packageStatus" clearable></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -268,24 +266,20 @@ import HttpUtil from '@/utils/HttpUtil';
 const remote = require('electron').remote;
 
 const emptyQueryForm = () => ({
-  productionDate: '',
-  packageNo: '',
-  businessNo: ''
+  orderId: '',
+  orderName: '',
+  orderStatus: ''
 });
 
 const emptyEditForm = () => ({
   id: null,
-  packageNo: '',
-  customerSource: '',
-  destinationCountry: '',
+  orderId: '',
+  orderName: '',
   batchNo: '',
-  trayStatus: '',
-  chargeWeight: '',
-  actualQty: '',
-  sourceWarehouse: '',
-  channel: '',
-  businessNo: '',
-  packageStatus: ''
+  productName: '',
+  processName: '',
+  orderQuantity: 0,
+  orderStatus: 0
 });
 
 export default {
@@ -334,23 +328,32 @@ export default {
     isInvalidRow(row) {
       return String(row.invalidFlag) === '1';
     },
+    getStatusText(status) {
+      const map = {
+        0: '未开始',
+        1: '执行中',
+        2: '已完成'
+      };
+      return map[String(status)] || status || '—';
+    },
+    getStatusTagType(status) {
+      const typeMap = {
+        0: 'info',
+        1: 'warning',
+        2: 'success'
+      };
+      return typeMap[String(status)] || 'info';
+    },
     openEdit(row) {
       this.editForm = {
         id: row.id,
-        packageNo: row.packageNo || '',
-        customerSource: row.customerSource || '',
-        destinationCountry: row.destinationCountry || '',
+        orderId: row.orderId || '',
+        orderName: row.orderName || '',
         batchNo: row.batchNo || '',
-        trayStatus:
-          row.trayStatus != null && row.trayStatus !== ''
-            ? String(row.trayStatus)
-            : '',
-        chargeWeight: row.chargeWeight != null ? String(row.chargeWeight) : '',
-        actualQty: row.actualQty != null ? String(row.actualQty) : '',
-        sourceWarehouse: row.sourceWarehouse || '',
-        channel: row.channel || '',
-        businessNo: row.businessNo || '',
-        packageStatus: row.packageStatus || ''
+        productName: row.productName || '',
+        processName: row.processName || '',
+        orderQuantity: row.orderQuantity != null ? row.orderQuantity : 0,
+        orderStatus: row.orderStatus != null ? row.orderStatus : 0
       };
       this.editBeforeSnapshot = { ...this.editForm };
       this.editDialogVisible = true;
@@ -375,17 +378,13 @@ export default {
       try {
         const payload = {
           id: this.editForm.id,
-          packageNo: this.editForm.packageNo,
-          customerSource: this.editForm.customerSource,
-          destinationCountry: this.editForm.destinationCountry,
+          orderId: this.editForm.orderId,
+          orderName: this.editForm.orderName,
           batchNo: this.editForm.batchNo,
-          trayStatus: this.editForm.trayStatus,
-          chargeWeight: this.editForm.chargeWeight,
-          actualQty: this.editForm.actualQty,
-          sourceWarehouse: this.editForm.sourceWarehouse,
-          channel: this.editForm.channel,
-          businessNo: this.editForm.businessNo,
-          packageStatus: this.editForm.packageStatus
+          productName: this.editForm.productName,
+          processName: this.editForm.processName,
+          orderQuantity: this.editForm.orderQuantity,
+          orderStatus: this.editForm.orderStatus
         };
         const res = await HttpUtil.post('/order_info/update', payload);
         if (res && res.data === 1) {
@@ -418,7 +417,7 @@ export default {
           try {
             const res = await HttpUtil.post('/order_info/update', {
               id: row.id,
-              invalidFlag: '1'
+              invalidFlag: 1
             });
             if (res && res.data === 1) {
               this.$message.success('已作废');
@@ -451,25 +450,26 @@ export default {
         }
       });
 
-      params.invalidFlag = '0';
       return params;
     },
 
     mapRowToExport(row) {
       return {
-        上货时间: row.insertTime || '',
-        大包号: row.packageNo || '',
-        客户来源: row.customerSource || '',
-        批次号: row.batchNo || '',
-        流转状态: this.getTrayStatusText(row.trayStatus),
-        渠道: row.channel || '',
-        目的国: row.destinationCountry || '',
-        来源仓: row.sourceWarehouse || '',
-        计费重: row.chargeWeight != null ? row.chargeWeight : '',
-        实际件数: row.actualQty != null ? row.actualQty : '',
-        业务编号: row.businessNo || '',
-        状态: row.packageStatus || '',
-        送达WMS时间: row.finishTime || ''
+        订单编号: row.orderId || '',
+        订单名称: row.orderName || '',
+        批号: row.batchNo || '',
+        产品名称: row.productName || '',
+        工艺名称: row.processName || '',
+        订单数量: row.orderQuantity != null ? row.orderQuantity : '',
+        已上货: row.loadedQuantity != null ? row.loadedQuantity : '',
+        目的地: row.destination || '',
+        解析时间: row.analysisTime != null ? row.analysisTime + 'h' : '',
+        状态: this.getStatusText(row.orderStatus),
+        创建时间: row.createTime || '',
+        创建人: row.createrName || '',
+        执行人: row.executorName || '',
+        完成人: row.finisherName || '',
+        完成时间: row.finishTime || ''
       };
     },
 
@@ -568,28 +568,6 @@ export default {
     handleCurrentChange(val) {
       this.pagination.pageNum = val;
       this.handleSearch();
-    },
-
-    /** 流转状态：1已上货 2分拣 3AGV运输中 4已送达WMS */
-    getTrayStatusText(status) {
-      const map = {
-        1: '已上货',
-        2: '分拣',
-        3: 'AGV运输中',
-        4: '已送达WMS'
-      };
-      return map[String(status)] || status || '—';
-    },
-
-    getTrayStatusType(status) {
-      const s = String(status);
-      const typeMap = {
-        1: 'warning',
-        2: 'primary',
-        3: '',
-        4: 'success'
-      };
-      return typeMap[s] || 'info';
     }
   }
 };

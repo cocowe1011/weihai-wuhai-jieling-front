@@ -6,59 +6,170 @@
       <div class="side-info-panel">
         <!-- PLC状态与订单信息区域 -->
         <div class="plc-info-section">
-          <div class="section-header">当前扫码包裹信息</div>
+          <div class="section-header">当前扫码信息</div>
           <div class="scrollable-content">
             <div class="status-overview">
               <div class="data-card">
                 <div class="data-card-border">
                   <div class="data-card-border-borderTop granient-text">
-                    大包号
+                    虚拟id
                   </div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.packageNo || '--' }}
+                    {{ nowScanTrayInfo.virtualId || '--' }}
                   </div>
                 </div>
               </div>
               <div class="data-card">
                 <div class="data-card-border">
-                  <div class="data-card-border-borderTop">客户来源</div>
+                  <div class="data-card-border-borderTop">目的地</div>
                   <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.customerSource || '--' }}
+                    {{ nowScanTrayInfo.destination || '--' }}
                   </div>
                 </div>
               </div>
-              <div class="data-card">
-                <div class="data-card-border">
-                  <div class="data-card-border-borderTop">来源仓</div>
-                  <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.sourceWarehouse || '--' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 订单信息列表区域 -->
+        <div class="order-list-section">
+          <div class="section-header">
+            <div class="section-title">
+              订单信息列表
+              <div class="title-actions">
+                <div
+                  class="refresh-btn"
+                  @click="refreshOrders"
+                  :class="{ 'is-loading': isRefreshing }"
+                >
+                  <i class="el-icon-refresh"></i>
+                </div>
+                <div
+                  class="add-order-btn"
+                  @click="showAddOrderDialog"
+                  title="新建订单"
+                >
+                  <i class="el-icon-plus"></i>
+                </div>
+              </div>
+            </div>
+            <div class="order-actions">
+              <el-button
+                type="primary"
+                size="small"
+                @click="showHistoryOrders"
+                icon="el-icon-time"
+              >
+                历史订单
+              </el-button>
+            </div>
+          </div>
+          <div class="scrollable-content">
+            <div class="order-list" v-if="ordersList.length > 0">
+              <div
+                v-for="order in ordersList"
+                :key="order.id"
+                class="order-item"
+                :class="
+                  order.orderStatus === 0
+                    ? 'pending'
+                    : order.orderStatus === 1
+                    ? 'running'
+                    : 'complete'
+                "
+              >
+                <div class="order-header">
+                  <div class="order-header-left">
+                    <span class="order-id">{{ order.orderId }}</span>
+                    <span
+                      class="order-status"
+                      :class="{ running: order.orderStatus === 1 }"
+                    >
+                      <i
+                        v-if="order.orderStatus === 1"
+                        class="el-icon-loading"
+                      ></i>
+                      {{ getStatusText(order.orderStatus) }}
+                    </span>
+                  </div>
+                  <div class="order-header-actions">
+                    <el-button
+                      v-if="order.orderStatus === 1"
+                      type="text"
+                      size="small"
+                      @click="cancelOrder(order)"
+                      :loading="order.isLoading"
+                      class="cancel-btn"
+                    >
+                      取消
+                    </el-button>
+                    <el-button
+                      v-if="order.orderStatus === 0"
+                      type="danger"
+                      size="mini"
+                      @click="deleteOrder(order)"
+                      :loading="order.isDeleting"
+                      icon="el-icon-delete"
+                      class="delete-btn"
+                      circle
+                    ></el-button>
+                    <button
+                      v-if="order.orderStatus === 0"
+                      class="switch-order-btn"
+                      :class="{ loading: order.isLoading }"
+                      @click="showExecuteOrderDialog(order)"
+                      :disabled="order.isLoading"
+                    >
+                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <span>执行</span>
+                    </button>
+                    <button
+                      v-if="order.orderStatus === 1"
+                      class="switch-order-btn complete-btn"
+                      :class="{ loading: order.isLoading }"
+                      @click="finishOrder(order)"
+                      :disabled="order.isLoading"
+                    >
+                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <span>完成</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="order-info">
+                  <div class="info-row">
+                    <span class="info-label">名称</span>
+                    <span class="info-value">{{ order.orderName }}</span>
+                    <span class="info-label">产品</span>
+                    <span class="info-value">{{ order.productName }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">批号</span>
+                    <span class="info-value">{{ order.batchNo }}</span>
+                    <span class="info-label">数量</span>
+                    <span class="info-value">{{ order.orderQuantity }}</span>
+                    <span class="info-label">已上货</span>
+                    <span class="info-value">{{
+                      order.loadedQuantity || 0
+                    }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">时间</span>
+                    <span class="info-value">{{ order.createTime }}</span>
                   </div>
                 </div>
               </div>
-              <div class="data-card">
-                <div class="data-card-border">
-                  <div class="data-card-border-borderTop">渠道</div>
-                  <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.channel || '--' }}
-                  </div>
-                </div>
-              </div>
-              <div class="data-card">
-                <div class="data-card-border">
-                  <div class="data-card-border-borderTop">目的国</div>
-                  <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.destinationCountry || '--' }}
-                  </div>
-                </div>
-              </div>
-              <div class="data-card">
-                <div class="data-card-border">
-                  <div class="data-card-border-borderTop">批次号</div>
-                  <div class="data-card-border-borderDown">
-                    {{ nowScanTrayInfo.batchNo || '--' }}
-                  </div>
-                </div>
-              </div>
+            </div>
+            <div v-else class="empty-state">
+              <i class="el-icon-document"></i>
+              <p>暂无订单信息</p>
+              <el-button
+                type="text"
+                @click="refreshOrders"
+                class="refresh-link"
+              >
+                <i class="el-icon-refresh"></i>
+                点击刷新
+              </el-button>
             </div>
           </div>
         </div>
@@ -454,6 +565,280 @@
       </div>
     </div>
 
+    <!-- 新建订单弹窗 -->
+    <el-dialog
+      title="新建订单"
+      :visible.sync="addOrderDialogVisible"
+      width="600px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      append-to-body
+    >
+      <el-form
+        ref="newOrderForm"
+        :model="newOrderForm"
+        :rules="orderFormRules"
+        label-width="120px"
+        size="small"
+      >
+        <el-form-item label="订单编号" prop="orderId">
+          <el-input
+            v-model="newOrderForm.orderId"
+            placeholder="请输入订单编号"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="订单名称" prop="orderName">
+          <el-input
+            v-model="newOrderForm.orderName"
+            placeholder="请输入订单名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="批号" prop="batchNo">
+          <el-input
+            v-model="newOrderForm.batchNo"
+            placeholder="请输入批号"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="产品名称" prop="productName">
+          <el-input
+            v-model="newOrderForm.productName"
+            placeholder="请输入产品名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="工艺名称" prop="processName">
+          <el-input
+            v-model="newOrderForm.processName"
+            placeholder="请输入工艺名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="订单数量" prop="orderQuantity">
+          <el-input-number
+            v-model="newOrderForm.orderQuantity"
+            :min="1"
+            placeholder="请输入订单数量"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancelAddOrder">取消</el-button>
+        <el-button
+          type="primary"
+          @click="submitAddOrder"
+          :loading="isSubmittingOrder"
+        >
+          确定
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 执行订单弹窗 -->
+    <el-dialog
+      title="设置订单-执行"
+      :visible.sync="executeOrderDialogVisible"
+      width="500px"
+      :close-on-click-modal="false"
+      append-to-body
+    >
+      <el-form
+        ref="executeOrderForm"
+        :model="executeOrderForm"
+        :rules="executeOrderRules"
+        label-width="130px"
+        size="small"
+      >
+        <el-form-item label="订单编号">
+          <el-input v-model="executeOrderForm.orderId" readonly size="small" />
+        </el-form-item>
+        <el-form-item label="订单名称">
+          <el-input
+            v-model="executeOrderForm.orderName"
+            readonly
+            size="small"
+          />
+        </el-form-item>
+        <el-form-item label="灭菌柜目的地" prop="destination">
+          <el-select
+            v-model="executeOrderForm.destination"
+            placeholder="请选择灭菌柜目的地"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="i in 15"
+              :key="i"
+              :label="String(i + 18)"
+              :value="String(i + 18)"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="解析时间" prop="analysisTime">
+          <el-input-number
+            v-model="executeOrderForm.analysisTime"
+            :min="1"
+            :max="720"
+            placeholder="请输入解析时间"
+            style="width: calc(100% - 42px)"
+          />
+          <span style="margin-left: 8px; color: #909399">小时</span>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="executeOrderDialogVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          @click="submitExecuteOrder"
+          :loading="isExecutingOrder"
+        >
+          确认执行
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 历史订单弹窗 -->
+    <el-dialog
+      title="历史订单"
+      :visible.sync="historyDialogVisible"
+      width="80%"
+      append-to-body
+      :before-close="handleHistoryDialogClose"
+    >
+      <div>
+        <div
+          style="
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+          "
+        >
+          订单编号：
+          <el-input
+            v-model="historyFilter.orderId"
+            placeholder="订单编号"
+            clearable
+            style="width: 180px"
+          />
+          订单名称：
+          <el-input
+            v-model="historyFilter.orderName"
+            placeholder="订单名称"
+            clearable
+            style="width: 180px"
+          />
+          订单状态：
+          <el-select
+            v-model="historyFilter.orderStatus"
+            placeholder="全部"
+            clearable
+            style="width: 140px"
+          >
+            <el-option label="未开始" :value="0" />
+            <el-option label="执行中" :value="1" />
+            <el-option label="已完成" :value="2" />
+          </el-select>
+          <el-button type="primary" @click="searchHistoryOrders"
+            >查询</el-button
+          >
+          <el-button @click="resetHistoryFilters">重置</el-button>
+        </div>
+        <el-table
+          :data="historyOrders"
+          style="width: 100%"
+          border
+          stripe
+          max-height="400"
+        >
+          <el-table-column prop="orderId" label="订单编号" width="140" />
+          <el-table-column
+            prop="orderName"
+            label="订单名称"
+            min-width="150"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            prop="batchNo"
+            label="批号"
+            width="120"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            prop="productName"
+            label="产品名称"
+            min-width="120"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            prop="processName"
+            label="工艺名称"
+            min-width="120"
+            show-overflow-tooltip
+          />
+          <el-table-column prop="orderQuantity" label="订单数量" width="90" />
+          <el-table-column prop="loadedQuantity" label="已上货" width="80" />
+          <el-table-column prop="destination" label="目的地" width="80" />
+          <el-table-column prop="analysisTime" label="解析时间" width="90">
+            <template slot-scope="scope">
+              {{
+                scope.row.analysisTime != null
+                  ? scope.row.analysisTime + 'h'
+                  : '--'
+              }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="orderStatus"
+            label="状态"
+            width="90"
+            align="center"
+          >
+            <template slot-scope="scope">
+              <el-tag
+                :type="getStatusTagType(scope.row.orderStatus)"
+                size="small"
+              >
+                {{ getStatusText(scope.row.orderStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="createTime"
+            label="创建时间"
+            width="160"
+            show-overflow-tooltip
+          />
+          <el-table-column prop="createrName" label="创建人" width="90" />
+          <el-table-column prop="executorName" label="执行人" width="90" />
+          <el-table-column prop="finisherName" label="完成人" width="90" />
+          <el-table-column
+            prop="finishTime"
+            label="完成时间"
+            width="160"
+            show-overflow-tooltip
+          />
+        </el-table>
+        <div
+          class="pagination-container"
+          style="margin-top: 20px; text-align: right"
+        >
+          <el-pagination
+            @size-change="handleHistorySizeChange"
+            @current-change="handleHistoryCurrentChange"
+            :current-page="currentPage"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalHistoryOrders"
+          />
+        </div>
+      </div>
+    </el-dialog>
+
     <!-- 订单查询对话框 -->
     <OrderQueryDialog :visible.sync="orderQueryDialogVisible" />
   </div>
@@ -464,6 +849,7 @@ import HttpUtil from '@/utils/HttpUtil';
 import moment from 'moment';
 import { ipcRenderer } from 'electron';
 import OrderQueryDialog from '@/components/OrderQueryDialog.vue';
+const remote = require('electron').remote;
 export default {
   name: 'MainPage',
   components: {
@@ -635,7 +1021,61 @@ export default {
         cart3: { min: 0, max: 3000 },
         cart4: { min: 0, max: 3000 },
         cart5: { min: 0, max: 3000 }
-      }
+      },
+      // ========== 订单管理相关 ==========
+      ordersList: [],
+      isRefreshing: false,
+      isSubmittingOrder: false,
+      isExecutingOrder: false,
+      // 新建订单弹窗
+      addOrderDialogVisible: false,
+      newOrderForm: {
+        orderId: '',
+        orderName: '',
+        batchNo: '',
+        productName: '',
+        processName: '',
+        orderQuantity: null
+      },
+      orderFormRules: {
+        orderId: [
+          { required: true, message: '请输入订单编号', trigger: 'blur' }
+        ],
+        orderName: [
+          { required: true, message: '请输入订单名称', trigger: 'blur' }
+        ],
+        batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
+        productName: [
+          { required: true, message: '请输入产品名称', trigger: 'blur' }
+        ],
+        orderQuantity: [
+          { required: true, message: '请输入订单数量', trigger: 'blur' }
+        ]
+      },
+      // 执行订单弹窗
+      executeOrderDialogVisible: false,
+      executeOrderForm: {
+        id: null,
+        orderId: '',
+        orderName: '',
+        destination: '',
+        analysisTime: null
+      },
+      executeOrderRules: {
+        destination: [
+          { required: true, message: '请选择灭菌柜目的地', trigger: 'change' }
+        ],
+        analysisTime: [
+          { required: true, message: '请输入解析时间', trigger: 'blur' }
+        ]
+      },
+      // 历史订单弹窗
+      historyDialogVisible: false,
+      historyOrders: [],
+      historyFilter: { orderId: '', orderName: '', orderStatus: '' },
+      currentPage: 1,
+      pageSize: 10,
+      totalHistoryOrders: 0
     };
   },
   computed: {
@@ -654,6 +1094,7 @@ export default {
   mounted() {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
+    this.refreshOrders();
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
       // 使用位运算优化赋值
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
@@ -708,6 +1149,347 @@ export default {
     // 显示订单查询对话框
     showOrderQueryDialog() {
       this.orderQueryDialogVisible = true;
+    },
+    // ========== 订单管理相关方法 ==========
+    // 刷新订单列表
+    async refreshOrders() {
+      if (this.isRefreshing) return;
+      this.isRefreshing = true;
+      await HttpUtil.post('/order_info/queryOrderList', {})
+        .then((res) => {
+          this.ordersList = res.data || [];
+        })
+        .catch((err) => {
+          this.$message.error('刷新订单列表失败：' + err);
+        })
+        .finally(() => {
+          this.isRefreshing = false;
+        });
+    },
+    // 获取状态文本
+    getStatusText(status) {
+      const statusMap = {
+        0: '未开始',
+        1: '执行中',
+        2: '已完成'
+      };
+      return statusMap[status] || status;
+    },
+    // 获取状态标签类型
+    getStatusTagType(status) {
+      const typeMap = {
+        0: 'info',
+        1: 'warning',
+        2: 'success'
+      };
+      return typeMap[status] || 'info';
+    },
+    // 订单状态变更后刷新列表
+    async handleOrderStatusChange(order, newStatus) {
+      if (newStatus === 1) {
+        this.$message.success(`订单 ${order.orderId} 已开始执行`);
+      } else if (newStatus === 2) {
+        this.$message.success(`订单 ${order.orderId} 已完成`);
+      }
+      await this.refreshOrders();
+    },
+    // 显示新建订单弹窗
+    showAddOrderDialog() {
+      this.addOrderDialogVisible = true;
+      this.newOrderForm = {
+        orderId: '',
+        orderName: '',
+        batchNo: '',
+        productName: '',
+        processName: '',
+        orderQuantity: null
+      };
+    },
+    // 提交新建订单
+    async submitAddOrder() {
+      try {
+        await this.$refs.newOrderForm.validate();
+        this.isSubmittingOrder = true;
+        // 获取当前登录用户信息
+        let userInfo = { userName: '', userCode: '' };
+        try {
+          userInfo = remote.getGlobal('sharedObject').userInfo || userInfo;
+        } catch (e) {
+          // 非 Electron 环境时忽略
+        }
+        const orderData = {
+          orderId: this.newOrderForm.orderId,
+          orderName: this.newOrderForm.orderName,
+          batchNo: this.newOrderForm.batchNo,
+          productName: this.newOrderForm.productName,
+          processName: this.newOrderForm.processName || '',
+          orderQuantity: this.newOrderForm.orderQuantity,
+          orderStatus: 0,
+          invalidFlag: 0,
+          loadedQuantity: 0,
+          createrName: userInfo.userName || '',
+          createrCode: userInfo.userCode || ''
+        };
+        await HttpUtil.post('/order_info/save', orderData)
+          .then((res) => {
+            if (res.code === '200' || res.data >= 1) {
+              this.$message.success('订单创建成功');
+              this.addLog(
+                `新建订单 ${orderData.orderId} 创建成功，产品：${orderData.productName}，数量：${orderData.orderQuantity}`
+              );
+              this.addOrderDialogVisible = false;
+              this.refreshOrders();
+            } else {
+              this.$message.error('创建订单失败：' + (res.message || '请重试'));
+            }
+          })
+          .catch((err) => {
+            this.$message.error('创建订单失败：' + err);
+          })
+          .finally(() => {
+            this.isSubmittingOrder = false;
+          });
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error('表单验证失败，请检查输入');
+        }
+        this.isSubmittingOrder = false;
+      }
+    },
+    // 取消新建订单
+    cancelAddOrder() {
+      this.addOrderDialogVisible = false;
+      this.$refs.newOrderForm && this.$refs.newOrderForm.resetFields();
+    },
+    // 显示执行订单弹窗
+    showExecuteOrderDialog(order) {
+      // 检查是否有正在执行的订单
+      const runningOrder = this.ordersList.find((o) => o.orderStatus === 1);
+      if (runningOrder) {
+        this.$message.warning('当前已有订单正在执行，请先完成或取消当前订单');
+        return;
+      }
+      this.executeOrderForm = {
+        id: order.id,
+        orderId: order.orderId,
+        orderName: order.orderName,
+        destination: '',
+        analysisTime: null
+      };
+      this.executeOrderDialogVisible = true;
+    },
+    // 提交执行订单
+    async submitExecuteOrder() {
+      try {
+        await this.$refs.executeOrderForm.validate();
+        this.isExecutingOrder = true;
+        // 获取当前登录用户信息
+        let userInfo = { userName: '', userCode: '' };
+        try {
+          userInfo = remote.getGlobal('sharedObject').userInfo || userInfo;
+        } catch (e) {
+          // 非 Electron 环境时忽略
+        }
+        const param = {
+          id: this.executeOrderForm.id,
+          destination: this.executeOrderForm.destination,
+          analysisTime: this.executeOrderForm.analysisTime,
+          executorName: userInfo.userName || '',
+          executorCode: userInfo.userCode || ''
+        };
+        await HttpUtil.post('/order_info/executeOrder', param)
+          .then((res) => {
+            if (res.code === '200' || res.data >= 1) {
+              this.$message.success('订单已开始执行');
+              this.addLog(
+                `订单 ${this.executeOrderForm.orderId} 开始执行，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
+              );
+              this.executeOrderDialogVisible = false;
+              this.refreshOrders();
+            } else {
+              this.$message.error('执行订单失败，请重试');
+            }
+          })
+          .catch((err) => {
+            this.$message.error('执行订单失败：' + err);
+          })
+          .finally(() => {
+            this.isExecutingOrder = false;
+          });
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error('表单验证失败，请检查输入');
+        }
+        this.isExecutingOrder = false;
+      }
+    },
+    // 完成订单
+    async finishOrder(order) {
+      try {
+        await this.$confirm('确认完成该订单吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        this.$set(order, 'isLoading', true);
+        let userInfo = { userName: '', userCode: '' };
+        try {
+          userInfo = remote.getGlobal('sharedObject').userInfo || userInfo;
+        } catch (e) {
+          // 非 Electron 环境时忽略
+        }
+        const param = {
+          id: order.id,
+          orderStatus: 2,
+          finisherName: userInfo.userName || '',
+          finisherCode: userInfo.userCode || '',
+          finishTime: new Date()
+        };
+        await HttpUtil.post('/order_info/update', param)
+          .then((res) => {
+            if (res.code === '200') {
+              this.handleOrderStatusChange(order, 2);
+              this.addLog(
+                `订单 ${order.orderId} 已完成，产品：${order.productName}`
+              );
+            } else {
+              this.$message.error('完成订单失败，请重试');
+            }
+          })
+          .catch((err) => {
+            this.$message.error('完成订单失败，请重试');
+          })
+          .finally(() => {
+            order.isLoading = false;
+          });
+      } catch (err) {
+        // 用户取消操作
+      }
+    },
+    // 取消订单（从执行中恢复为未开始）
+    async cancelOrder(order) {
+      try {
+        await this.$confirm('确认要取消该订单的执行状态吗？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        this.$set(order, 'isLoading', true);
+        const param = {
+          id: order.id,
+          orderStatus: 0
+        };
+        await HttpUtil.post('/order_info/update', param)
+          .then((res) => {
+            if (res.code === '200') {
+              this.handleOrderStatusChange(order, 0);
+              this.$message.success('订单状态已更新为未开始');
+            } else {
+              this.$message.error('取消订单失败，请重试');
+            }
+          })
+          .catch((err) => {
+            this.$message.error('取消订单失败，请重试');
+          })
+          .finally(() => {
+            order.isLoading = false;
+          });
+      } catch (err) {
+        // 用户取消操作
+      }
+    },
+    // 删除订单（作废）
+    async deleteOrder(order) {
+      try {
+        await this.$confirm('确认要删除该订单吗？删除后无法恢复。', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        });
+        this.$set(order, 'isDeleting', true);
+        const param = {
+          id: order.id,
+          invalidFlag: 1
+        };
+        await HttpUtil.post('/order_info/update', param)
+          .then((res) => {
+            if (res.code === '200') {
+              this.$message.success('订单删除成功');
+              this.addLog(`订单 ${order.orderId} 已删除`);
+              this.refreshOrders();
+            } else {
+              this.$message.error('删除订单失败，请重试');
+            }
+          })
+          .catch((err) => {
+            this.$message.error('删除订单失败，请重试');
+          })
+          .finally(() => {
+            this.$set(order, 'isDeleting', false);
+          });
+      } catch (err) {
+        // 用户取消操作
+      }
+    },
+    // 显示历史订单弹窗
+    async showHistoryOrders() {
+      this.historyDialogVisible = true;
+      await this.loadHistoryOrders();
+    },
+    // 关闭历史订单弹窗
+    handleHistoryDialogClose(done) {
+      this.historyOrders = [];
+      this.currentPage = 1;
+      done();
+    },
+    // 加载历史订单
+    async loadHistoryOrders() {
+      const params = {
+        pageNum: this.currentPage,
+        pageSize: this.pageSize,
+        orderId: this.historyFilter.orderId || '',
+        orderName: this.historyFilter.orderName || '',
+        orderStatus:
+          this.historyFilter.orderStatus !== ''
+            ? this.historyFilter.orderStatus
+            : null,
+        executorName: ''
+      };
+      try {
+        const res = await HttpUtil.post(
+          '/order_info/queryHistoryOrderList',
+          params
+        );
+        if (res.code === '200') {
+          this.historyOrders = res.data.list || [];
+          this.totalHistoryOrders = res.data.total || 0;
+        } else {
+          this.$message.error('获取历史订单失败');
+        }
+      } catch (error) {
+        this.$message.error('获取历史订单失败');
+      }
+    },
+    // 搜索历史订单
+    searchHistoryOrders() {
+      this.currentPage = 1;
+      this.loadHistoryOrders();
+    },
+    // 重置筛选条件
+    resetHistoryFilters() {
+      this.historyFilter = { orderId: '', orderName: '', orderStatus: '' };
+      this.currentPage = 1;
+      this.loadHistoryOrders();
+    },
+    // 分页大小变更
+    handleHistorySizeChange(val) {
+      this.pageSize = val;
+      this.loadHistoryOrders();
+    },
+    // 当前页变更
+    handleHistoryCurrentChange(val) {
+      this.currentPage = val;
+      this.loadHistoryOrders();
     },
     toggleButtonState(button) {
       if (button === 'start') {
@@ -1362,6 +2144,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 .smart-workshop {
   --mp-surface: #ffffff;
   --mp-surface-muted: #eef2f8;
@@ -1446,7 +2236,8 @@ export default {
       flex-shrink: 0;
       overflow: hidden;
       .plc-info-section,
-      .operation-panel {
+      .operation-panel,
+      .order-list-section {
         background: var(--mp-surface);
         padding: 0;
         border-radius: 12px;
@@ -1724,6 +2515,222 @@ export default {
 
         .scrollable-content::-webkit-scrollbar-thumb:hover {
           background: rgba(67, 133, 255, 0.25);
+        }
+      }
+      /* 订单列表区域专用样式 */
+      .order-list-section {
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          .title-actions {
+            display: flex;
+            gap: 4px;
+            margin-left: auto;
+            .refresh-btn,
+            .add-order-btn {
+              width: 26px;
+              height: 26px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              background: rgba(255, 255, 255, 0.2);
+              color: #fff;
+              transition: background 0.2s;
+              i {
+                font-size: 14px;
+              }
+              &:hover {
+                background: rgba(255, 255, 255, 0.35);
+              }
+              &.is-loading i {
+                animation: spin 1s linear infinite;
+              }
+            }
+            .add-order-btn {
+              background: rgba(103, 194, 58, 0.4);
+              &:hover {
+                background: rgba(103, 194, 58, 0.6);
+              }
+            }
+          }
+        }
+        .order-actions {
+          margin-left: auto;
+        }
+        .scrollable-content {
+          height: 220px;
+          overflow-y: auto;
+          padding: 6px 8px;
+          display: flex;
+          flex-direction: column;
+        }
+        .order-list {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .order-item {
+          position: relative;
+          background: #eaf2ff;
+          border: 1px solid #c4d8f5;
+          border-radius: 10px;
+          padding: 6px 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          cursor: pointer;
+          &.pending {
+            border-left: 3px solid #9bb4d8;
+          }
+          &.running {
+            border-left: 3px solid #67c23a;
+            background: #f0f9eb;
+          }
+          &.complete {
+            border-left: 3px solid #529b2e;
+            background: #f1f9ec;
+          }
+          .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 3px;
+            border-bottom: 1px dashed var(--mp-border-light);
+            .order-header-left {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              min-width: 0;
+              overflow: hidden;
+              .order-id {
+                font-weight: 700;
+                font-size: 13px;
+                color: var(--mp-accent-deep);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                background: var(--mp-accent-bg);
+                padding: 1px 8px;
+                border-radius: 4px;
+              }
+              .order-status {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 12px;
+                color: var(--mp-text-secondary);
+                white-space: nowrap;
+                &::before {
+                  content: '';
+                  display: inline-block;
+                  width: 6px;
+                  height: 6px;
+                  border-radius: 50%;
+                  background: #c0c4cc;
+                  flex-shrink: 0;
+                }
+                &.running {
+                  color: #e6a23c;
+                  font-weight: 600;
+                  &::before {
+                    background: #e6a23c;
+                    box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
+                  }
+                }
+              }
+            }
+            .order-header-actions {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              flex-shrink: 0;
+              .cancel-btn {
+                padding: 0;
+                font-size: 12px;
+              }
+            }
+          }
+          .order-info {
+            .info-row {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 2px 12px;
+              margin-bottom: 1px;
+              font-size: 12px;
+              line-height: 16px;
+              .info-label {
+                color: var(--mp-text-secondary);
+                white-space: nowrap;
+              }
+              .info-value {
+                color: var(--mp-text);
+                font-weight: 500;
+              }
+            }
+          }
+        }
+        .switch-order-btn {
+          padding: 4px 14px;
+          border: none;
+          border-radius: 6px;
+          background: linear-gradient(135deg, #4385ff, #2f54eb);
+          color: #fff;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: opacity 0.2s;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+          height: 26px;
+          line-height: 1;
+          &:hover {
+            opacity: 0.9;
+          }
+          &.loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+          &.complete-btn {
+            background: linear-gradient(135deg, #67c23a, #529b2e);
+          }
+        }
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 30px 0;
+          color: var(--mp-text-secondary);
+          flex: 1;
+          i {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #c0c4cc;
+          }
+          p {
+            font-size: 14px;
+            margin: 0 0 12px 0;
+          }
+          .refresh-link {
+            padding: 0;
+            font-size: 14px;
+            color: var(--mp-accent);
+            i {
+              font-size: 14px;
+              margin-right: 4px;
+              color: inherit;
+              margin-bottom: 0;
+            }
+            &:hover {
+              color: var(--mp-accent-hover);
+            }
+          }
         }
       }
       .operation-panel {

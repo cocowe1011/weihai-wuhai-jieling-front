@@ -395,7 +395,7 @@ app.on('ready', () => {
       const jarPath = path.join(
         __static,
         './jarlib',
-        'weihai-wuhai-jieling-record-middle.jar'
+        'wcs-wuhan-jieling-middle.jar'
       );
 
       // 优化的Java启动参数 - 针对启动速度优化
