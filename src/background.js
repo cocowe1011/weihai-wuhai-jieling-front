@@ -12,6 +12,7 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import nodes7 from 'nodes7';
 import HttpUtil from '@/utils/HttpUtil';
 import logger from 'electron-log';
+import plcPoints from '@/utils/plcPoints';
 // 设置日志文件的保存路径
 logger.transports.file.file = app.getPath('userData') + '/app.log';
 
@@ -29,7 +30,43 @@ const path = require('path');
 const fs = require('fs');
 var appTray = null;
 let closeStatus = false;
-var conn = new nodes7();
+// PLC 配置 - 加 PLC 只改这里（variables/readItems/writeItems 从 plcPoints.js 引入）
+var plcConfigs = [
+  {
+    name: '一楼',
+    host: '192.168.2.10',
+    port: 102,
+    variables: plcPoints.variables1,
+    readItems: plcPoints.readItems1,
+    writeItems: plcPoints.writeItems1
+  },
+  {
+    name: '二楼',
+    host: '192.168.2.20',
+    port: 102,
+    variables: plcPoints.variables2,
+    readItems: plcPoints.readItems2,
+    writeItems: plcPoints.writeItems2
+  }
+];
+
+// 工厂函数：创建 PLC 实例，每台 PLC 状态独立互不干扰
+function createPLCInstance(config) {
+  return {
+    config: config,
+    conn: new nodes7(),
+    variables: config.variables,
+    readItems: config.readItems,
+    writeStrArr: config.writeItems.map(function () {
+      return 0;
+    }),
+    writeAddArr: config.writeItems.slice(),
+    times: 1,
+    nowValue: 0
+  };
+}
+
+var plcInstances = plcConfigs.map(createPLCInstance);
 
 // 读取缩放配置文件（D://weihai-wuhai-jieling-front/config/zoom.json，升级不覆盖）
 function readZoomConfig() {
@@ -252,30 +289,31 @@ app.on('ready', () => {
   ipcMain.on('min-window', (event, arg) => {
     mainWindow.minimize();
   });
-  // writeValuesToPLC
-  ipcMain.on('writeValuesToPLC', (event, arg1, arg2) => {
-    writeValuesToPLC(arg1, arg2);
-  });
-  // writeSingleValueToPLC - 单独给PLC某个变量写值，通过批量写入数组实现
-  ipcMain.on('writeSingleValueToPLC', (event, arg1, arg2) => {
-    writeSingleValueToPLC(arg1, arg2);
-  });
-  // cancelWriteToPLC - 取消PLC某个变量的写入
-  ipcMain.on('cancelWriteToPLC', (event, arg1) => {
-    cancelWriteToPLC(arg1);
-  });
-  // 获取PLC变量定义（只在组件挂载时调用一次，因为启动后不会变）
-  ipcMain.handle('getPlcVariables', () => {
-    return {
-      variables
-    };
-  });
-  // 获取写入数据（轮询调用，因为经常变化）
-  ipcMain.handle('getWriteData', () => {
-    return {
-      writeAddArr,
-      writeStrArr
-    };
+  // 循环注册所有 PLC 的 IPC 处理器，加 PLC 无需手写新通道
+  plcInstances.forEach(function (inst, index) {
+    // 获取PLC变量定义（只在组件挂载时调用一次，因为启动后不会变）
+    ipcMain.handle('getPlcVariables_' + index, function () {
+      return { variables: inst.variables };
+    });
+    // 获取写入数据（轮询调用，因为经常变化）
+    ipcMain.handle('getWriteData_' + index, function () {
+      return {
+        writeAddArr: inst.writeAddArr,
+        writeStrArr: inst.writeStrArr
+      };
+    });
+    // writeValuesToPLC
+    ipcMain.on('writeValuesToPLC_' + index, function (event, arg1, arg2) {
+      writeValuesToPLC(index, arg1, arg2);
+    });
+    // writeSingleValueToPLC - 单独给PLC某个变量写值，通过批量写入数组实现
+    ipcMain.on('writeSingleValueToPLC_' + index, function (event, arg1, arg2) {
+      writeSingleValueToPLC(index, arg1, arg2);
+    });
+    // cancelWriteToPLC - 取消PLC某个变量的写入
+    ipcMain.on('cancelWriteToPLC_' + index, function (event, arg1) {
+      cancelWriteToPLC(index, arg1);
+    });
   });
   // 定义自定义事件
   ipcMain.on('max-window', (event, arg) => {
@@ -290,15 +328,13 @@ app.on('ready', () => {
       height: screen.getPrimaryDisplay().workAreaSize.height - 20
     });
   });
-  // 启动plc conPLC
-  ipcMain.on('conPLC', (event, arg1, arg2) => {
+  // 启动plc conPLC - 循环连接所有配置的 PLC
+  ipcMain.on('conPLC', function () {
     if (process.env.NODE_ENV === 'production') {
-      conPLC();
+      plcInstances.forEach(function (_, index) {
+        conPLC(index);
+      });
     }
-    // setInterval(() => {
-    //   console.log(writeStrArr.toString());
-    // }, 50);
-    // sendHeartToPLC()
   });
   mainWindow.on('maximize', () => {
     mainWindow.webContents.send('mainWin-max', 'max-window');
@@ -331,25 +367,16 @@ app.on('ready', () => {
   });
   if (process.env.NODE_ENV === 'development') {
     let revert = false;
-    setInterval(() => {
+    setInterval(function () {
       if (mainWindow) {
-        if (revert) {
+        plcInstances.forEach(function (inst, index) {
+          var val = revert ? 0 : 1;
           mainWindow.webContents.send(
-            'receivedMsg',
-            {
-              DBW0: 0
-            },
-            writeStrArr.toString()
+            'receivedMsg_' + index,
+            { DBW0: val },
+            inst.writeStrArr.toString()
           );
-        } else {
-          mainWindow.webContents.send(
-            'receivedMsg',
-            {
-              DBW0: 1
-            },
-            writeStrArr.toString()
-          );
-        }
+        });
         revert = !revert;
       }
     }, 500);
@@ -448,303 +475,176 @@ app.on('ready', () => {
   });
 });
 
-function conPLC() {
-  logger.info('开始连接PLC');
-  // 查询配置
-  HttpUtil.get('/cssConfig/getConfig')
-    .then((res) => {
-      logger.info(JSON.stringify(res));
-      if (!res.data.plcPort) {
-        logger.info('配置查询失败');
+// 连接 PLC（参数化：index 对应 plcConfigs 中的序号）
+function conPLC(index) {
+  var inst = plcInstances[index];
+  logger.info('开始连接' + inst.config.name + 'PLC');
+  inst.conn.initiateConnection(
+    {
+      port: inst.config.port,
+      host: inst.config.host,
+      rack: 0,
+      slot: 1,
+      debug: false
+    },
+    function (err) {
+      if (typeof err !== 'undefined') {
+        logger.info(
+          '连接' + inst.config.name + 'PLC失败' + JSON.stringify(err)
+        );
         // We have an error. Maybe the PLC is not reachable.
-        conPLC();
+        conPLC(index);
         return false;
       }
-      conn.initiateConnection(
-        {
-          port: Number(res.data.plcPort),
-          host: res.data.plcIp,
-          rack: 0,
-          slot: 1,
-          debug: false
-        },
-        (err) => {
-          if (typeof err !== 'undefined') {
-            logger.info('连接PLC失败' + JSON.stringify(err));
-            // We have an error. Maybe the PLC is not reachable.
-            conPLC();
-            return false;
-            // process.exit();
+      inst.conn.setTranslationCB(function (tag) {
+        return inst.variables[tag];
+      }); // This sets the "translation" to allow us to work with object names
+      logger.info('连接' + inst.config.name + 'PLC成功');
+      // —— 读取点位（每台 PLC 独立的 readItems）——
+      inst.readItems.forEach(function (item) {
+        inst.conn.addItems(item);
+      });
+      setInterval(function () {
+        inst.conn.readAllItems(function (anythingBad, values) {
+          if (anythingBad) {
+            console.log(
+              'SOMETHING WENT WRONG READING VALUES (PLC' + index + ')!!!!'
+            );
           }
-          conn.setTranslationCB(function (tag) {
-            return variables[tag];
-          }); // This sets the "translation" to allow us to work with object names
-          logger.info('连接PLC成功');
-          // —— 读取点位（与 读取点位.csv / DB1000、DB1001 一致）——
-          conn.addItems('DBW0'); // 输送线看门狗心跳 DB1000.DBW0
-          conn.addItems('DBW2'); // 输送线当前运行状态
-          conn.addItems('DBW4'); // 区域报警
-          conn.addItems('DBW6'); // 电机运行信号
-          conn.addItems('DBW8'); // 电机运行信号
-          conn.addItems('DBW10'); // 电机运行信号
-          conn.addItems('DBW12'); // 光电信号--1
-          conn.addItems('DBW14'); // 光电信号--2
-          conn.addItems('DBW16'); // 对接WCS信号
-          conn.addItems('DBW18'); // 对接WCS信号
-          conn.addItems('DBW20'); // 反馈WCS信号
-          // 反馈WCS写虚拟ID（DB1000.DBB298-717，每段 char(30)）
-          conn.addItems('DBB298'); // 分拣口01进货ID
-          conn.addItems('DBB328'); // 分拣口02进货ID
-          conn.addItems('DBB358'); // 分拣口03进货ID
-          conn.addItems('DBB388'); // 分拣口04进货ID
-          conn.addItems('DBB418'); // 分拣口05进货ID
-          conn.addItems('DBB448'); // 分拣口06进货ID
-          conn.addItems('DBB478'); // 分拣口07进货ID
-          conn.addItems('DBB508'); // 分拣口08进货ID
-          conn.addItems('DBB538'); // 分拣口09进货ID
-          conn.addItems('DBB568'); // 分拣口10进货ID
-          conn.addItems('DBB598'); // 分拣口11进货ID
-          conn.addItems('DBB628'); // 分拣口12进货ID
-          conn.addItems('DBB658'); // 分拣口13进货ID
-          conn.addItems('DBB688'); // 备用
-          // 各皮带工位虚拟ID（DB1000.DBB748-1137）
-          conn.addItems('DBB748'); // M1008工位ID
-          conn.addItems('DBB778'); // M1009工位ID
-          conn.addItems('DBB808'); // M1010工位ID
-          conn.addItems('DBB838'); // M1011工位ID
-          conn.addItems('DBB868'); // M1012工位ID
-          conn.addItems('DBB898'); // M1013工位ID
-          conn.addItems('DBB928'); // M1014工位ID
-          conn.addItems('DBB958'); // M1015工位ID
-          conn.addItems('DBB988'); // M1016工位ID
-          conn.addItems('DBB1018'); // M1017工位ID
-          conn.addItems('DBB1048'); // M1018工位ID
-          conn.addItems('DBB1078'); // M1019工位ID
-          conn.addItems('DBB1108'); // M1020工位ID
-          // 各皮带工位目的地（DB1000.DBW1198-1222）
-          conn.addItems('DBW1198'); // M1008目的地
-          conn.addItems('DBW1200'); // M1009目的地
-          conn.addItems('DBW1202'); // M1010目的地
-          conn.addItems('DBW1204'); // M1011目的地
-          conn.addItems('DBW1206'); // M1012目的地
-          conn.addItems('DBW1208'); // M1013目的地
-          conn.addItems('DBW1210'); // M1014目的地
-          conn.addItems('DBW1212'); // M1015目的地
-          conn.addItems('DBW1214'); // M1016目的地
-          conn.addItems('DBW1216'); // M1017目的地
-          conn.addItems('DBW1218'); // M1018目的地
-          conn.addItems('DBW1220'); // M1019目的地
-          conn.addItems('DBW1222'); // M1020目的地
-          setInterval(() => {
-            conn.readAllItems(valuesReady);
-          }, 200);
-          setInterval(() => {
-            // nodes7 代码
-            conn.writeItems(writeAddArr, writeStrArr, valuesWritten);
-          }, 200);
-          // 发送心跳
-          sendHeartToPLC();
-        }
-      );
-    })
-    .catch((err) => {
-      logger.info('config error!');
-    });
-}
-let times = 1;
-let nowValue = 0;
-function sendHeartToPLC() {
-  setInterval(() => {
-    if (times > 5) {
-      times = 1;
-      nowValue = 1 - nowValue;
+          mainWindow.webContents.send(
+            'receivedMsg_' + index,
+            values,
+            inst.writeStrArr.toString()
+          );
+        });
+      }, 200);
+      setInterval(function () {
+        // nodes7 代码
+        inst.conn.writeItems(
+          inst.writeAddArr,
+          inst.writeStrArr,
+          function (anythingBad) {
+            if (anythingBad) {
+              console.log(
+                'SOMETHING WENT WRONG WRITING VALUES (PLC' + index + ')!!!!'
+              );
+            }
+          }
+        );
+      }, 200);
+      // 发送心跳
+      sendHeartToPLC(index);
     }
-    times++;
-    writeValuesToPLC('W_DBW0', nowValue);
+  );
+}
+
+// 发送心跳（参数化）
+function sendHeartToPLC(index) {
+  var inst = plcInstances[index];
+  setInterval(function () {
+    if (inst.times > 5) {
+      inst.times = 1;
+      inst.nowValue = 1 - inst.nowValue;
+    }
+    inst.times++;
+    writeValuesToPLC(index, 'W_DBW0', inst.nowValue);
   }, 200); // 每200毫秒执行一次交替
 }
 
-var variables = {
-  // —— 读取（读取点位.csv / DB1000、DB1000）——
-  DBW0: 'DB1000,INT0', // 输送线看门狗心跳
-  DBW2: 'DB1000,INT2', // 输送线当前运行状态
-  DBW4: 'DB1000,INT4', // 区域报警
-  DBW6: 'DB1000,INT6', // 电机运行信号
-  DBW8: 'DB1000,INT8', // 电机运行信号
-  DBW10: 'DB1000,INT10', // 电机运行信号
-  DBW12: 'DB1000,INT12', // 光电信号--1
-  DBW14: 'DB1000,INT14', // 光电信号--2
-  DBW16: 'DB1000,INT16', // 对接WCS信号
-  DBW18: 'DB1000,INT18', // 对接WCS信号
-  DBW20: 'DB1000,INT20', // 反馈WCS信号
-  DBB298: 'DB1000,S298.28', // 分拣口01进货ID
-  DBB328: 'DB1000,S328.28', // 分拣口02进货ID
-  DBB358: 'DB1000,S358.28', // 分拣口03进货ID
-  DBB388: 'DB1000,S388.28', // 分拣口04进货ID
-  DBB418: 'DB1000,S418.28', // 分拣口05进货ID
-  DBB448: 'DB1000,S448.28', // 分拣口06进货ID
-  DBB478: 'DB1000,S478.28', // 分拣口07进货ID
-  DBB508: 'DB1000,S508.28', // 分拣口08进货ID
-  DBB538: 'DB1000,S538.28', // 分拣口09进货ID
-  DBB568: 'DB1000,S568.28', // 分拣口10进货ID
-  DBB598: 'DB1000,S598.28', // 分拣口11进货ID
-  DBB628: 'DB1000,S628.28', // 分拣口12进货ID
-  DBB658: 'DB1000,S658.28', // 分拣口13进货ID
-  DBB688: 'DB1000,S688.28', // 备用
-  // —— 各皮带工位虚拟ID（DB1000.DBB748-1137，每段 char(30)）——
-  DBB748: 'DB1000,S748.28', // M1008工位ID
-  DBB778: 'DB1000,S778.28', // M1009工位ID
-  DBB808: 'DB1000,S808.28', // M1010工位ID
-  DBB838: 'DB1000,S838.28', // M1011工位ID
-  DBB868: 'DB1000,S868.28', // M1012工位ID
-  DBB898: 'DB1000,S898.28', // M1013工位ID
-  DBB928: 'DB1000,S928.28', // M1014工位ID
-  DBB958: 'DB1000,S958.28', // M1015工位ID
-  DBB988: 'DB1000,S988.28', // M1016工位ID
-  DBB1018: 'DB1000,S1018.28', // M1017工位ID
-  DBB1048: 'DB1000,S1048.28', // M1018工位ID
-  DBB1078: 'DB1000,S1078.28', // M1019工位ID
-  DBB1108: 'DB1000,S1108.28', // M1020工位ID
-  // —— 各皮带工位目的地（DB1000.DBW1198-1222，INT）——
-  DBW1198: 'DB1000,INT1198', // M1008目的地
-  DBW1200: 'DB1000,INT1200', // M1009目的地
-  DBW1202: 'DB1000,INT1202', // M1010目的地
-  DBW1204: 'DB1000,INT1204', // M1011目的地
-  DBW1206: 'DB1000,INT1206', // M1012目的地
-  DBW1208: 'DB1000,INT1208', // M1013目的地
-  DBW1210: 'DB1000,INT1210', // M1014目的地
-  DBW1212: 'DB1000,INT1212', // M1015目的地
-  DBW1214: 'DB1000,INT1214', // M1016目的地
-  DBW1216: 'DB1000,INT1216', // M1017目的地
-  DBW1218: 'DB1000,INT1218', // M1018目的地
-  DBW1220: 'DB1000,INT1220', // M1019目的地
-  DBW1222: 'DB1000,INT1222', // M1020目的地
-  // —— 写入（写入点位.csv / DB1001）——
-  W_DBW0: 'DB1001,INT0', // WCS看门狗心跳
-  W_DBW2: 'DB1001,INT2', // WCS-全线启动（系统在线）
-  W_DBW4: 'DB1001,INT4', // WCS-全线停止
-  W_DBW6: 'DB1001,INT6', // WCS-故障复位
-  W_DBW8: 'DB1001,INT8', // WCS六面扫位写目的地
-  W_DBB10: 'DB1001,S10.28', // WCS写虚拟ID
-  W_DBW50: 'DB1001,INT50', // WCS修改电机编号
-  W_DBW52: 'DB1001,INT52', // WCS修改目的地
-  W_DBB54: 'DB1001,S54.28', // WCS下修改模拟ID
-  W_DBW100: 'DB1001,INT100', // WCS下发修改命令
-  W_DBW102_BIT0: 'DB1001,X102.0', // 分拣口01禁止进货
-  W_DBW102_BIT1: 'DB1001,X102.1', // 分拣口02禁止进货
-  W_DBW102_BIT2: 'DB1001,X102.2', // 分拣口03禁止进货
-  W_DBW102_BIT3: 'DB1001,X102.3', // 分拣口04禁止进货
-  W_DBW102_BIT4: 'DB1001,X102.4', // 分拣口05禁止进货
-  W_DBW102_BIT5: 'DB1001,X102.5', // 分拣口06禁止进货
-  W_DBW102_BIT6: 'DB1001,X102.6', // 分拣口07禁止进货
-  W_DBW102_BIT7: 'DB1001,X102.7', // 分拣口08禁止进货
-  W_DBW102_BIT8: 'DB1001,X103.0', // 分拣口09禁止进货
-  W_DBW102_BIT9: 'DB1001,X103.1', // 分拣口10禁止进货
-  W_DBW102_BIT10: 'DB1001,X103.2', // 分拣口11禁止进货
-  W_DBW102_BIT11: 'DB1001,X103.3', // 分拣口12禁止进货
-  W_DBW102_BIT12: 'DB1001,X103.4', // 分拣口13禁止进货
-  W_DBW102_BIT13: 'DB1001,X103.5', // 分拣口14禁止进货
-  W_DBW102_BIT14: 'DB1001,X103.6', // 分拣口15禁止进货
-  W_DBW102_BIT15: 'DB1001,X103.7' // 备用
-};
-
-var writeStrArr = [0, 0, 0, 0];
-var writeAddArr = [
-  'W_DBW0', // WCS看门狗心跳
-  'W_DBW2', // WCS-全线启动
-  'W_DBW4', // WCS-全线停止
-  'W_DBW6' // WCS-故障复位
-];
+// —— 以下为参数化的 PLC 写入函数（index 对应 plcConfigs 中的序号）——
 
 // 给PLC写值
-function writeValuesToPLC(add, values) {
-  const index = writeAddArr.indexOf(add);
-  if (index !== -1) {
-    writeStrArr[index] = values;
+function writeValuesToPLC(index, add, values) {
+  var inst = plcInstances[index];
+  var i = inst.writeAddArr.indexOf(add);
+  if (i !== -1) {
+    inst.writeStrArr[i] = values;
   } else {
-    console.warn(`Address ${add} not found in writeAddArr.`);
+    console.warn(
+      'Address ' + add + ' not found in writeAddArr (PLC' + index + ').'
+    );
   }
 }
 
 // 单独给PLC某个变量写值，通过操作批量写入数组实现，避免写入冲突
-function writeSingleValueToPLC(add, values) {
-  if (!variables[add]) {
-    console.warn(`Address ${add} not found in variables.`);
+function writeSingleValueToPLC(index, add, values) {
+  var inst = plcInstances[index];
+  if (!inst.variables[add]) {
+    console.warn(
+      'Address ' + add + ' not found in variables (PLC' + index + ').'
+    );
     return;
   }
 
   // 查找地址在批量写入数组中的索引
-  const index = writeAddArr.indexOf(add);
+  var i = inst.writeAddArr.indexOf(add);
 
-  if (index !== -1) {
+  if (i !== -1) {
     // 地址已存在，直接更新值（这个操作是原子的）
-    writeStrArr[index] = values;
-    console.log(`更新PLC地址 ${add} 的值为：${values}`);
+    inst.writeStrArr[i] = values;
+    console.log('更新PLC' + index + '地址 ' + add + ' 的值为：' + values);
   } else {
     // 地址不存在，使用原子性操作添加到批量写入数组
-    const newAddArr = [...writeAddArr, add];
-    const newStrArr = [...writeStrArr, values];
+    var newAddArr = inst.writeAddArr.concat([add]);
+    var newStrArr = inst.writeStrArr.concat([values]);
 
     // 原子性替换数组内容
-    writeAddArr.length = 0;
-    writeStrArr.length = 0;
-    writeAddArr.push(...newAddArr);
-    writeStrArr.push(...newStrArr);
+    inst.writeAddArr.length = 0;
+    inst.writeStrArr.length = 0;
+    inst.writeAddArr.push.apply(inst.writeAddArr, newAddArr);
+    inst.writeStrArr.push.apply(inst.writeStrArr, newStrArr);
 
-    console.log(`添加PLC地址 ${add} 到批量写入数组，值：${values}`);
+    console.log(
+      '添加PLC' + index + '地址 ' + add + ' 到批量写入数组，值：' + values
+    );
   }
 }
 
 // 取消PLC某个变量的写入，从批量写入数组中移除
-function cancelWriteToPLC(add) {
-  // 使用 filter 方法重建数组，避免 splice 的并发问题
-  const originalLength = writeAddArr.length;
-  const newAddArr = [];
-  const newStrArr = [];
+function cancelWriteToPLC(index, add) {
+  var inst = plcInstances[index];
+  var originalLength = inst.writeAddArr.length;
+  var newAddArr = [];
+  var newStrArr = [];
 
-  for (let i = 0; i < writeAddArr.length; i++) {
-    if (writeAddArr[i] !== add) {
-      newAddArr.push(writeAddArr[i]);
-      newStrArr.push(writeStrArr[i]);
+  for (var i = 0; i < inst.writeAddArr.length; i++) {
+    if (inst.writeAddArr[i] !== add) {
+      newAddArr.push(inst.writeAddArr[i]);
+      newStrArr.push(inst.writeStrArr[i]);
     }
   }
 
   // 检查是否找到并移除了地址
   if (newAddArr.length === originalLength) {
-    console.warn(`Address ${add} not found in writeAddArr, cannot cancel.`);
+    console.warn(
+      'Address ' +
+        add +
+        ' not found in writeAddArr (PLC' +
+        index +
+        '), cannot cancel.'
+    );
     return false;
   }
 
   // 原子性替换数组内容
-  writeAddArr.length = 0;
-  writeStrArr.length = 0;
-  writeAddArr.push(...newAddArr);
-  writeStrArr.push(...newStrArr);
+  inst.writeAddArr.length = 0;
+  inst.writeStrArr.length = 0;
+  inst.writeAddArr.push.apply(inst.writeAddArr, newAddArr);
+  inst.writeStrArr.push.apply(inst.writeStrArr, newStrArr);
 
-  console.log(`已从批量写入数组中移除PLC地址：${add}`);
+  console.log('已从批量写入数组中移除PLC' + index + '地址：' + add);
 
   // 验证数组长度一致性
-  if (writeAddArr.length !== writeStrArr.length) {
+  if (inst.writeAddArr.length !== inst.writeStrArr.length) {
     console.error(
-      `数组长度不一致！地址数组长度：${writeAddArr.length}，值数组长度：${writeStrArr.length}`
+      '数组长度不一致！地址数组长度：' +
+        inst.writeAddArr.length +
+        '，值数组长度：' +
+        inst.writeStrArr.length
     );
   }
 
   return true;
-}
-
-function valuesWritten(anythingBad) {
-  if (anythingBad) {
-    console.log('SOMETHING WENT WRONG WRITING VALUES!!!!');
-  }
-}
-
-function valuesReady(anythingBad, values) {
-  if (anythingBad) {
-    console.log('SOMETHING WENT WRONG READING VALUES!!!!');
-  }
-  // console.log(values)
-  mainWindow.webContents.send('receivedMsg', values, writeStrArr.toString());
 }
 
 const setAppTray = () => {

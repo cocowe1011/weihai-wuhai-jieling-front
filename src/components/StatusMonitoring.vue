@@ -1,17 +1,15 @@
 <template>
-  <div
-    :class="['sm-main', plcStatus ? 'online' : 'offline']"
-    v-drag
-    @dblclick="openPlcPanel"
-  >
+  <div :class="['sm-main', plcStatusClass]" v-drag @dblclick="openPlcPanel">
     <div class="inner">
       <i
-        :class="plcStatus ? 'el-icon-circle-check' : 'el-icon-circle-close'"
+        :class="
+          plcStatusClass === 'offline'
+            ? 'el-icon-circle-close'
+            : 'el-icon-circle-check'
+        "
         class="status-icon"
       ></i>
-      <span class="status-text">
-        {{ plcStatus ? 'PLC 已连接' : 'PLC 断开' }}
-      </span>
+      <span class="status-text">{{ plcStatusText }}</span>
     </div>
     <el-dialog
       title="PLC变量"
@@ -22,6 +20,16 @@
       @open="handlePlcPanelOpen"
       @close="handlePlcPanelClose"
     >
+      <el-radio-group
+        v-model="activePlcIndex"
+        size="mini"
+        class="plc-panel__tabs"
+        @change="handlePlcTabChange"
+      >
+        <el-radio-button v-for="(config, i) in plcConfigs" :key="i" :label="i"
+          >{{ config.name }}PLC</el-radio-button
+        >
+      </el-radio-group>
       <div class="plc-panel__actions">
         <el-select
           v-model="customWriteAddress"
@@ -288,228 +296,279 @@ export default {
   },
   data() {
     return {
-      watchDog: '0',
-      warningTimeOut: null,
-      plcStatus: false,
+      plcCount: 2, // PLC 数量，与 background.js 的 plcConfigs 对应
+      plcConfigs: [{ name: '一楼' }, { name: '二楼' }],
+      warningTimeOuts: [],
+      plcStatuses: [], // [false, false]
+      plcValuesArr: [], // [{}, {}]
+      plcVariablesArr: [], // [{}, {}]
+      writeAddArrs: [],
+      writeStrArrs: [],
+      activePlcIndex: 0, // 当前选中的 PLC tab
       plcPanelVisible: false,
-      plcValues: {},
-      plcVariables: {},
-      writeAddArr: [],
-      writeStrArr: [],
       customWriteAddress: '',
       customWriteType: 'string',
       customWriteValue: '',
       customWriteBool: true,
       readFilter: '',
       isWriting: false,
-      cancelWriteTimer: null, // 取消写入的定时器，防止内存泄漏
-      writeDataPollingTimer: null, // 轮询定时器
-      bitParseAddress: '' // Bit 解析选中的 DBW 地址
+      cancelWriteTimers: [],
+      writeDataPollingTimers: [],
+      bitParseAddress: ''
     };
   },
+  created() {
+    // 初始化数组
+    for (var i = 0; i < this.plcCount; i++) {
+      this.warningTimeOuts.push(null);
+      this.plcStatuses.push(false);
+      this.plcValuesArr.push({});
+      this.plcVariablesArr.push({});
+      this.writeAddArrs.push([]);
+      this.writeStrArrs.push([]);
+      this.cancelWriteTimers.push(null);
+      this.writeDataPollingTimers.push(null);
+    }
+  },
   computed: {
+    plcStatusClass() {
+      var online = this.plcStatuses.filter(function (s) {
+        return s;
+      }).length;
+      if (online === this.plcCount) return 'online';
+      if (online === 0) return 'offline';
+      return 'partial';
+    },
+    plcStatusText() {
+      var online = this.plcStatuses.filter(function (s) {
+        return s;
+      }).length;
+      if (online === this.plcCount) return 'PLC 已连接';
+      if (online === 0) return 'PLC 断开';
+      return 'PLC 部分连接';
+    },
+    // 当前选中的PLC变量定义
+    currentPlcVariables() {
+      return this.plcVariablesArr[this.activePlcIndex] || {};
+    },
+    // 当前选中的PLC读取数据
+    currentPlcValues() {
+      return this.plcValuesArr[this.activePlcIndex] || {};
+    },
     writeAddressOptions() {
-      return Object.keys(this.plcVariables).filter((key) =>
-        key.startsWith('W_')
-      );
+      return Object.keys(this.currentPlcVariables).filter(function (key) {
+        return key.startsWith('W_');
+      });
     },
     readRows() {
-      const keys = Object.keys(this.plcVariables).filter(
-        (key) => !key.startsWith('W_')
-      );
-      return keys.map((key) => ({
-        key,
-        value: this.plcValues[key] === undefined ? '--' : this.plcValues[key]
-      }));
+      var self = this;
+      var keys = Object.keys(this.currentPlcVariables).filter(function (key) {
+        return !key.startsWith('W_');
+      });
+      return keys.map(function (key) {
+        return {
+          key: key,
+          value:
+            self.currentPlcValues[key] === undefined
+              ? '--'
+              : self.currentPlcValues[key]
+        };
+      });
     },
     filteredReadRows() {
-      const keyword = this.readFilter.trim().toLowerCase();
+      var keyword = this.readFilter.trim().toLowerCase();
       if (!keyword) return this.readRows;
-      return this.readRows.filter((item) =>
-        String(item.key).toLowerCase().includes(keyword)
-      );
+      return this.readRows.filter(function (item) {
+        return String(item.key).toLowerCase().includes(keyword);
+      });
     },
     writeRows() {
-      return this.writeAddArr.map((key, index) => ({
-        key,
-        value:
-          this.writeStrArr[index] === undefined ? '--' : this.writeStrArr[index]
-      }));
+      var addArr = this.writeAddArrs[this.activePlcIndex] || [];
+      var strArr = this.writeStrArrs[this.activePlcIndex] || [];
+      return addArr.map(function (key, index) {
+        return {
+          key: key,
+          value: strArr[index] === undefined ? '--' : strArr[index]
+        };
+      });
     },
-    // Bit 解析：当前可选的读取地址（非 W_ 开头）
     readAddressOptions() {
-      return Object.keys(this.plcVariables).filter(
-        (key) => !key.startsWith('W_')
-      );
+      return Object.keys(this.currentPlcVariables).filter(function (key) {
+        return !key.startsWith('W_');
+      });
     },
-    // Bit 解析：从 plcValues 取到的原始值
     bitParseRawValue() {
       if (!this.bitParseAddress) return '--';
-      const v = this.plcValues[this.bitParseAddress];
+      var v = this.currentPlcValues[this.bitParseAddress];
       return v === undefined || v === null ? '--' : v;
     },
-    // Bit 解析：转换为无符号 16 位 word
     bitParseWordValue() {
       if (!this.bitParseAddress) return '--';
-      const v = this.plcValues[this.bitParseAddress];
+      var v = this.currentPlcValues[this.bitParseAddress];
       if (v === undefined || v === null) return '--';
       return this.convertToWord(Number(v));
     },
-    // Bit 解析：16 位二进制字符串（高位在前）
     bitParseBinary() {
       if (this.bitParseWordValue === '--') return '--';
       return Number(this.bitParseWordValue).toString(2).padStart(16, '0');
     },
-    // Bit 解析：bit0~bit15 映射（按 MainPage.vue 的 S7 大端序逻辑）
     bitParseRows() {
-      const word =
+      var word =
         this.bitParseWordValue === '--' ? 0 : Number(this.bitParseWordValue);
-      const hasValue = this.bitParseWordValue !== '--';
-      const rows = [];
-      for (let logicBit = 0; logicBit < 16; logicBit++) {
-        // S7 大端序：逻辑 bit0~7 → 实际 bit8~15，逻辑 bit8~15 → 实际 bit0~7
-        const actualBit = logicBit < 8 ? logicBit + 8 : logicBit - 8;
-        const value = hasValue ? (word >> actualBit) & 1 : '-';
-        rows.push({ logicBit, actualBit, value });
+      var hasValue = this.bitParseWordValue !== '--';
+      var rows = [];
+      for (var logicBit = 0; logicBit < 16; logicBit++) {
+        var actualBit = logicBit < 8 ? logicBit + 8 : logicBit - 8;
+        var value = hasValue ? (word >> actualBit) & 1 : '-';
+        rows.push({ logicBit: logicBit, actualBit: actualBit, value: value });
       }
       return rows;
     }
   },
-  watch: {
-    watchDog: {
-      handler(newVal, oldVal) {
-        this.plcStatus = true;
-        if (this.warningTimeOut) {
-          clearTimeout(this.warningTimeOut);
-        }
-        this.warningTimeOut = setTimeout(() => {
-          if (this._isDestroyed) return;
-          this.plcStatus = false;
-          if (this.$route.path != '/login') {
-            this.$message.error('PLC连接中断');
+  mounted: function () {
+    // 为每台 PLC 注册 receivedMsg_N 监听，状态更新直接在 handler 内完成
+    var self = this;
+    this.ipcHandlers = [];
+    for (var i = 0; i < this.plcCount; i++) {
+      (function (index) {
+        var handler = function (event, values) {
+          // 更新读取数据
+          self.plcValuesArr.splice(index, 1, values || {});
+          // 直接更新状态（不依赖 watcher，避免 deep 遍历误触其他 PLC）
+          self.plcStatuses.splice(index, 1, true);
+          if (self.warningTimeOuts[index]) {
+            clearTimeout(self.warningTimeOuts[index]);
           }
-        }, 3000);
-      }
+          self.warningTimeOuts[index] = setTimeout(function () {
+            if (self._isDestroyed) return;
+            self.plcStatuses.splice(index, 1, false);
+            if (self.$route.path != '/login') {
+              self.$message.error(
+                (self.plcConfigs[index] || { name: 'PLC' + index }).name +
+                  'PLC连接中断'
+              );
+            }
+          }, 3000);
+        };
+        self.ipcHandlers.push(handler);
+        ipcRenderer.on('receivedMsg_' + index, handler);
+      })(i);
     }
   },
-  mounted() {
-    // receivedMsg 只接收PLC实时读取的数据
-    this.ipcHandler = (event, values) => {
-      this.watchDog = values.DBW0;
-      this.plcValues = values || {};
-    };
-    ipcRenderer.on('receivedMsg', this.ipcHandler);
-    // 不在挂载时获取数据，只有打开面板时才交互
-  },
-  // 3. 组件销毁清理
-  beforeDestroy() {
+  beforeDestroy: function () {
     this._isDestroyed = true;
-    // 清理 IPC 监听器
-    if (this.ipcHandler) {
-      ipcRenderer.removeListener('receivedMsg', this.ipcHandler);
-      this.ipcHandler = null;
+    var self = this;
+    // 清理所有 IPC 监听器
+    if (this.ipcHandlers) {
+      this.ipcHandlers.forEach(function (handler, i) {
+        ipcRenderer.removeListener('receivedMsg_' + i, handler);
+      });
+      this.ipcHandlers = null;
     }
     // 清理所有定时器
-    if (this.warningTimeOut) {
-      clearTimeout(this.warningTimeOut);
-      this.warningTimeOut = null;
-    }
-    // 清除轮询定时器
-    this.stopWriteDataPolling();
-    // 清除取消写入定时器
-    if (this.cancelWriteTimer) {
-      clearTimeout(this.cancelWriteTimer);
-      this.cancelWriteTimer = null;
-    }
+    this.warningTimeOuts.forEach(function (t) {
+      if (t) clearTimeout(t);
+    });
+    this.cancelWriteTimers.forEach(function (t) {
+      if (t) clearTimeout(t);
+    });
+    this.stopAllPolling();
   },
   methods: {
-    openPlcPanel() {
+    openPlcPanel: function () {
       this.plcPanelVisible = true;
     },
-    async handlePlcPanelOpen() {
-      // 打开面板时才开始数据交互
-      // 1. 如果还没加载过 plcVariables，先加载一次（因为启动后不会变）
-      if (Object.keys(this.plcVariables).length === 0) {
-        await this.loadPlcVariables();
+    handlePlcPanelOpen: async function () {
+      // 为每台 PLC 加载变量定义和写入数据
+      for (var i = 0; i < this.plcCount; i++) {
+        if (Object.keys(this.plcVariablesArr[i]).length === 0) {
+          await this.loadPlcVariables(i);
+        }
+        await this.refreshWriteData(i);
+        this.startWriteDataPolling(i);
       }
-      // 2. 立即获取一次写入数据
-      await this.refreshWriteData();
-      // 3. 开始轮询写入数据
-      this.startWriteDataPolling();
     },
-    handlePlcPanelClose() {
-      // 关闭面板时停止轮询，避免不必要的请求
-      this.stopWriteDataPolling();
+    handlePlcPanelClose: function () {
+      this.stopAllPolling();
     },
-    // 加载PLC变量定义：只在组件挂载时调用一次（因为启动后不会变）
-    async loadPlcVariables() {
+    handlePlcTabChange: function () {
+      this.customWriteAddress = '';
+      this.customWriteType = 'string';
+      this.customWriteValue = '';
+      this.customWriteBool = true;
+      this.readFilter = '';
+      this.bitParseAddress = '';
+    },
+    loadPlcVariables: async function (index) {
       try {
-        const payload = await ipcRenderer.invoke('getPlcVariables');
+        var payload = await ipcRenderer.invoke('getPlcVariables_' + index);
         if (payload) {
-          this.plcVariables = payload.variables || {};
+          this.plcVariablesArr.splice(index, 1, payload.variables || {});
         }
       } catch (error) {
-        console.error('加载PLC变量定义失败:', error);
+        console.error('加载PLC' + index + '变量定义失败:', error);
       }
     },
-    // 刷新写入数据：writeStrArr 和 writeAddArr 经常变化，需要轮询更新
-    async refreshWriteData() {
+    refreshWriteData: async function (index) {
       try {
-        const payload = await ipcRenderer.invoke('getWriteData');
+        var payload = await ipcRenderer.invoke('getWriteData_' + index);
         if (payload) {
-          this.writeAddArr = payload.writeAddArr || [];
-          this.writeStrArr = payload.writeStrArr || [];
+          this.writeAddArrs.splice(index, 1, payload.writeAddArr || []);
+          this.writeStrArrs.splice(index, 1, payload.writeStrArr || []);
         }
       } catch (error) {
-        // 轮询时的错误不需要弹窗提示，只在控制台记录
-        console.error('刷新写入数据失败:', error);
+        console.error('刷新PLC' + index + '写入数据失败:', error);
       }
     },
-    // 开始轮询写入数据
-    startWriteDataPolling() {
-      // 防止重复创建定时器
-      this.stopWriteDataPolling();
-      // 每2秒轮询一次写入数据
-      this.writeDataPollingTimer = setInterval(() => {
-        this.refreshWriteData();
+    startWriteDataPolling: function (index) {
+      this.stopWriteDataPolling(index);
+      var self = this;
+      this.writeDataPollingTimers[index] = setInterval(function () {
+        self.refreshWriteData(index);
       }, 1000);
     },
-    // 停止轮询写入数据
-    stopWriteDataPolling() {
-      if (this.writeDataPollingTimer) {
-        clearInterval(this.writeDataPollingTimer);
-        this.writeDataPollingTimer = null;
+    stopWriteDataPolling: function (index) {
+      if (this.writeDataPollingTimers[index]) {
+        clearInterval(this.writeDataPollingTimers[index]);
+        this.writeDataPollingTimers[index] = null;
       }
     },
-    getCustomWriteValue() {
+    stopAllPolling: function () {
+      for (var i = 0; i < this.plcCount; i++) {
+        this.stopWriteDataPolling(i);
+      }
+    },
+    getCustomWriteValue: function () {
       if (this.customWriteType === 'bool') {
         return this.customWriteBool;
       }
       return String(this.customWriteValue);
     },
-    async confirmCustomWrite() {
-      const address = this.customWriteAddress.trim();
+    confirmCustomWrite: async function () {
+      var address = this.customWriteAddress.trim();
       if (!address) {
         this.$message.warning('请输入变量地址');
         return;
       }
       this.isWriting = true;
-      const value = this.getCustomWriteValue();
+      var value = this.getCustomWriteValue();
+      var idx = this.activePlcIndex;
+      var currentWriteAddArr = this.writeAddArrs[idx] || [];
       try {
-        if (this.writeAddArr.includes(address)) {
-          ipcRenderer.send('writeValuesToPLC', address, value);
-          await this.refreshWriteData();
+        if (currentWriteAddArr.includes(address)) {
+          ipcRenderer.send('writeValuesToPLC_' + idx, address, value);
+          await this.refreshWriteData(idx);
           this.$message.success('写入指令已发送');
           this.isWriting = false;
         } else {
-          ipcRenderer.send('writeSingleValueToPLC', address, value);
-          await this.refreshWriteData();
+          ipcRenderer.send('writeSingleValueToPLC_' + idx, address, value);
+          await this.refreshWriteData(idx);
           this.$message.success('写入指令已发送');
-          // 2秒后取消写入并关闭loading
-          this.cancelWriteTimer = setTimeout(() => {
-            ipcRenderer.send('cancelWriteToPLC', address);
-            this.isWriting = false;
-            this.cancelWriteTimer = null;
+          var self = this;
+          this.cancelWriteTimers[idx] = setTimeout(function () {
+            ipcRenderer.send('cancelWriteToPLC_' + idx, address);
+            self.isWriting = false;
+            self.cancelWriteTimers[idx] = null;
           }, 2000);
         }
       } catch (error) {
@@ -518,8 +577,7 @@ export default {
         this.isWriting = false;
       }
     },
-    // 将有符号 16 位整数转为无符号 word（与 MainPage.vue convertToWord 一致）
-    convertToWord(value) {
+    convertToWord: function (value) {
       if (value < 0) {
         return (value & 0xffff) >>> 0;
       }
@@ -536,7 +594,7 @@ export default {
   right: 25px;
   bottom: 25px;
   height: 40px;
-  width: 120px;
+  width: 130px;
   z-index: 4000;
   background-color: #1f2d3d;
   border-radius: 4px;
@@ -573,6 +631,13 @@ export default {
     }
   }
 
+  &.partial {
+    border-left: 4px solid #e6a23c;
+    .status-icon {
+      color: #e6a23c;
+    }
+  }
+
   &.offline {
     border-left: 4px solid #f56c6c;
     .status-icon {
@@ -582,6 +647,17 @@ export default {
       color: #bbb;
     }
   }
+}
+
+.status-divider {
+  width: 1px;
+  height: 16px;
+  background: #4a5568;
+  margin: 0 6px;
+}
+
+.plc-panel__tabs {
+  margin-bottom: 12px;
 }
 
 .sm-main:active {
@@ -766,6 +842,15 @@ export default {
   .plc-panel__bit-value {
     font-size: 14px;
     font-weight: 700;
+  }
+}
+</style>
+
+<style lang="less">
+/* append-to-body 的 dialog 必须放在非 scoped 块 */
+.plc-panel {
+  .el-dialog__body {
+    padding: 10px 20px;
   }
 }
 </style>

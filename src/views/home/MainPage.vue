@@ -654,7 +654,7 @@ export default {
   mounted() {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
-    ipcRenderer.on('receivedMsg', (event, values, values2) => {
+    ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
       // 使用位运算优化赋值
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
       // A线电机运行信号 (DBW6)
@@ -725,9 +725,9 @@ export default {
               clear: false
             };
             // 全线启动：写入 DB1001.DBW2（WCS-全线启动），见 写入PLC点位.csv
-            ipcRenderer.send('writeSingleValueToPLC', 'W_DBW2', 1);
+            ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW2', 1);
             setTimeout(() => {
-              ipcRenderer.send('cancelWriteToPLC', 'W_DBW2');
+              ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW2');
             }, 2000);
             this.buttonStates[button] = !this.buttonStates[button];
             this.$message.success('全线启动成功');
@@ -751,9 +751,9 @@ export default {
               clear: false
             };
             // 全线停止：写入 DB1001.DBW4（WCS-全线停止），见 写入PLC点位.csv
-            ipcRenderer.send('writeSingleValueToPLC', 'W_DBW4', 1);
+            ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW4', 1);
             setTimeout(() => {
-              ipcRenderer.send('cancelWriteToPLC', 'W_DBW4');
+              ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW4');
             }, 2000);
             this.buttonStates[button] = !this.buttonStates[button];
             this.$message.success('全线停止成功');
@@ -778,9 +778,9 @@ export default {
             };
             this.buttonStates[button] = !this.buttonStates[button];
             // 全线暂停：写入点位以 写入PLC点位.csv 为准，暂用 W_DBW6；可按实际协议调整
-            ipcRenderer.send('writeSingleValueToPLC', 'W_DBW6', 1);
+            ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW6', 1);
             setTimeout(() => {
-              ipcRenderer.send('cancelWriteToPLC', 'W_DBW6');
+              ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW6');
             }, 2000);
             this.$message.success('全线暂停成功');
             this.addLog('全线暂停成功');
@@ -796,9 +796,9 @@ export default {
         })
           .then(() => {
             // 故障复位：写入 DB1001.DBW8（WCS-故障复位），见 写入PLC点位.csv
-            ipcRenderer.send('writeSingleValueToPLC', 'W_DBW8', 1);
+            ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW8', 1);
             setTimeout(() => {
-              ipcRenderer.send('cancelWriteToPLC', 'W_DBW8');
+              ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW8');
             }, 2000);
             this.$message.success('故障复位成功');
             this.addLog('故障复位成功');
