@@ -547,17 +547,18 @@
               </div>
             </div>
           </div>
-          <!-- 添加扫码测试部分 -->
+          <!-- 上货请求信号手动触发 -->
           <div class="test-section">
-            <span class="test-label">扫码信息测试:</span>
-            <div class="qrcode-test-container">
-              <div class="qrcode-input-group">
-                <div class="qrcode-label">一楼扫码:</div>
-                <el-input
+            <span class="test-label">上货请求信号测试:</span>
+            <div class="task-test-container">
+              <div class="task-buttons">
+                <el-button
+                  type="primary"
                   size="small"
-                  placeholder="输入扫码信息"
-                  class="qrcode-input"
-                ></el-input>
+                  @click="manualTriggerUploadRequest"
+                >
+                  模拟上货信号 ({{ floor1UploadTrayRequest.bit0 }})
+                </el-button>
               </div>
             </div>
           </div>
@@ -1495,7 +1496,11 @@ export default {
       historyFilter: { orderId: '', orderName: '', orderStatus: '' },
       currentPage: 1,
       pageSize: 10,
-      totalHistoryOrders: 0
+      totalHistoryOrders: 0,
+      // ========== 上货请求信号处理 ==========
+      currentVirtualId: 10000, // 当前虚拟ID（范围10000-29999）
+      lastUploadRequestBit: '0', // 上次上货请求信号值（用于上升沿检测）
+      isHandlingUploadRequest: false // 是否正在处理上货请求（防重复）
     };
   },
   computed: {
@@ -1514,6 +1519,21 @@ export default {
   mounted() {
     this.initializeMarkers();
     this.loadQueueInfoFromDatabase();
+    // 数据加载完成后创建监听（跳过 id 为 1-5 的队列）
+    this._queueWatchers = []; // 保存 watcher 取消函数
+    this._queueInitDone = false; // 初始化标记，跳过首次赋值触发的watch
+    this.$nextTick(() => {
+      this.queues.forEach((queue, index) => {
+        const unwatch = this.$watch(`queues.${index}`, {
+          handler(newVal, oldVal) {
+            if (!this._queueInitDone) return;
+            this.updateQueueInfo(queue.id);
+          },
+          deep: true
+        });
+        this._queueWatchers.push(unwatch);
+      });
+    });
     this.refreshOrders();
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
@@ -1983,6 +2003,13 @@ export default {
     },
     'cartPositionValues.cart5'(newVal) {
       this.updateCartPositionByValue(5, newVal);
+    },
+    // 监听上货请求信号 DB1000.DBW22.BIT0 的上升沿
+    'floor1UploadTrayRequest.bit0'(newVal, oldVal) {
+      // 上升沿检测：从0变为1
+      if (newVal === '1' && oldVal === '0') {
+        this.handleUploadTrayRequest();
+      }
     }
   },
   methods: {
@@ -2282,6 +2309,170 @@ export default {
     async showHistoryOrders() {
       this.historyDialogVisible = true;
       await this.loadHistoryOrders();
+    },
+    // ========== 上货请求信号处理 ==========
+    // 处理上货请求信号（DB1000.DBW22.BIT0 上升沿触发）
+    async handleUploadTrayRequest() {
+      if (this.isHandlingUploadRequest) {
+        this.addLog('上货请求处理中，忽略重复信号');
+        return;
+      }
+      this.isHandlingUploadRequest = true;
+      try {
+        // 1. 查找当前执行中的订单
+        const runningOrder = this.ordersList.find((o) => o.orderStatus === 1);
+        if (!runningOrder) {
+          this.addLog('上货请求失败：当前没有执行中的订单', 'alarm');
+          this.$message.warning('当前没有执行中的订单，无法上货');
+          return;
+        }
+
+        // 2. 检查订单是否已完成数量
+        if (runningOrder.loadedQuantity >= runningOrder.orderQuantity) {
+          this.addLog(
+            `上货请求失败：订单 ${runningOrder.orderId} 已上货数量(${runningOrder.loadedQuantity})已达到订单数量(${runningOrder.orderQuantity})`,
+            'alarm'
+          );
+          this.$message.warning('该订单已上货完成，无需继续上货');
+          return;
+        }
+
+        // 3. 生成虚拟ID（范围10000-29999，递增）
+        const virtualId = this.generateVirtualId();
+        if (!virtualId) {
+          this.addLog('上货请求失败：虚拟ID已用尽(10000-29999)', 'alarm');
+          this.$message.error('虚拟ID已用尽，请联系管理员');
+          return;
+        }
+
+        // 4. 获取目的地（从订单执行信息中获取，无目的地则不允许上货）
+        if (!runningOrder.destination) {
+          this.addLog('上货请求失败：订单没有设置目的地，不允许上货', 'alarm');
+          this.$message.warning(
+            '当前执行订单没有目的地，请先执行订单设置目的地'
+          );
+          return;
+        }
+        const destination = Number(runningOrder.destination);
+
+        // 5. 向 PLC 写入虚拟ID和目的地（写2S后取消）
+        ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW10', virtualId);
+        ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW14', destination);
+        this.addLog(`已向上货口写入虚拟ID=${virtualId}，目的地=${destination}`);
+
+        // 2秒后取消写入
+        setTimeout(() => {
+          ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW10');
+          ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW14');
+          this.addLog('上货口PLC写入信号已取消');
+        }, 2000);
+
+        // 6. 生成托盘信息并加入上货区队列
+        const now = new Date();
+        const timeStr = moment(now).format('YYYY-MM-DD HH:mm:ss');
+        const trayInfo = {
+          trayCode: String(virtualId),
+          virtualId: virtualId,
+          trayTime: timeStr,
+          isTerile: 0,
+          sendTo: String(destination),
+          state: 'loaded',
+          sequenceNumber: String(this.queues[0].trayInfo.length + 1),
+          orderId: runningOrder.orderId || '',
+          orderDbId: runningOrder.id,
+          productCode: runningOrder.productCode || '',
+          productName: runningOrder.productName || '',
+          unit: runningOrder.unit || '',
+          batchNo: runningOrder.batchNo || '',
+          processName: runningOrder.processName || '',
+          destination: String(destination),
+          remark: `订单${runningOrder.orderId}自动上货`
+        };
+
+        // 将托盘加入上货区队列（queues[0]）
+        this.queues[0].trayInfo.push(trayInfo);
+        this.updateQueueTrays(1, this.queues[0].trayInfo);
+
+        // 更新扫码信息显示
+        this.nowScanTrayInfo = {
+          virtualId: virtualId,
+          destination: destination
+        };
+
+        // 7. 更新订单已上货数量（loadedQuantity + 1）
+        const newLoadedQty = (runningOrder.loadedQuantity || 0) + 1;
+        const updateParam = {
+          id: runningOrder.id,
+          loadedQuantity: newLoadedQty
+        };
+        await HttpUtil.post('/order_info/update', updateParam)
+          .then((res) => {
+            if (res.code === '200') {
+              this.addLog(
+                `订单 ${runningOrder.orderId} 已上货数量更新为 ${newLoadedQty}/${runningOrder.orderQuantity}`
+              );
+              this.refreshOrders();
+            } else {
+              this.addLog(
+                `订单 ${runningOrder.orderId} 已上货数量更新失败`,
+                'alarm'
+              );
+            }
+          })
+          .catch((err) => {
+            this.addLog(
+              `订单 ${runningOrder.orderId} 已上货数量更新异常: ${err}`,
+              'alarm'
+            );
+          });
+
+        this.addLog(
+          `上货请求处理完成：虚拟ID=${virtualId}，订单=${runningOrder.orderId}，目的地=${destination}，已上货${newLoadedQty}/${runningOrder.orderQuantity}`
+        );
+      } catch (error) {
+        console.error('处理上货请求时出错:', error);
+        this.addLog('处理上货请求时发生异常: ' + error.message, 'alarm');
+        this.$message.error('处理上货请求失败: ' + error.message);
+      } finally {
+        this.isHandlingUploadRequest = false;
+      }
+    },
+    // 生成虚拟ID（范围10000-29999，基于本批次已写入的虚拟ID递增）
+    generateVirtualId() {
+      // 从上货区队列中找出当前批次最大的虚拟ID
+      let maxVirtualId = 0;
+      this.queues.forEach((queue) => {
+        (queue.trayInfo || []).forEach((tray) => {
+          const vid = Number(tray.virtualId || 0);
+          if (vid >= 10000 && vid <= 29999 && vid > maxVirtualId) {
+            maxVirtualId = vid;
+          }
+        });
+      });
+
+      // 如果队列中没有虚拟ID，则从currentVirtualId开始
+      let nextId;
+      if (maxVirtualId > 0) {
+        nextId = maxVirtualId + 1;
+      } else {
+        nextId = this.currentVirtualId;
+      }
+
+      // 检查是否超出范围
+      if (nextId > 29999) {
+        return null;
+      }
+
+      this.currentVirtualId = nextId;
+      return nextId;
+    },
+    // 手动触发上货请求信号（测试用）
+    manualTriggerUploadRequest() {
+      this.floor1UploadTrayRequest.bit0 = '1';
+      this.addLog('测试面板：手动触发上货请求信号');
+      setTimeout(() => {
+        this.floor1UploadTrayRequest.bit0 = '0';
+      }, 1000);
     },
     // 关闭历史订单弹窗
     handleHistoryDialogClose(done) {
@@ -2985,6 +3176,15 @@ export default {
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
+    }
+    // 取消队列监听器
+    if (this._queueWatchers && this._queueWatchers.length > 0) {
+      this._queueWatchers.forEach((unwatch) => {
+        if (typeof unwatch === 'function') {
+          unwatch();
+        }
+      });
+      this._queueWatchers = [];
     }
   }
 };
