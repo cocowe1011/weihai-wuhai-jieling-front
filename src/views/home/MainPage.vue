@@ -93,29 +93,9 @@
                     </span>
                   </div>
                   <div class="order-header-actions">
-                    <el-button
-                      v-if="order.orderStatus === 1"
-                      type="text"
-                      size="small"
-                      @click="cancelOrder(order)"
-                      :loading="order.isLoading"
-                      class="cancel-btn"
-                    >
-                      取消
-                    </el-button>
-                    <el-button
-                      v-if="order.orderStatus === 0"
-                      type="danger"
-                      size="mini"
-                      @click="deleteOrder(order)"
-                      :loading="order.isDeleting"
-                      icon="el-icon-delete"
-                      class="delete-btn"
-                      circle
-                    ></el-button>
                     <button
                       v-if="order.orderStatus === 0"
-                      class="switch-order-btn"
+                      class="order-action-btn order-action-btn--execute"
                       :class="{ loading: order.isLoading }"
                       @click="showExecuteOrderDialog(order)"
                       :disabled="order.isLoading"
@@ -124,14 +104,44 @@
                       <span>执行</span>
                     </button>
                     <button
+                      v-if="order.orderStatus === 0"
+                      class="order-action-btn order-action-btn--edit"
+                      @click="showEditOrderDialog(order)"
+                      :disabled="order.isLoading || order.isDeleting"
+                    >
+                      <i class="el-icon-edit"></i>
+                      <span>修改</span>
+                    </button>
+                    <button
+                      v-if="order.orderStatus === 0"
+                      class="order-action-btn order-action-btn--delete"
+                      :class="{ loading: order.isDeleting }"
+                      @click="deleteOrder(order)"
+                      :disabled="order.isDeleting"
+                    >
+                      <i v-if="order.isDeleting" class="el-icon-loading"></i>
+                      <i v-else class="el-icon-delete"></i>
+                      <span>删除</span>
+                    </button>
+                    <button
                       v-if="order.orderStatus === 1"
-                      class="switch-order-btn complete-btn"
+                      class="order-action-btn order-action-btn--complete"
                       :class="{ loading: order.isLoading }"
                       @click="finishOrder(order)"
                       :disabled="order.isLoading"
                     >
                       <i v-if="order.isLoading" class="el-icon-loading"></i>
                       <span>完成</span>
+                    </button>
+                    <button
+                      v-if="order.orderStatus === 1"
+                      class="order-action-btn order-action-btn--cancel"
+                      :class="{ loading: order.isLoading }"
+                      @click="cancelOrder(order)"
+                      :disabled="order.isLoading"
+                    >
+                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <span>取消</span>
                     </button>
                   </div>
                 </div>
@@ -337,6 +347,57 @@
                   :data-width="cart.width"
                 >
                   <img :src="cart.image" :alt="cart.name" class="cart-image" />
+                </div>
+                <!-- 预热房到灭菌柜执行 -->
+                <div
+                  class="preheating-room-marker"
+                  data-x="1000"
+                  data-y="1550"
+                  style="width: 160px"
+                >
+                  <div class="preheating-room-content">
+                    <div class="preheating-room-header">预热房到灭菌柜选择</div>
+                    <div class="preheating-room-body">
+                      <div style="display: flex; align-items: center">
+                        <el-select
+                          v-model="preheatToSterilizeFrom"
+                          placeholder="预热"
+                          size="mini"
+                        >
+                          <el-option
+                            v-for="i in 12"
+                            :key="i"
+                            :label="String(i)"
+                            :value="String(i)"
+                          />
+                        </el-select>
+                        <span
+                          style="font-size: 12px; color: #fff; margin-left: 5px"
+                          >到：</span
+                        >
+                        <el-select
+                          v-model="preheatToSterilizeTo"
+                          placeholder="灭菌"
+                          size="mini"
+                        >
+                          <el-option
+                            v-for="i in 15"
+                            :key="i"
+                            :label="String(i + 18)"
+                            :value="String(i + 18)"
+                          />
+                        </el-select>
+                      </div>
+                      <el-button
+                        type="primary"
+                        size="mini"
+                        @click="executePreheatToSterilize"
+                        :loading="preheatToSterilizeLoading"
+                        style="width: 100%"
+                        >执行</el-button
+                      >
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -837,6 +898,78 @@
             :total="totalHistoryOrders"
           />
         </div>
+      </div>
+    </el-dialog>
+
+    <!-- 修改订单弹窗 -->
+    <el-dialog
+      title="修改订单"
+      :visible.sync="editOrderDialogVisible"
+      width="600px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      append-to-body
+    >
+      <el-form
+        ref="editOrderForm"
+        :model="editOrderForm"
+        :rules="editOrderRules"
+        label-width="120px"
+        size="small"
+      >
+        <el-form-item label="订单编号" prop="orderId">
+          <el-input
+            v-model="editOrderForm.orderId"
+            placeholder="请输入订单编号"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="订单名称" prop="orderName">
+          <el-input
+            v-model="editOrderForm.orderName"
+            placeholder="请输入订单名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="批号" prop="batchNo">
+          <el-input
+            v-model="editOrderForm.batchNo"
+            placeholder="请输入批号"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="产品名称" prop="productName">
+          <el-input
+            v-model="editOrderForm.productName"
+            placeholder="请输入产品名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="工艺名称" prop="processName">
+          <el-input
+            v-model="editOrderForm.processName"
+            placeholder="请输入工艺名称"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="订单数量" prop="orderQuantity">
+          <el-input-number
+            v-model="editOrderForm.orderQuantity"
+            :min="1"
+            placeholder="请输入订单数量"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancelEditOrder">取消</el-button>
+        <el-button
+          type="primary"
+          @click="submitEditOrder"
+          :loading="isEditingOrder"
+        >
+          确定
+        </el-button>
       </div>
     </el-dialog>
 
@@ -1473,6 +1606,33 @@ export default {
           { required: true, message: '请输入订单数量', trigger: 'blur' }
         ]
       },
+      // 修改订单弹窗
+      editOrderDialogVisible: false,
+      editOrderForm: {
+        id: null,
+        orderId: '',
+        orderName: '',
+        batchNo: '',
+        productName: '',
+        processName: '',
+        orderQuantity: null
+      },
+      editOrderRules: {
+        orderId: [
+          { required: true, message: '请输入订单编号', trigger: 'blur' }
+        ],
+        orderName: [
+          { required: true, message: '请输入订单名称', trigger: 'blur' }
+        ],
+        batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
+        productName: [
+          { required: true, message: '请输入产品名称', trigger: 'blur' }
+        ],
+        orderQuantity: [
+          { required: true, message: '请输入订单数量', trigger: 'blur' }
+        ]
+      },
+      isEditingOrder: false,
       // 执行订单弹窗
       executeOrderDialogVisible: false,
       executeOrderForm: {
@@ -1500,7 +1660,11 @@ export default {
       // ========== 上货请求信号处理 ==========
       currentVirtualId: 10000, // 当前虚拟ID（范围10000-29999）
       lastUploadRequestBit: '0', // 上次上货请求信号值（用于上升沿检测）
-      isHandlingUploadRequest: false // 是否正在处理上货请求（防重复）
+      isHandlingUploadRequest: false, // 是否正在处理上货请求（防重复）
+      // ========== 预热房到灭菌柜执行 ==========
+      preheatToSterilizeFrom: '', // 预热房编号（1~12）
+      preheatToSterilizeTo: '', // 灭菌柜编号（19~33）
+      preheatToSterilizeLoading: false
     };
   },
   computed: {
@@ -2066,6 +2230,64 @@ export default {
         this.$message.success(`订单 ${order.orderId} 已完成`);
       }
       await this.refreshOrders();
+    },
+    // 显示修改订单弹窗
+    showEditOrderDialog(order) {
+      this.editOrderForm = {
+        id: order.id,
+        orderId: order.orderId,
+        orderName: order.orderName,
+        batchNo: order.batchNo,
+        productName: order.productName,
+        processName: order.processName || '',
+        orderQuantity: order.orderQuantity
+      };
+      this.editOrderDialogVisible = true;
+    },
+    // 提交修改订单
+    async submitEditOrder() {
+      try {
+        await this.$refs.editOrderForm.validate();
+        this.isEditingOrder = true;
+        const param = {
+          id: this.editOrderForm.id,
+          orderId: this.editOrderForm.orderId,
+          orderName: this.editOrderForm.orderName,
+          batchNo: this.editOrderForm.batchNo,
+          productName: this.editOrderForm.productName,
+          processName: this.editOrderForm.processName || '',
+          orderQuantity: this.editOrderForm.orderQuantity
+        };
+        await HttpUtil.post('/order_info/update', param)
+          .then((res) => {
+            if (res.code === '200') {
+              this.$message.success('订单修改成功');
+              this.addLog(
+                `订单 ${param.orderId} 修改成功，产品：${param.productName}，数量：${param.orderQuantity}`
+              );
+              this.editOrderDialogVisible = false;
+              this.refreshOrders();
+            } else {
+              this.$message.error('修改订单失败：' + (res.message || '请重试'));
+            }
+          })
+          .catch((err) => {
+            this.$message.error('修改订单失败：' + err);
+          })
+          .finally(() => {
+            this.isEditingOrder = false;
+          });
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error('表单验证失败，请检查输入');
+        }
+        this.isEditingOrder = false;
+      }
+    },
+    // 取消修改订单
+    cancelEditOrder() {
+      this.editOrderDialogVisible = false;
+      this.$refs.editOrderForm && this.$refs.editOrderForm.resetFields();
     },
     // 显示新建订单弹窗
     showAddOrderDialog() {
@@ -3159,6 +3381,47 @@ export default {
           this.addLog('队列信息加载失败');
         });
     },
+    // ========== 预热房到灭菌柜执行 ==========
+    executePreheatToSterilize() {
+      if (!this.preheatToSterilizeFrom || !this.preheatToSterilizeTo) {
+        this.$message.warning('请先选择预热房和灭菌柜');
+        return;
+      }
+      this.$confirm(
+        `确认执行预热房${this.preheatToSterilizeFrom}到灭菌柜${this.preheatToSterilizeTo}进货命令？`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          this.preheatToSterilizeLoading = true;
+          const preheatNo = Number(this.preheatToSterilizeFrom);
+          const sterilizeNo = Number(this.preheatToSterilizeTo);
+          // WCS执行进货预热柜编号 DB1001.DBW16
+          ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW16', preheatNo);
+          // WCS执行进货灭菌柜进货执行命令 DB1001.DBW18
+          ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW18', sterilizeNo);
+          setTimeout(() => {
+            ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW16');
+            ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW18');
+          }, 2000);
+          this.addLog(
+            `执行预热房${this.preheatToSterilizeFrom}到灭菌柜${this.preheatToSterilizeTo}进货命令（DBW16=${this.preheatToSterilizeFrom}, DBW18=${this.preheatToSterilizeTo}）`
+          );
+          this.$message.success(
+            `已发送预热房${this.preheatToSterilizeFrom}到灭菌柜${this.preheatToSterilizeTo}执行命令`
+          );
+          setTimeout(() => {
+            this.preheatToSterilizeLoading = false;
+          }, 2000);
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
+    },
     // 切换到报警日志时清除未读状态
     switchToAlarmLog() {
       this.activeLogType = 'alarm';
@@ -3697,10 +3960,6 @@ export default {
               align-items: center;
               gap: 6px;
               flex-shrink: 0;
-              .cancel-btn {
-                padding: 0;
-                font-size: 12px;
-              }
             }
           }
           .order-info {
@@ -3722,16 +3981,15 @@ export default {
             }
           }
         }
-        .switch-order-btn {
-          padding: 4px 14px;
+        .order-action-btn {
+          padding: 4px 12px;
           border: none;
           border-radius: 6px;
-          background: linear-gradient(135deg, #4385ff, #2f54eb);
           color: #fff;
           font-size: 12px;
           font-weight: 600;
           cursor: pointer;
-          transition: opacity 0.2s;
+          transition: all 0.2s;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -3740,13 +3998,27 @@ export default {
           line-height: 1;
           &:hover {
             opacity: 0.9;
+            transform: translateY(-1px);
           }
           &.loading {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
           }
-          &.complete-btn {
+          &--execute {
+            background: linear-gradient(135deg, #4385ff, #2f54eb);
+          }
+          &--complete {
             background: linear-gradient(135deg, #67c23a, #529b2e);
+          }
+          &--edit {
+            background: linear-gradient(135deg, #e6a23c, #cf8e22);
+          }
+          &--delete {
+            background: linear-gradient(135deg, #f56c6c, #dd4a4a);
+          }
+          &--cancel {
+            background: linear-gradient(135deg, #909399, #737680);
           }
         }
         .empty-state {
