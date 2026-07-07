@@ -623,6 +623,40 @@
               </div>
             </div>
           </div>
+          <!-- 灭菌柜完成数量模拟 -->
+          <div class="test-section">
+            <span class="test-label">灭菌柜数量测试(完成):</span>
+            <div class="steril-quantity-test-grid">
+              <div
+                v-for="cabinetNo in 15"
+                :key="'steril-qty-' + (cabinetNo + 18)"
+                class="steril-quantity-item"
+              >
+                <span class="steril-quantity-label">{{ cabinetNo + 18 }}</span>
+                <span class="steril-quantity-value">{{
+                  getSterilizationCompleteQuantity(cabinetNo + 18)
+                }}</span>
+                <div class="steril-quantity-buttons">
+                  <button
+                    class="quantity-btn plus"
+                    @click="
+                      updateSterilizationCompleteQuantity(cabinetNo + 18, 1)
+                    "
+                  >
+                    +
+                  </button>
+                  <button
+                    class="quantity-btn minus"
+                    @click="
+                      updateSterilizationCompleteQuantity(cabinetNo + 18, -1)
+                    "
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1090,426 +1124,426 @@ export default {
       logId: 1000, // 添加一个日志ID计数器
       isDataReady: false,
       // ========== 一楼 PLC 读取点位（一楼-读取点位.csv）==========
-      floor1ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳
-      floor1ConveyorRunStatus: 0, // DBW2 输送线当前运行状态
+      floor1ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳（高电平1秒持续，低电平1秒持续，一直循环）
+      floor1ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
       floor1AreaAlarm: {
         // DBW4 区域报警
-        bit0: '0',
-        bit1: '0',
-        bit2: '0'
+        bit0: '0', // 上货区域报警
+        bit1: '0', // 灭菌前区域报警
+        bit2: '0' // 灭菌后区域报警
       },
       floor1AreaEstop: {
         // DBW6 区域急停
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0'
+        bit0: '0', // 一楼控制柜急停
+        bit1: '0', // 上货口操作台急停
+        bit2: '0', // 灭菌前分站急停
+        bit3: '0', // 灭菌前小车1急停
+        bit4: '0', // 灭菌前小车2急停
+        bit5: '0' // 灭菌后小车急停
       },
       floor1MotorRunning1: {
         // DBW8 电机运行信号--1
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 1001电机运行（上货口输送电机）
+        bit1: '0', // 1002电机运行（上货口过渡电机）
+        bit2: '0', // 1003电机运行（上货口升降电机）
+        bit3: '0', // 1008电机正转运行（灭菌柜进货）
+        bit4: '0', // 1008电机反转运行（灭菌柜出货）
+        bit5: '0', // 1009电机正转运行（灭菌柜进货）
+        bit6: '0', // 1009电机反转运行（灭菌柜出货）
+        bit7: '0', // 1010电机正转运行（灭菌柜进货）
+        bit8: '0', // 1010电机反转运行（灭菌柜出货）
+        bit9: '0', // 1011电机正转运行（灭菌柜进货）
+        bit10: '0', // 1011电机反转运行（灭菌柜出货）
+        bit11: '0', // 1012电机正转运行（灭菌柜进货）
+        bit12: '0', // 1012电机反转运行（灭菌柜出货）
+        bit13: '0', // 1013电机正转运行（灭菌柜进货）
+        bit14: '0', // 1013电机反转运行（灭菌柜出货）
+        bit15: '0' // 1014电机运行
       },
       floor1MotorRunning2: {
         // DBW10 电机运行信号--2
-        bit0: '0'
+        bit0: '0' // 1015电机运行
       },
       floor1SensorSignal: {
         // DBW12 传感器信号
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0'
+        bit0: '0', // 光电1001
+        bit1: '0', // 光电1008-1
+        bit2: '0', // 光电1008-2
+        bit3: '0', // 光电1010-1
+        bit4: '0', // 光电1010-2
+        bit5: '0', // 光电1012-1
+        bit6: '0', // 光电1012-2
+        bit7: '0', // 光电1014
+        bit8: '0' // 光电1015
       },
-      floor1CartBeforeSteril1Pos: 0, // DBW14 灭菌前小车1位置
-      floor1CartBeforeSteril2Pos: 0, // DBW16 灭菌前小车2位置
-      floor1CartAfterSterilPos: 0, // DBW18 灭菌后小车位置
-      floor1CartBeforeSteril3Pos: 0, // DBW20 灭菌前小车3（备用）
+      floor1CartBeforeSteril1Pos: 0, // DBW14 灭菌前小车1位置信息（0-3000）
+      floor1CartBeforeSteril2Pos: 0, // DBW16 灭菌前小车2位置信息（0-3000）
+      floor1CartAfterSterilPos: 0, // DBW18 灭菌后小车位置信息（0-3000/6000）
+      floor1CartBeforeSteril3Pos: 0, // DBW20 灭菌前小车3位置信息（二期小车备用，0-3000）
       floor1UploadTrayRequest: {
         // DBW22 上货请求托盘指定ID和目的地
-        bit0: '0'
+        bit0: '0' // 1001（上货口）处请求写ID和目的地
       },
       floor1SterilOutTrayRequest: {
         // DBW24 灭菌出货请求托盘指定ID和目的地
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 19号（灭菌柜出货）处请求写ID和目的地
+        bit1: '0', // 20号（灭菌柜出货）处请求写ID和目的地
+        bit2: '0', // 21号（灭菌柜出货）处请求写ID和目的地
+        bit3: '0', // 22号（灭菌柜出货）处请求写ID和目的地
+        bit4: '0', // 23号（灭菌柜出货）处请求写ID和目的地
+        bit5: '0', // 24号（灭菌柜出货）处请求写ID和目的地
+        bit6: '0', // 25(备用)
+        bit7: '0', // 26(备用)
+        bit8: '0', // 27(备用)
+        bit9: '0', // 28(备用)
+        bit10: '0', // 29(备用)
+        bit11: '0', // 30(备用)
+        bit12: '0', // 31号（灭菌柜出货）处请求写ID和目的地
+        bit13: '0', // 32号（灭菌柜出货）处请求写ID和目的地
+        bit14: '0', // 33号（灭菌柜出货）处请求写ID和目的地
+        bit15: '0' // M1015电机处请求写ID和目的地
       },
-      floor1MotorVirtualId1001: 0, // DBW26
-      floor1MotorVirtualId1004: 0, // DBW28
-      floor1MotorVirtualId1006A: 0, // DBW30
-      floor1MotorVirtualId1006B: 0, // DBW32
-      floor1MotorVirtualId1008: 0, // DBW34
-      floor1MotorVirtualId1010: 0, // DBW36
-      floor1MotorVirtualId1012: 0, // DBW38
-      floor1MotorVirtualId1014: 0, // DBW40
-      floor1MotorVirtualId1016: 0, // DBW42
-      floor1MotorVirtualIdspare1: 0, // DBW44
-      floor1MotorVirtualIdspare2: 0, // DBW46
-      floor1MotorDestination1001: 0, // DBW48
-      floor1MotorDestination1004: 0, // DBW50
-      floor1MotorDestination1006A: 0, // DBW52
-      floor1MotorDestination1006B: 0, // DBW54
-      floor1MotorDestination1008: 0, // DBW56
-      floor1MotorDestination1010: 0, // DBW58
-      floor1MotorDestination1012: 0, // DBW60
-      floor1MotorDestination1014: 0, // DBW62
-      floor1MotorDestination1016: 0, // DBW64
-      floor1MotorDestinationspare1: 0, // DBW66
-      floor1MotorDestinationspare2: 0, // DBW68
-      floor1Sterilization19Incomplete: 0, // DBW70
-      floor1Sterilization20Incomplete: 0, // DBW72
-      floor1Sterilization21Incomplete: 0, // DBW74
-      floor1Sterilization22Incomplete: 0, // DBW76
-      floor1Sterilization23Incomplete: 0, // DBW78
-      floor1Sterilization24Incomplete: 0, // DBW80
-      floor1Sterilization25Incomplete: 0, // DBW82
-      floor1Sterilization26Incomplete: 0, // DBW84
-      floor1Sterilization27Incomplete: 0, // DBW86
-      floor1Sterilization28Incomplete: 0, // DBW88
-      floor1Sterilization29Incomplete: 0, // DBW90
-      floor1Sterilization30Incomplete: 0, // DBW92
-      floor1Sterilization19Complete: 0, // DBW94
-      floor1Sterilization20Complete: 0, // DBW96
-      floor1Sterilization21Complete: 0, // DBW98
-      floor1Sterilization22Complete: 0, // DBW100
-      floor1Sterilization23Complete: 0, // DBW102
-      floor1Sterilization24Complete: 0, // DBW104
-      floor1Sterilization25Complete: 0, // DBW106
-      floor1Sterilization26Complete: 0, // DBW108
-      floor1Sterilization27Complete: 0, // DBW110
-      floor1Sterilization28Complete: 0, // DBW112
-      floor1Sterilization29Complete: 0, // DBW114
-      floor1Sterilization30Complete: 0, // DBW116
-      floor1Sterilization31Complete: 0, // DBW118
-      floor1Sterilization32Complete: 0, // DBW120
-      floor1Sterilization33Complete: 0, // DBW122
-      floor1FaultInfo1001: 0, // DBW124
-      floor1FaultInfo1002: 0, // DBW126
-      floor1FaultInfo1003: 0, // DBW128
-      floor1FaultInfo1004: 0, // DBW130
-      floor1FaultInfo1005: 0, // DBW132
-      floor1FaultInfo1006: 0, // DBW134
-      floor1FaultInfo1007: 0, // DBW136
-      floor1FaultInfo1008: 0, // DBW138
-      floor1FaultInfo1009: 0, // DBW140
-      floor1FaultInfo1010: 0, // DBW142
-      floor1FaultInfo1011: 0, // DBW144
-      floor1FaultInfo1012: 0, // DBW146
-      floor1FaultInfo1013: 0, // DBW148
-      floor1FaultInfo1014: 0, // DBW150
-      floor1FaultInfo1015: 0, // DBW152
-      floor1FaultInfo1016: 0, // DBW154
-      floor1FaultInfo1017: 0, // DBW156
-      floor1FaultInfospare1: 0, // DBW158
-      floor1FaultInfospare2: 0, // DBW160
+      floor1MotorVirtualId1001: 0, // DBW26 1001电机占位虚拟ID
+      floor1MotorVirtualId1004: 0, // DBW28 1004电机占位虚拟ID
+      floor1MotorVirtualId1006A: 0, // DBW30 1006A电机占位虚拟ID
+      floor1MotorVirtualId1006B: 0, // DBW32 1006B电机占位虚拟ID
+      floor1MotorVirtualId1008: 0, // DBW34 1008电机占位虚拟ID
+      floor1MotorVirtualId1010: 0, // DBW36 1010电机占位虚拟ID
+      floor1MotorVirtualId1012: 0, // DBW38 1012电机占位虚拟ID
+      floor1MotorVirtualId1014: 0, // DBW40 1014电机占位虚拟ID
+      floor1MotorVirtualId1016: 0, // DBW42 1016电机占位虚拟ID
+      floor1MotorVirtualIdspare1: 0, // DBW44 电机占位虚拟ID备用
+      floor1MotorVirtualIdspare2: 0, // DBW46 电机占位虚拟ID备用
+      floor1MotorDestination1001: 0, // DBW48 1001电机货物目的地
+      floor1MotorDestination1004: 0, // DBW50 1004电机货物目的地
+      floor1MotorDestination1006A: 0, // DBW52 1006A电机货物目的地
+      floor1MotorDestination1006B: 0, // DBW54 1006B电机货物目的地
+      floor1MotorDestination1008: 0, // DBW56 1008电机货物目的地
+      floor1MotorDestination1010: 0, // DBW58 1010电机货物目的地
+      floor1MotorDestination1012: 0, // DBW60 1012电机货物目的地
+      floor1MotorDestination1014: 0, // DBW62 1014电机货物目的地
+      floor1MotorDestination1016: 0, // DBW64 1016电机货物目的地
+      floor1MotorDestinationspare1: 0, // DBW66 电机货物目的地备用
+      floor1MotorDestinationspare2: 0, // DBW68 电机货物目的地备用
+      floor1Sterilization19Incomplete: 0, // DBW70 灭菌柜19内实际数量--未完成
+      floor1Sterilization20Incomplete: 0, // DBW72 灭菌柜20内实际数量--未完成
+      floor1Sterilization21Incomplete: 0, // DBW74 灭菌柜21内实际数量--未完成
+      floor1Sterilization22Incomplete: 0, // DBW76 灭菌柜22内实际数量--未完成
+      floor1Sterilization23Incomplete: 0, // DBW78 灭菌柜23内实际数量--未完成
+      floor1Sterilization24Incomplete: 0, // DBW80 灭菌柜24内实际数量--未完成
+      floor1Sterilization25Incomplete: 0, // DBW82 灭菌柜25内实际数量--未完成
+      floor1Sterilization26Incomplete: 0, // DBW84 灭菌柜26内实际数量--未完成
+      floor1Sterilization27Incomplete: 0, // DBW86 灭菌柜27内实际数量--未完成
+      floor1Sterilization28Incomplete: 0, // DBW88 灭菌柜28内实际数量--未完成
+      floor1Sterilization29Incomplete: 0, // DBW90 灭菌柜29内实际数量--未完成
+      floor1Sterilization30Incomplete: 0, // DBW92 灭菌柜30内实际数量--未完成
+      floor1Sterilization19Complete: 0, // DBW94 灭菌柜19内实际数量--完成
+      floor1Sterilization20Complete: 0, // DBW96 灭菌柜20内实际数量--完成
+      floor1Sterilization21Complete: 0, // DBW98 灭菌柜21内实际数量--完成
+      floor1Sterilization22Complete: 0, // DBW100 灭菌柜22内实际数量--完成
+      floor1Sterilization23Complete: 0, // DBW102 灭菌柜23内实际数量--完成
+      floor1Sterilization24Complete: 0, // DBW104 灭菌柜24内实际数量--完成
+      floor1Sterilization25Complete: 0, // DBW106 灭菌柜25内实际数量--完成
+      floor1Sterilization26Complete: 0, // DBW108 灭菌柜26内实际数量--完成
+      floor1Sterilization27Complete: 0, // DBW110 灭菌柜27内实际数量--完成
+      floor1Sterilization28Complete: 0, // DBW112 灭菌柜28内实际数量--完成
+      floor1Sterilization29Complete: 0, // DBW114 灭菌柜29内实际数量--完成
+      floor1Sterilization30Complete: 0, // DBW116 灭菌柜30内实际数量--完成
+      floor1Sterilization31Complete: 0, // DBW118 灭菌柜31内实际数量--完成
+      floor1Sterilization32Complete: 0, // DBW120 灭菌柜32内实际数量--完成
+      floor1Sterilization33Complete: 0, // DBW122 灭菌柜33内实际数量--完成
+      floor1FaultInfo1001: 0, // DBW124 1001故障信息
+      floor1FaultInfo1002: 0, // DBW126 1002故障信息
+      floor1FaultInfo1003: 0, // DBW128 1003故障信息
+      floor1FaultInfo1004: 0, // DBW130 1004故障信息
+      floor1FaultInfo1005: 0, // DBW132 1005故障信息
+      floor1FaultInfo1006: 0, // DBW134 1006故障信息
+      floor1FaultInfo1007: 0, // DBW136 1007故障信息
+      floor1FaultInfo1008: 0, // DBW138 1008故障信息
+      floor1FaultInfo1009: 0, // DBW140 1009故障信息
+      floor1FaultInfo1010: 0, // DBW142 1010故障信息
+      floor1FaultInfo1011: 0, // DBW144 1011故障信息
+      floor1FaultInfo1012: 0, // DBW146 1012故障信息
+      floor1FaultInfo1013: 0, // DBW148 1013故障信息
+      floor1FaultInfo1014: 0, // DBW150 1014故障信息
+      floor1FaultInfo1015: 0, // DBW152 1015故障信息
+      floor1FaultInfo1016: 0, // DBW154 1016故障信息
+      floor1FaultInfo1017: 0, // DBW156 1017故障信息
+      floor1FaultInfospare1: 0, // DBW158 故障信息备用
+      floor1FaultInfospare2: 0, // DBW160 故障信息备用
       // ========== 二楼 PLC 读取点位（二楼-读取点位.csv）==========
-      floor2ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳
-      floor2ConveyorRunStatus: 0, // DBW2 输送线当前运行状态
+      floor2ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳（高电平1秒持续，低电平1秒持续，一直循环）
+      floor2ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
       floor2AreaAlarm: {
         // DBW4 区域报警
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0'
+        bit0: '0', // 提升机一楼输送线报警
+        bit1: '0', // 提升机报警
+        bit2: '0', // 提升机二楼输送线报警
+        bit3: '0', // 解析前区域报警
+        bit4: '0', // 解析房内报警
+        bit5: '0' // 解析出货报警
       },
       floor2AreaEstop: {
         // DBW6 区域急停
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0'
+        bit0: '0', // 提升机一楼操作台急停
+        bit1: '0', // 提升机控制柜急停
+        bit2: '0', // 解析前分站急停
+        bit3: '0', // 解析出货分站急停
+        bit4: '0', // 解析进货小车急停
+        bit5: '0' // 解析出货小车急停
       },
       floor2MotorRunning1: {
         // DBW8 电机运行信号--1
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 1018电机运行
+        bit1: '0', // 1019电机运行
+        bit2: '0', // 2001电机正转（提升机上升）
+        bit3: '0', // 2001电机反转（提升机下降）
+        bit4: '0', // 2002电机正转（提升机轿厢进货）
+        bit5: '0', // 2002电机反转（提升机轿厢出货）
+        bit6: '0', // 2003电机运行
+        bit7: '0', // 2004电机运行（转盘输送电机）
+        bit8: '0', // 2005电机运行（转盘旋转电机）
+        bit9: '0', // 2006电机运行
+        bit10: '0', // 2007电机运行（转盘输送电机）
+        bit11: '0', // 2008电机运行（转盘旋转电机）
+        bit12: '0', // 2009电机运行
+        bit13: '0', // 2010电机运行（转盘输送电机）
+        bit14: '0', // 2011电机运行（转盘旋转电机）
+        bit15: '0' // 2012电机运行
       },
       floor2MotorRunning2: {
         // DBW10 电机运行信号--2
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 2013电机运行
+        bit1: '0', // 2014电机运行（转盘输送电机）
+        bit2: '0', // 2015电机运行（转盘旋转电机）
+        bit3: '0', // 2016电机运行
+        bit4: '0', // 2017电机运行
+        bit5: '0', // 2018电机运行
+        bit6: '0', // 2019电机运行
+        bit7: '0', // 2020电机运行（转盘输送电机）
+        bit8: '0', // 2021电机运行（转盘旋转电机）
+        bit9: '0', // 2022电机运行
+        bit10: '0', // 2025电机运行
+        bit11: '0', // 2026电机运行
+        bit12: '0', // 2027电机运行
+        bit13: '0', // 2028电机运行
+        bit14: '0', // 2029电机运行
+        bit15: '0' // 2030电机运行
       },
       floor2MotorRunning3: {
         // DBW12 电机运行信号--3
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0'
+        bit0: '0', // 2031电机运行
+        bit1: '0', // 2032电机运行
+        bit2: '0', // 2033电机运行
+        bit3: '0', // 2034电机运行
+        bit4: '0', // 2035电机运行
+        bit5: '0', // 2036电机运行
+        bit6: '0', // 2037电机运行
+        bit7: '0', // 2038电机运行
+        bit8: '0', // 2041电机运行（出货口过渡电机）
+        bit9: '0', // 2042电机运行（出货口输送电机）
+        bit10: '0' // 2043电机运行（出货口升降电机）
       },
       floor2SensorSignal1: {
         // DBW14 传感器信号--1
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 光电1018
+        bit1: '0', // 光电1019
+        bit2: '0', // 提升机一楼到位（轿厢位置信号）
+        bit3: '0', // 提升机二楼到位（轿厢位置信号）
+        bit4: '0', // 光电2002
+        bit5: '0', // 光电2003
+        bit6: '0', // 光电2004
+        bit7: '0', // 行程2005-1（转盘1进货位）
+        bit8: '0', // 行程2005-2（转盘1出货位）
+        bit9: '0', // 光电2006
+        bit10: '0', // 光电2007
+        bit11: '0', // 行程2008-1（转盘2进货位）
+        bit12: '0', // 行程2008-2（转盘2出货位）
+        bit13: '0', // 光电2009
+        bit14: '0', // 光电2010
+        bit15: '0' // 行程2011-1（转盘3进货位）
       },
       floor2SensorSignal2: {
         // DBW16 传感器信号--2
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 行程2011-2（转盘3出货位）
+        bit1: '0', // 光电2012
+        bit2: '0', // 光电2013
+        bit3: '0', // 光电2014
+        bit4: '0', // 行程2015-1（转盘4进货位）
+        bit5: '0', // 行程2015-2（转盘4出货位）
+        bit6: '0', // 光电2016
+        bit7: '0', // 光电2017
+        bit8: '0', // 光电2018
+        bit9: '0', // 光电2019
+        bit10: '0', // 光电2020
+        bit11: '0', // 行程2021-1（转盘5进货位）
+        bit12: '0', // 行程2021-2（转盘5出货位）
+        bit13: '0', // 光电2025-1
+        bit14: '0', // 光电2025-2
+        bit15: '0' // 光电2026-1
       },
       floor2SensorSignal3: {
         // DBW18 传感器信号--3
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0',
-        bit14: '0',
-        bit15: '0'
+        bit0: '0', // 光电2026-2
+        bit1: '0', // 光电2027-1
+        bit2: '0', // 光电2027-2
+        bit3: '0', // 光电2028-1
+        bit4: '0', // 光电2028-2
+        bit5: '0', // 光电2029-1
+        bit6: '0', // 光电2029-2
+        bit7: '0', // 光电2030-1
+        bit8: '0', // 光电2030-2
+        bit9: '0', // 光电2031-1
+        bit10: '0', // 光电2031-2
+        bit11: '0', // 光电2032-1
+        bit12: '0', // 光电2032-2
+        bit13: '0', // 光电2033-1
+        bit14: '0', // 光电2033-2
+        bit15: '0' // 光电2034-1
       },
       floor2SensorSignal4: {
         // DBW20 传感器信号--4
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0'
+        bit0: '0', // 光电2034-2
+        bit1: '0', // 光电2035-1
+        bit2: '0', // 光电2035-2
+        bit3: '0', // 光电2036-1
+        bit4: '0', // 光电2036-2
+        bit5: '0', // 光电2037-1
+        bit6: '0', // 光电2037-2
+        bit7: '0', // 光电2038-1
+        bit8: '0', // 光电2038-2
+        bit9: '0' // 光电2042
       },
-      floor2CartAnalysisInPos: 0, // DBW22 解析进货小车位置
-      floor2CartAnalysisOutPos: 0, // DBW24 解析出货小车位置
-      floor2CartSpare1Pos: 0, // DBW26 二期小车备用1
-      floor2CartSpare2Pos: 0, // DBW28 二期小车备用2
+      floor2CartAnalysisInPos: 0, // DBW22 解析进货小车位置信息（0-3000）
+      floor2CartAnalysisOutPos: 0, // DBW24 解析出货小车位置信息（0-3000）
+      floor2CartSpare1Pos: 0, // DBW26 小车位置信息（二期小车备用1，0-3000）
+      floor2CartSpare2Pos: 0, // DBW28 小车位置信息（二期小车备用2，0-3000）
       floor2AnalysisOutTrayRequest: {
         // DBW30 解析房出货请求托盘指定ID和目的地
-        bit0: '0',
-        bit1: '0',
-        bit2: '0',
-        bit3: '0',
-        bit4: '0',
-        bit5: '0',
-        bit6: '0',
-        bit7: '0',
-        bit8: '0',
-        bit9: '0',
-        bit10: '0',
-        bit11: '0',
-        bit12: '0',
-        bit13: '0'
+        bit0: '0', // 1（解析出货）处请求写ID和目的地
+        bit1: '0', // 2
+        bit2: '0', // 3
+        bit3: '0', // 4
+        bit4: '0', // 5
+        bit5: '0', // 6
+        bit6: '0', // 7
+        bit7: '0', // 8
+        bit8: '0', // 9
+        bit9: '0', // 10
+        bit10: '0', // 11
+        bit11: '0', // 12
+        bit12: '0', // 13
+        bit13: '0' // 14
       },
-      floor2MotorVirtualId1018A: 0, // DBW32
-      floor2MotorVirtualId1018B: 0, // DBW34
-      floor2MotorVirtualId1019: 0, // DBW36
-      floor2MotorVirtualId2002: 0, // DBW38
-      floor2MotorVirtualId2003: 0, // DBW40
-      floor2MotorVirtualId2004: 0, // DBW42
-      floor2MotorVirtualId2006: 0, // DBW44
-      floor2MotorVirtualId2007: 0, // DBW46
-      floor2MotorVirtualId2009: 0, // DBW48
-      floor2MotorVirtualId2010: 0, // DBW50
-      floor2MotorVirtualId2012: 0, // DBW52
-      floor2MotorVirtualId2013: 0, // DBW54
-      floor2MotorVirtualId2014: 0, // DBW56
-      floor2MotorVirtualId2016: 0, // DBW58
-      floor2MotorVirtualId2017: 0, // DBW60
-      floor2MotorVirtualId2018: 0, // DBW62
-      floor2MotorVirtualId2019: 0, // DBW64
-      floor2MotorVirtualId2020: 0, // DBW66
-      floor2MotorVirtualId2023: 0, // DBW68
-      floor2MotorVirtualId2039: 0, // DBW70
-      floor2MotorVirtualId2042: 0, // DBW72
-      floor2MotorDestination1018A: 0, // DBW74
-      floor2MotorDestination1018B: 0, // DBW76
-      floor2MotorDestination1019: 0, // DBW78
-      floor2MotorDestination2002: 0, // DBW80
-      floor2MotorDestination2003: 0, // DBW82
-      floor2MotorDestination2004: 0, // DBW84
-      floor2MotorDestination2006: 0, // DBW86
-      floor2MotorDestination2007: 0, // DBW88
-      floor2MotorDestination2009: 0, // DBW90
-      floor2MotorDestination2010: 0, // DBW92
-      floor2MotorDestination2012: 0, // DBW94
-      floor2MotorDestination2013: 0, // DBW96
-      floor2MotorDestination2014: 0, // DBW98
-      floor2MotorDestination2016: 0, // DBW100
-      floor2MotorDestination2017: 0, // DBW102
-      floor2MotorDestination2018: 0, // DBW104
-      floor2MotorDestination2019: 0, // DBW106
-      floor2MotorDestination2020: 0, // DBW108
-      floor2MotorDestination2023: 0, // DBW110
-      floor2MotorDestination2039: 0, // DBW112
-      floor2MotorDestination2042: 0, // DBW114
-      floor2AnalysisRoom1Qty: 0, // DBW116
-      floor2AnalysisRoom2Qty: 0, // DBW118
-      floor2AnalysisRoom3Qty: 0, // DBW120
-      floor2AnalysisRoom4Qty: 0, // DBW122
-      floor2AnalysisRoom5Qty: 0, // DBW124
-      floor2AnalysisRoom6Qty: 0, // DBW126
-      floor2AnalysisRoom7Qty: 0, // DBW128
-      floor2AnalysisRoom8Qty: 0, // DBW130
-      floor2AnalysisRoom9Qty: 0, // DBW132
-      floor2AnalysisRoom10Qty: 0, // DBW134
-      floor2AnalysisRoom11Qty: 0, // DBW136
-      floor2AnalysisRoom12Qty: 0, // DBW138
-      floor2AnalysisRoom13Qty: 0, // DBW140
-      floor2AnalysisRoom14Qty: 0, // DBW142
-      floor2AnalysisRoom15Qty: 0, // DBW144
-      floor2AnalysisRoom16Qty: 0, // DBW146
-      floor2AnalysisRoom17Qty: 0, // DBW148
+      floor2MotorVirtualId1018A: 0, // DBW32 1018A电机占位虚拟ID
+      floor2MotorVirtualId1018B: 0, // DBW34 1018B电机占位虚拟ID（备用）
+      floor2MotorVirtualId1019: 0, // DBW36 1019电机占位虚拟ID
+      floor2MotorVirtualId2002: 0, // DBW38 2002电机占位虚拟ID
+      floor2MotorVirtualId2003: 0, // DBW40 2003电机占位虚拟ID
+      floor2MotorVirtualId2004: 0, // DBW42 2004电机占位虚拟ID
+      floor2MotorVirtualId2006: 0, // DBW44 2006电机占位虚拟ID
+      floor2MotorVirtualId2007: 0, // DBW46 2007电机占位虚拟ID
+      floor2MotorVirtualId2009: 0, // DBW48 2009电机占位虚拟ID
+      floor2MotorVirtualId2010: 0, // DBW50 2010电机占位虚拟ID
+      floor2MotorVirtualId2012: 0, // DBW52 2012电机占位虚拟ID
+      floor2MotorVirtualId2013: 0, // DBW54 2013电机占位虚拟ID
+      floor2MotorVirtualId2014: 0, // DBW56 2014电机占位虚拟ID
+      floor2MotorVirtualId2016: 0, // DBW58 2016电机占位虚拟ID
+      floor2MotorVirtualId2017: 0, // DBW60 2017电机占位虚拟ID
+      floor2MotorVirtualId2018: 0, // DBW62 2018电机占位虚拟ID
+      floor2MotorVirtualId2019: 0, // DBW64 2019电机占位虚拟ID
+      floor2MotorVirtualId2020: 0, // DBW66 2020电机占位虚拟ID
+      floor2MotorVirtualId2023: 0, // DBW68 2023电机占位虚拟ID
+      floor2MotorVirtualId2039: 0, // DBW70 2039电机占位虚拟ID
+      floor2MotorVirtualId2042: 0, // DBW72 2042电机占位虚拟ID
+      floor2MotorDestination1018A: 0, // DBW74 1018A电机货物目的地
+      floor2MotorDestination1018B: 0, // DBW76 1018B电机货物目的地
+      floor2MotorDestination1019: 0, // DBW78 1019电机货物目的地
+      floor2MotorDestination2002: 0, // DBW80 2002电机货物目的地
+      floor2MotorDestination2003: 0, // DBW82 2003电机货物目的地
+      floor2MotorDestination2004: 0, // DBW84 2004电机货物目的地
+      floor2MotorDestination2006: 0, // DBW86 2006电机货物目的地
+      floor2MotorDestination2007: 0, // DBW88 2007电机货物目的地
+      floor2MotorDestination2009: 0, // DBW90 2009电机货物目的地
+      floor2MotorDestination2010: 0, // DBW92 2010电机货物目的地
+      floor2MotorDestination2012: 0, // DBW94 2012电机货物目的地
+      floor2MotorDestination2013: 0, // DBW96 2013电机货物目的地
+      floor2MotorDestination2014: 0, // DBW98 2014电机货物目的地
+      floor2MotorDestination2016: 0, // DBW100 2016电机货物目的地
+      floor2MotorDestination2017: 0, // DBW102 2017电机货物目的地
+      floor2MotorDestination2018: 0, // DBW104 2018电机货物目的地
+      floor2MotorDestination2019: 0, // DBW106 2019电机货物目的地
+      floor2MotorDestination2020: 0, // DBW108 2020电机货物目的地
+      floor2MotorDestination2023: 0, // DBW110 2023电机货物目的地
+      floor2MotorDestination2039: 0, // DBW112 2039电机货物目的地
+      floor2MotorDestination2042: 0, // DBW114 2042电机货物目的地
+      floor2AnalysisRoom1Qty: 0, // DBW116 解析1（2025电机）内实际数量
+      floor2AnalysisRoom2Qty: 0, // DBW118 解析2（2026电机）内实际数量
+      floor2AnalysisRoom3Qty: 0, // DBW120 解析3（2027电机）内实际数量
+      floor2AnalysisRoom4Qty: 0, // DBW122 解析4（2028电机）内实际数量
+      floor2AnalysisRoom5Qty: 0, // DBW124 解析5（2029电机）内实际数量
+      floor2AnalysisRoom6Qty: 0, // DBW126 解析6（2030电机）内实际数量
+      floor2AnalysisRoom7Qty: 0, // DBW128 解析7（2031电机）内实际数量
+      floor2AnalysisRoom8Qty: 0, // DBW130 解析8（2032电机）内实际数量
+      floor2AnalysisRoom9Qty: 0, // DBW132 解析9（2033电机）内实际数量
+      floor2AnalysisRoom10Qty: 0, // DBW134 解析10（2034电机）内实际数量
+      floor2AnalysisRoom11Qty: 0, // DBW136 解析11（2035电机）内实际数量
+      floor2AnalysisRoom12Qty: 0, // DBW138 解析12（2036电机）内实际数量
+      floor2AnalysisRoom13Qty: 0, // DBW140 解析13（2037电机）内实际数量
+      floor2AnalysisRoom14Qty: 0, // DBW142 解析14（2038电机）内实际数量
+      floor2AnalysisRoom15Qty: 0, // DBW144 二期解析备用
+      floor2AnalysisRoom16Qty: 0, // DBW146 二期解析备用
+      floor2AnalysisRoom17Qty: 0, // DBW148 二期解析备用
       floor2SpareDBW150: 0, // DBW150 备用
       floor2SpareDBW152: 0, // DBW152 备用
       floor2SpareDBW154: 0, // DBW154 备用
       floor2SpareDBW156: 0, // DBW156 备用
       floor2SpareDBW158: 0, // DBW158 备用
-      floor2FaultInfo1018: 0, // DBW160
-      floor2FaultInfo1019: 0, // DBW162
-      floor2FaultInfo2001: 0, // DBW164
-      floor2FaultInfo2002: 0, // DBW166
-      floor2FaultInfo2003: 0, // DBW168
-      floor2FaultInfo2004: 0, // DBW170
-      floor2FaultInfo2005: 0, // DBW172
-      floor2FaultInfo2006: 0, // DBW174
-      floor2FaultInfo2007: 0, // DBW176
-      floor2FaultInfo2008: 0, // DBW178
-      floor2FaultInfo2009: 0, // DBW180
-      floor2FaultInfo2010: 0, // DBW182
-      floor2FaultInfo2011: 0, // DBW184
-      floor2FaultInfo2012: 0, // DBW186
-      floor2FaultInfo2013: 0, // DBW188
-      floor2FaultInfo2014: 0, // DBW190
-      floor2FaultInfo2015: 0, // DBW192
-      floor2FaultInfo2016: 0, // DBW194
-      floor2FaultInfo2017: 0, // DBW196
-      floor2FaultInfo2018: 0, // DBW198
-      floor2FaultInfo2019: 0, // DBW200
-      floor2FaultInfo2020: 0, // DBW202
-      floor2FaultInfo2021: 0, // DBW204
-      floor2FaultInfo2022: 0, // DBW206
-      floor2FaultInfo2023: 0, // DBW208
-      floor2FaultInfo2024: 0, // DBW210
-      floor2FaultInfo2025: 0, // DBW212
-      floor2FaultInfo2026: 0, // DBW214
-      floor2FaultInfo2027: 0, // DBW216
-      floor2FaultInfo2028: 0, // DBW218
-      floor2FaultInfo2029: 0, // DBW220
-      floor2FaultInfo2030: 0, // DBW222
-      floor2FaultInfo2031: 0, // DBW224
-      floor2FaultInfo2032: 0, // DBW226
-      floor2FaultInfo2033: 0, // DBW228
-      floor2FaultInfo2034: 0, // DBW230
-      floor2FaultInfo2035: 0, // DBW232
-      floor2FaultInfo2036: 0, // DBW234
-      floor2FaultInfo2037: 0, // DBW236
-      floor2FaultInfo2038: 0, // DBW238
-      floor2FaultInfo2039: 0, // DBW240
-      floor2FaultInfo2040: 0, // DBW242
-      floor2FaultInfo2041: 0, // DBW244
-      floor2FaultInfo2042: 0, // DBW246
-      floor2FaultInfo2043: 0, // DBW248
+      floor2FaultInfo1018: 0, // DBW160 1018故障信息
+      floor2FaultInfo1019: 0, // DBW162 1019故障信息
+      floor2FaultInfo2001: 0, // DBW164 2001故障信息
+      floor2FaultInfo2002: 0, // DBW166 2002故障信息
+      floor2FaultInfo2003: 0, // DBW168 2003故障信息
+      floor2FaultInfo2004: 0, // DBW170 2004故障信息
+      floor2FaultInfo2005: 0, // DBW172 2005故障信息
+      floor2FaultInfo2006: 0, // DBW174 2006故障信息
+      floor2FaultInfo2007: 0, // DBW176 2007故障信息
+      floor2FaultInfo2008: 0, // DBW178 2008故障信息
+      floor2FaultInfo2009: 0, // DBW180 2009故障信息
+      floor2FaultInfo2010: 0, // DBW182 2010故障信息
+      floor2FaultInfo2011: 0, // DBW184 2011故障信息
+      floor2FaultInfo2012: 0, // DBW186 2012故障信息
+      floor2FaultInfo2013: 0, // DBW188 2013故障信息
+      floor2FaultInfo2014: 0, // DBW190 2014故障信息
+      floor2FaultInfo2015: 0, // DBW192 2015故障信息
+      floor2FaultInfo2016: 0, // DBW194 2016故障信息
+      floor2FaultInfo2017: 0, // DBW196 2017故障信息
+      floor2FaultInfo2018: 0, // DBW198 2018故障信息
+      floor2FaultInfo2019: 0, // DBW200 2019故障信息
+      floor2FaultInfo2020: 0, // DBW202 2020故障信息
+      floor2FaultInfo2021: 0, // DBW204 2021故障信息
+      floor2FaultInfo2022: 0, // DBW206 2022故障信息
+      floor2FaultInfo2023: 0, // DBW208 2023故障信息
+      floor2FaultInfo2024: 0, // DBW210 2024故障信息
+      floor2FaultInfo2025: 0, // DBW212 2025故障信息
+      floor2FaultInfo2026: 0, // DBW214 2026故障信息
+      floor2FaultInfo2027: 0, // DBW216 2027故障信息
+      floor2FaultInfo2028: 0, // DBW218 2028故障信息
+      floor2FaultInfo2029: 0, // DBW220 2029故障信息
+      floor2FaultInfo2030: 0, // DBW222 2030故障信息
+      floor2FaultInfo2031: 0, // DBW224 2031故障信息
+      floor2FaultInfo2032: 0, // DBW226 2032故障信息
+      floor2FaultInfo2033: 0, // DBW228 2033故障信息
+      floor2FaultInfo2034: 0, // DBW230 2034故障信息
+      floor2FaultInfo2035: 0, // DBW232 2035故障信息
+      floor2FaultInfo2036: 0, // DBW234 2036故障信息
+      floor2FaultInfo2037: 0, // DBW236 2037故障信息
+      floor2FaultInfo2038: 0, // DBW238 2038故障信息
+      floor2FaultInfo2039: 0, // DBW240 2039故障信息
+      floor2FaultInfo2040: 0, // DBW242 2040故障信息
+      floor2FaultInfo2041: 0, // DBW244 2041故障信息
+      floor2FaultInfo2042: 0, // DBW246 2042故障信息
+      floor2FaultInfo2043: 0, // DBW248 2043故障信息
       carts: [
         {
           id: 1,
@@ -2174,6 +2208,52 @@ export default {
       if (newVal === '1' && oldVal === '0') {
         this.handleUploadTrayRequest();
       }
+    },
+    // 监听灭菌柜内完成实际数量 DBW94-DBW122
+    floor1Sterilization19Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(19, newVal, oldVal);
+    },
+    floor1Sterilization20Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(20, newVal, oldVal);
+    },
+    floor1Sterilization21Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(21, newVal, oldVal);
+    },
+    floor1Sterilization22Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(22, newVal, oldVal);
+    },
+    floor1Sterilization23Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(23, newVal, oldVal);
+    },
+    floor1Sterilization24Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(24, newVal, oldVal);
+    },
+    floor1Sterilization25Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(25, newVal, oldVal);
+    },
+    floor1Sterilization26Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(26, newVal, oldVal);
+    },
+    floor1Sterilization27Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(27, newVal, oldVal);
+    },
+    floor1Sterilization28Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(28, newVal, oldVal);
+    },
+    floor1Sterilization29Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(29, newVal, oldVal);
+    },
+    floor1Sterilization30Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(30, newVal, oldVal);
+    },
+    floor1Sterilization31Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(31, newVal, oldVal);
+    },
+    floor1Sterilization32Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(32, newVal, oldVal);
+    },
+    floor1Sterilization33Complete(newVal, oldVal) {
+      this.handleSterilizationCabinetQuantityIncrease(33, newVal, oldVal);
     }
   },
   methods: {
@@ -2695,6 +2775,61 @@ export default {
       setTimeout(() => {
         this.floor1UploadTrayRequest.bit0 = '0';
       }, 1000);
+    },
+    getSterilizationCompleteQuantity(cabinetNo) {
+      return this[`floor1Sterilization${cabinetNo}Complete`] || 0;
+    },
+    updateSterilizationCompleteQuantity(cabinetNo, change) {
+      this.isDataReady = true;
+      const key = `floor1Sterilization${cabinetNo}Complete`;
+      this[key] = Math.max(0, parseInt(this[key] || 0) + change);
+    },
+    handleSterilizationCabinetQuantityIncrease(cabinetNo, newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal <= oldVal) return;
+
+      const increaseCount = newVal - oldVal;
+      const destStr = String(cabinetNo);
+      const sourceQueue = this.queues[0];
+      const targetQueue = this.queues[cabinetNo - 18];
+      if (!sourceQueue || !targetQueue) {
+        this.addLog(`灭菌柜${cabinetNo}数量增加，找不到对应队列`, 'alarm');
+        return;
+      }
+
+      let movedCount = 0;
+      for (let i = 0; i < increaseCount; i++) {
+        const trayIndex = sourceQueue.trayInfo.findIndex(
+          (tray) =>
+            String(tray.sendTo) === destStr ||
+            String(tray.destination) === destStr
+        );
+
+        if (trayIndex === -1) {
+          break;
+        }
+
+        const tray = sourceQueue.trayInfo[trayIndex];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'sterilizationRoom', destStr);
+        this.$set(tray, 'inSterilizationRoomTime', currentTime);
+        targetQueue.trayInfo.push(tray);
+        sourceQueue.trayInfo.splice(trayIndex, 1);
+        movedCount++;
+        this.addLog(
+          `托盘 ${tray.trayCode} 从上货区进入灭菌柜${cabinetNo}，时间：${currentTime}`
+        );
+      }
+
+      if (movedCount > 0) {
+        this.addLog(`从上货区移动${movedCount}个托盘到灭菌柜${cabinetNo}队列`);
+      }
+
+      if (movedCount < increaseCount) {
+        this.addLog(
+          `灭菌柜${cabinetNo}数量增加${increaseCount}，上货区目的地为${cabinetNo}的托盘不足，仅移动${movedCount}个托盘`
+        );
+      }
     },
     // 关闭历史订单弹窗
     handleHistoryDialogClose(done) {
@@ -5774,6 +5909,57 @@ export default {
   padding: 10px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
+}
+
+.steril-quantity-test-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.steril-quantity-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 3px;
+  box-sizing: border-box;
+  width: calc((100% - 8px) / 3);
+  background: rgba(30, 42, 56, 0.85);
+  border-radius: 3px;
+  border: 1px solid rgba(64, 158, 255, 0.12);
+}
+
+.steril-quantity-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  min-width: 18px;
+  flex-shrink: 0;
+}
+
+.steril-quantity-value {
+  font-size: 12px;
+  color: #7eb8ff;
+  font-weight: bold;
+  min-width: 14px;
+  text-align: center;
+  flex: 1;
+}
+
+.steril-quantity-buttons {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+
+  .quantity-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+  }
 }
 
 .quantity-group {
