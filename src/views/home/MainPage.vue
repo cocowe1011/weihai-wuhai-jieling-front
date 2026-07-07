@@ -399,6 +399,87 @@
                     </div>
                   </div>
                 </div>
+                <!-- 灭菌柜到解析房执行 -->
+                <div
+                  class="preheating-room-marker"
+                  data-x="1650"
+                  data-y="110"
+                  style="width: 160px"
+                >
+                  <div class="preheating-room-content">
+                    <div class="preheating-room-header">灭菌柜到解析房选择</div>
+                    <div class="preheating-room-body">
+                      <div style="display: flex; align-items: center">
+                        <el-select
+                          v-model="sterToAnalysisFrom"
+                          placeholder="灭菌"
+                          size="mini"
+                        >
+                          <el-option
+                            v-for="i in 15"
+                            :key="'ster-out-' + (i + 18)"
+                            :label="String(i + 18)"
+                            :value="String(i + 18)"
+                          />
+                        </el-select>
+                        <span
+                          style="font-size: 12px; color: #fff; margin-left: 5px"
+                          >到：</span
+                        >
+                        <el-select
+                          v-model="sterToAnalysisTo"
+                          placeholder="解析"
+                          size="mini"
+                          clearable
+                        >
+                          <el-option label="自动" value="" />
+                          <el-option
+                            v-for="i in 19"
+                            :key="'analysis-' + i"
+                            :label="String(i)"
+                            :value="String(i)"
+                          />
+                        </el-select>
+                      </div>
+                      <el-button
+                        type="primary"
+                        size="mini"
+                        @click="executeSterToAnalysis"
+                        :loading="sterToAnalysisLoading"
+                        style="width: 100%"
+                        >执行</el-button
+                      >
+                      <el-button
+                        v-if="sterToAnalysisExecuting"
+                        type="danger"
+                        size="mini"
+                        @click="cancelSterToAnalysis"
+                        style="width: 100%; margin-left: 0px"
+                        >取消</el-button
+                      >
+                      <div
+                        style="display: flex; align-items: center"
+                        v-if="sterToAnalysisExecuting"
+                      >
+                        <span
+                          style="
+                            font-size: 12px;
+                            color: #fff;
+                            color: greenyellow;
+                          "
+                          >执行中：{{ sterToAnalysisTrayCode || '--' }}</span
+                        >
+                      </div>
+                      <div
+                        style="font-size: 12px; color: #9fe3d3"
+                        v-if="sterToAnalysisExecuting"
+                      >
+                        解析房：<b>{{ sterToAnalysisResolvedTo || '自动' }}</b>
+                        已发送：<b>{{ sterToAnalysisSentCount }}</b>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1698,7 +1779,16 @@ export default {
       // ========== 预热房到灭菌柜执行 ==========
       preheatToSterilizeFrom: '', // 预热房编号（1~12）
       preheatToSterilizeTo: '', // 灭菌柜编号（19~33）
-      preheatToSterilizeLoading: false
+      preheatToSterilizeLoading: false,
+      // ========== 灭菌柜到解析房执行 ==========
+      sterToAnalysisFrom: '', // 出货灭菌柜编号（19~33）
+      sterToAnalysisTo: '', // 解析房编号（1~19），空=自动
+      sterToAnalysisLoading: false,
+      sterToAnalysisExecuting: false,
+      sterToAnalysisResolvedTo: '', // 本次执行实际使用的解析房编号
+      sterToAnalysisSentCount: 0, // 本次已移入输送线计数
+      sterToAnalysisTrayCode: '', // 当前处理托盘展示
+      isHandlingSterilOutRequest: false
     };
   },
   computed: {
@@ -2209,51 +2299,127 @@ export default {
         this.handleUploadTrayRequest();
       }
     },
+    // 监听灭菌出货请求 DB1000.DBW24 bit0~14 上升沿
+    'floor1SterilOutTrayRequest.bit0'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(19);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit1'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(20);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit2'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(21);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit3'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(22);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit4'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(23);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit5'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(24);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit6'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(25);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit7'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(26);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit8'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(27);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit9'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(28);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit10'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(29);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit11'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(30);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit12'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(31);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit13'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(32);
+      }
+    },
+    'floor1SterilOutTrayRequest.bit14'(newVal, oldVal) {
+      if (newVal === '1' && oldVal === '0') {
+        this.handleSterilOutTrayRequest(33);
+      }
+    },
     // 监听灭菌柜内完成实际数量 DBW94-DBW122
     floor1Sterilization19Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(19, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(19, newVal, oldVal);
     },
     floor1Sterilization20Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(20, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(20, newVal, oldVal);
     },
     floor1Sterilization21Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(21, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(21, newVal, oldVal);
     },
     floor1Sterilization22Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(22, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(22, newVal, oldVal);
     },
     floor1Sterilization23Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(23, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(23, newVal, oldVal);
     },
     floor1Sterilization24Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(24, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(24, newVal, oldVal);
     },
     floor1Sterilization25Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(25, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(25, newVal, oldVal);
     },
     floor1Sterilization26Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(26, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(26, newVal, oldVal);
     },
     floor1Sterilization27Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(27, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(27, newVal, oldVal);
     },
     floor1Sterilization28Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(28, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(28, newVal, oldVal);
     },
     floor1Sterilization29Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(29, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(29, newVal, oldVal);
     },
     floor1Sterilization30Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(30, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(30, newVal, oldVal);
     },
     floor1Sterilization31Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(31, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(31, newVal, oldVal);
     },
     floor1Sterilization32Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(32, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(32, newVal, oldVal);
     },
     floor1Sterilization33Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityIncrease(33, newVal, oldVal);
+      this.handleSterilizationCabinetQuantityChange(33, newVal, oldVal);
     }
   },
   methods: {
@@ -2666,7 +2832,6 @@ export default {
         setTimeout(() => {
           ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW10');
           ipcRenderer.send('cancelWriteToPLC_0', 'W_DBW14');
-          this.addLog('上货口PLC写入信号已取消');
         }, 2000);
 
         // 6. 生成托盘信息并加入上货区队列
@@ -2693,7 +2858,6 @@ export default {
 
         // 将托盘加入上货区队列（queues[0]）
         this.queues[0].trayInfo.push(trayInfo);
-        this.updateQueueTrays(1, this.queues[0].trayInfo);
 
         // 更新扫码信息显示
         this.nowScanTrayInfo = {
@@ -2710,9 +2874,6 @@ export default {
         await HttpUtil.post('/order_info/update', updateParam)
           .then((res) => {
             if (res.code === '200') {
-              this.addLog(
-                `订单 ${runningOrder.orderId} 已上货数量更新为 ${newLoadedQty}/${runningOrder.orderQuantity}`
-              );
               this.refreshOrders();
             } else {
               this.addLog(
@@ -2771,7 +2932,6 @@ export default {
     // 手动触发上货请求信号（测试用）
     manualTriggerUploadRequest() {
       this.floor1UploadTrayRequest.bit0 = '1';
-      this.addLog('测试面板：手动触发上货请求信号');
       setTimeout(() => {
         this.floor1UploadTrayRequest.bit0 = '0';
       }, 1000);
@@ -2784,10 +2944,69 @@ export default {
       const key = `floor1Sterilization${cabinetNo}Complete`;
       this[key] = Math.max(0, parseInt(this[key] || 0) + change);
     },
-    handleSterilizationCabinetQuantityIncrease(cabinetNo, newVal, oldVal) {
+    writePlcPulse(tag, value) {
+      ipcRenderer.send('writeSingleValueToPLC_0', tag, value);
+      setTimeout(() => {
+        ipcRenderer.send('cancelWriteToPLC_0', tag);
+      }, 2000);
+    },
+    getSterilQueueIndex(cabinetNo) {
+      return cabinetNo - 18;
+    },
+    getAnalysisQueueIndex(roomNo) {
+      return roomNo + 17;
+    },
+    getAnalysisRoomCount(roomNo) {
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const queue = this.queues[queueIndex];
+      return queue && Array.isArray(queue.trayInfo) ? queue.trayInfo.length : 0;
+    },
+    pickAvailableAnalysisRoom() {
+      for (let i = 1; i <= 19; i++) {
+        if (this.getAnalysisRoomCount(i) < 15) {
+          return i;
+        }
+      }
+      return null;
+    },
+    resolveAnalysisDestination() {
+      if (this.sterToAnalysisTo) {
+        this.sterToAnalysisResolvedTo = String(this.sterToAnalysisTo);
+        return Number(this.sterToAnalysisTo);
+      }
+      const room = this.pickAvailableAnalysisRoom();
+      if (room === null) {
+        return null;
+      }
+      this.sterToAnalysisResolvedTo = String(room);
+      return room;
+    },
+    writeSterilOutTrayToPlc(cabinetNo, virtualId, destination) {
+      if (cabinetNo >= 31 && cabinetNo <= 33) {
+        this.writePlcPulse('W_DBW24', virtualId);
+        this.writePlcPulse('W_DBW26', destination);
+      } else if (cabinetNo >= 19 && cabinetNo <= 30) {
+        this.writePlcPulse('W_DBW28', virtualId);
+        this.writePlcPulse('W_DBW30', destination);
+      }
+    },
+    handleSterilizationCabinetQuantityChange(cabinetNo, newVal, oldVal) {
       if (!this.isDataReady) return;
-      if (newVal <= oldVal) return;
-
+      if (newVal > oldVal) {
+        this.handleSterilizationCabinetQuantityIncrease(
+          cabinetNo,
+          newVal,
+          oldVal
+        );
+      } else if (newVal < oldVal) {
+        this.handleSterilizationCabinetQuantityDecrease(
+          cabinetNo,
+          newVal,
+          oldVal
+        );
+      }
+    },
+    handleSterilizationCabinetQuantityIncrease(cabinetNo, newVal, oldVal) {
       const increaseCount = newVal - oldVal;
       const destStr = String(cabinetNo);
       const sourceQueue = this.queues[0];
@@ -2829,6 +3048,135 @@ export default {
         this.addLog(
           `灭菌柜${cabinetNo}数量增加${increaseCount}，上货区目的地为${cabinetNo}的托盘不足，仅移动${movedCount}个托盘`
         );
+      }
+    },
+    handleSterilizationCabinetQuantityDecrease(cabinetNo, newVal, oldVal) {
+      const decreaseCount = oldVal - newVal;
+      if (!this.sterToAnalysisExecuting) {
+        this.addLog(
+          `灭菌柜${cabinetNo}完成数量减少${decreaseCount}（${oldVal}→${newVal}），灭菌到解析未执行，跳过队列移动`
+        );
+        return;
+      }
+      if (cabinetNo !== Number(this.sterToAnalysisFrom)) return;
+
+      const sourceQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      const conveyorQueue = this.queues[16];
+      if (!sourceQueue || !conveyorQueue) {
+        this.addLog(`灭菌柜${cabinetNo}数量减少，找不到对应队列`, 'alarm');
+        return;
+      }
+
+      for (let i = 0; i < sourceQueue.trayInfo.length; i++) {
+        const tray = sourceQueue.trayInfo[i];
+        if (!tray.analysisDestination) {
+          const dest = this.resolveAnalysisDestination();
+          if (dest === null) {
+            this.addLog('解析房均已满，无法分配目的地，已取消执行', 'alarm');
+            this.cancelSterToAnalysis();
+            return;
+          }
+          this.$set(tray, 'analysisDestination', String(dest));
+        }
+      }
+
+      let movedCount = 0;
+      for (let i = 0; i < decreaseCount; i++) {
+        const trayIndex = sourceQueue.trayInfo.findIndex(
+          (tray) => tray.analysisDestination
+        );
+        if (trayIndex === -1) {
+          break;
+        }
+
+        const tray = sourceQueue.trayInfo[trayIndex];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        conveyorQueue.trayInfo.push(tray);
+        sourceQueue.trayInfo.splice(trayIndex, 1);
+        movedCount++;
+        this.sterToAnalysisSentCount++;
+        this.addLog(
+          `托盘 ${
+            tray.trayCode || tray.id
+          } 离开灭菌柜${cabinetNo}进入输送线，解析房目的地=${
+            tray.analysisDestination
+          }，时间：${currentTime}`
+        );
+      }
+
+      if (movedCount < decreaseCount) {
+        this.addLog(
+          `灭菌柜${cabinetNo}数量减少${decreaseCount}，已设解析房目的地的托盘不足，仅移动${movedCount}个托盘`,
+          'alarm'
+        );
+      }
+
+      const resolvedTo = Number(this.sterToAnalysisResolvedTo);
+      if (
+        resolvedTo &&
+        this.getAnalysisRoomCount(resolvedTo) + this.sterToAnalysisSentCount >=
+          15
+      ) {
+        this.cancelSterToAnalysis();
+        this.addLog(
+          `灭菌柜到解析房执行完成，解析房${resolvedTo}容量已满（15），已自动停止执行`
+        );
+        return;
+      }
+
+      if (newVal === 0) {
+        this.cancelSterToAnalysis();
+        this.addLog(`灭菌柜${cabinetNo}数量已减至0，已自动停止执行`);
+      }
+    },
+    handleSterilOutTrayRequest(cabinetNo) {
+      if (!this.sterToAnalysisExecuting) return;
+      if (cabinetNo !== Number(this.sterToAnalysisFrom)) return;
+      if (this.isHandlingSterilOutRequest) return;
+
+      const sourceQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      if (!sourceQueue) return;
+
+      const trayIndex = sourceQueue.trayInfo.findIndex(
+        (tray) => !tray.analysisDestination
+      );
+      if (trayIndex === -1) {
+        this.addLog(
+          `灭菌柜${cabinetNo}出货请求：无待分配解析房目的地的托盘`,
+          'alarm'
+        );
+        return;
+      }
+
+      this.isHandlingSterilOutRequest = true;
+      try {
+        const dest = this.resolveAnalysisDestination();
+        if (dest === null) {
+          this.addLog('解析房均已满，无法分配目的地，已取消执行', 'alarm');
+          this.cancelSterToAnalysis();
+          return;
+        }
+
+        const tray = sourceQueue.trayInfo[trayIndex];
+        this.$set(tray, 'analysisDestination', String(dest));
+
+        const virtualId = Number(tray.virtualId || 0);
+        if (!virtualId) {
+          this.addLog(
+            `托盘 ${tray.trayCode || tray.id} 缺少虚拟ID，无法写入PLC`,
+            'alarm'
+          );
+          return;
+        }
+
+        this.writeSterilOutTrayToPlc(cabinetNo, virtualId, dest);
+        this.sterToAnalysisTrayCode = tray.trayCode || tray.id || '';
+        this.addLog(
+          `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 解析房目的地=${dest}，虚拟ID=${virtualId}`
+        );
+      } finally {
+        this.isHandlingSterilOutRequest = false;
       }
     },
     // 关闭历史订单弹窗
@@ -3424,6 +3772,17 @@ export default {
         return value; // 非负数保持不变
       }
     },
+    // 更新数据库队列信息（仅同步trayInfo，AGV状态字段由syncAgvStatusToBackend单独控制）
+    // 更新数据库队列信息
+    updateQueueInfo(id) {
+      const param = {
+        id: id,
+        trayInfo: JSON.stringify(this.queues[id - 1].trayInfo)
+      };
+      HttpUtil.post('/queue_info/update', param).catch((err) => {
+        this.$message.error(err);
+      });
+    },
     updateCartPositionByValue(cartId, value) {
       const cart = this.carts.find((c) => c.id === cartId);
       if (!cart) return;
@@ -3514,6 +3873,9 @@ export default {
           console.error('加载队列信息失败:', err);
           this.$message.error('加载队列信息失败: ' + err);
           this.addLog('队列信息加载失败');
+        })
+        .finally(() => {
+          this._queueInitDone = true;
         });
     },
     // ========== 预热房到灭菌柜执行 ==========
@@ -3556,6 +3918,89 @@ export default {
         .catch(() => {
           // 用户取消操作
         });
+    },
+    // ========== 灭菌柜到解析房执行 ==========
+    executeSterToAnalysis() {
+      if (!this.sterToAnalysisFrom) {
+        this.$message.warning('请先选择出货灭菌柜');
+        return;
+      }
+      if (
+        this.preheatToSterilizeTo &&
+        this.preheatToSterilizeTo === this.sterToAnalysisFrom
+      ) {
+        this.$message.warning(
+          `灭菌柜${this.sterToAnalysisFrom}已被选择为预热到灭菌的目的地，不能同时执行出货`
+        );
+        return;
+      }
+
+      const cabinetNo = Number(this.sterToAnalysisFrom);
+      const sourceQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      const systemQueueCount = sourceQueue?.trayInfo?.length || 0;
+      const plcCount = this.getSterilizationCompleteQuantity(cabinetNo);
+
+      if (systemQueueCount <= 0 || plcCount <= 0) {
+        this.$message.warning(
+          `灭菌柜${cabinetNo}中没有可用的托盘，请检查起始地数量`
+        );
+        return;
+      }
+
+      let analysisRoomNo;
+      if (this.sterToAnalysisTo) {
+        analysisRoomNo = Number(this.sterToAnalysisTo);
+        this.sterToAnalysisResolvedTo = String(analysisRoomNo);
+      } else {
+        analysisRoomNo = this.resolveAnalysisDestination();
+        if (analysisRoomNo === null) {
+          this.$message.warning('所有解析房均已满，无法执行');
+          return;
+        }
+      }
+
+      if (this.getAnalysisRoomCount(analysisRoomNo) >= 15) {
+        this.$message.warning(`解析房${analysisRoomNo}已满，无法执行`);
+        return;
+      }
+
+      this.$confirm(
+        `确认执行灭菌柜${cabinetNo}到解析房${analysisRoomNo}出货命令？`,
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          this.sterToAnalysisLoading = true;
+          this.writePlcPulse('W_DBW20', cabinetNo);
+          this.writePlcPulse('W_DBW22', analysisRoomNo);
+          this.sterToAnalysisExecuting = true;
+          this.sterToAnalysisSentCount = 0;
+          this.sterToAnalysisTrayCode =
+            sourceQueue.trayInfo[0]?.trayCode ||
+            sourceQueue.trayInfo[0]?.id ||
+            '';
+          this.addLog(
+            `执行灭菌柜${cabinetNo}到解析房${analysisRoomNo}出货命令（DBW20=${cabinetNo}, DBW22=${analysisRoomNo}）`
+          );
+          this.$message.success(
+            `已发送灭菌柜${cabinetNo}到解析房${analysisRoomNo}执行命令`
+          );
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
+    },
+    cancelSterToAnalysis() {
+      this.sterToAnalysisLoading = false;
+      this.sterToAnalysisExecuting = false;
+      this.sterToAnalysisSentCount = 0;
+      this.sterToAnalysisResolvedTo = '';
+      this.sterToAnalysisTrayCode = '';
+      this.addLog('灭菌柜到解析房选择已取消，切换为不执行状态');
     },
     // 切换到报警日志时清除未读状态
     switchToAlarmLog() {
