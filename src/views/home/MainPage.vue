@@ -480,6 +480,61 @@
                     </div>
                   </div>
                 </div>
+                <!-- 解析房出货执行 -->
+                <div
+                  class="preheating-room-marker"
+                  data-x="1650"
+                  data-y="850"
+                  style="width: 160px"
+                >
+                  <div class="preheating-room-content">
+                    <div class="preheating-room-header">解析房出货选择</div>
+                    <div class="preheating-room-body">
+                      <el-select
+                        v-model="analysisOutRoom"
+                        placeholder="解析房"
+                        size="mini"
+                        style="width: 100%"
+                      >
+                        <el-option
+                          v-for="i in 19"
+                          :key="'analysis-out-' + i"
+                          :label="String(i)"
+                          :value="String(i)"
+                        />
+                      </el-select>
+                      <el-button
+                        type="primary"
+                        size="mini"
+                        @click="executeAnalysisOut"
+                        :loading="analysisOutLoading"
+                        style="width: 100%"
+                        >执行</el-button
+                      >
+                      <el-button
+                        v-if="analysisOutExecuting"
+                        type="danger"
+                        size="mini"
+                        @click="cancelAnalysisOut"
+                        style="width: 100%; margin-left: 0px"
+                        >取消</el-button
+                      >
+                      <div
+                        style="display: flex; align-items: center"
+                        v-if="analysisOutExecuting"
+                      >
+                        <span
+                          style="
+                            font-size: 12px;
+                            color: #fff;
+                            color: greenyellow;
+                          "
+                          >执行中：{{ analysisOutTrayCode || '--' }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -731,6 +786,36 @@
                     @click="
                       updateSterilizationCompleteQuantity(cabinetNo + 18, -1)
                     "
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 解析房实际数量模拟 -->
+          <div class="test-section">
+            <span class="test-label">解析房数量测试:</span>
+            <div class="steril-quantity-test-grid">
+              <div
+                v-for="roomNo in 17"
+                :key="'analysis-qty-' + roomNo"
+                class="steril-quantity-item"
+              >
+                <span class="steril-quantity-label">{{ roomNo }}</span>
+                <span class="steril-quantity-value">{{
+                  getAnalysisRoomQuantity(roomNo)
+                }}</span>
+                <div class="steril-quantity-buttons">
+                  <button
+                    class="quantity-btn plus"
+                    @click="updateAnalysisRoomQuantity(roomNo, 1)"
+                  >
+                    +
+                  </button>
+                  <button
+                    class="quantity-btn minus"
+                    @click="updateAnalysisRoomQuantity(roomNo, -1)"
                   >
                     -
                   </button>
@@ -1203,6 +1288,7 @@ export default {
         { id: 36, name: '解析19', queueId: 36, x: 2830, y: 1050 }
       ],
       logId: 1000, // 添加一个日志ID计数器
+      // 数据准备就绪标志位
       isDataReady: false,
       // ========== 一楼 PLC 读取点位（一楼-读取点位.csv）==========
       floor1ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳（高电平1秒持续，低电平1秒持续，一直循环）
@@ -1788,7 +1874,13 @@ export default {
       sterToAnalysisResolvedTo: '', // 本次执行实际使用的解析房编号
       sterToAnalysisSentCount: 0, // 本次已移入输送线计数
       sterToAnalysisTrayCode: '', // 当前处理托盘展示
-      isHandlingSterilOutRequest: false
+      isHandlingSterilOutRequest: false,
+      // ========== 解析房出货执行 ==========
+      analysisOutRoom: '', // 出货解析房编号（1~19）
+      analysisOutLoading: false,
+      analysisOutExecuting: false,
+      analysisOutTrayCode: '', // 当前处理托盘展示
+      isHandlingAnalysisOutRequest: false
     };
   },
   computed: {
@@ -1989,10 +2081,6 @@ export default {
       this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
       this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
-
-      if (!this.isDataReady) {
-        this.isDataReady = true;
-      }
     });
     ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
@@ -2275,6 +2363,11 @@ export default {
       this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
     });
+    // 给PLC数据加载时间
+    setTimeout(() => {
+      this.addLog('isDataReady数据加载完成');
+      this.isDataReady = true;
+    }, 3000);
   },
   watch: {
     'cartPositionValues.cart1'(newVal) {
@@ -2294,6 +2387,7 @@ export default {
     },
     // 监听上货请求信号 DB1000.DBW22.BIT0 的上升沿
     'floor1UploadTrayRequest.bit0'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       // 上升沿检测：从0变为1
       if (newVal === '1' && oldVal === '0') {
         this.handleUploadTrayRequest();
@@ -2301,76 +2395,91 @@ export default {
     },
     // 监听灭菌出货请求 DB1000.DBW24 bit0~14 上升沿
     'floor1SterilOutTrayRequest.bit0'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(19);
       }
     },
     'floor1SterilOutTrayRequest.bit1'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(20);
       }
     },
     'floor1SterilOutTrayRequest.bit2'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(21);
       }
     },
     'floor1SterilOutTrayRequest.bit3'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(22);
       }
     },
     'floor1SterilOutTrayRequest.bit4'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(23);
       }
     },
     'floor1SterilOutTrayRequest.bit5'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(24);
       }
     },
     'floor1SterilOutTrayRequest.bit6'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(25);
       }
     },
     'floor1SterilOutTrayRequest.bit7'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(26);
       }
     },
     'floor1SterilOutTrayRequest.bit8'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(27);
       }
     },
     'floor1SterilOutTrayRequest.bit9'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(28);
       }
     },
     'floor1SterilOutTrayRequest.bit10'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(29);
       }
     },
     'floor1SterilOutTrayRequest.bit11'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(30);
       }
     },
     'floor1SterilOutTrayRequest.bit12'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(31);
       }
     },
     'floor1SterilOutTrayRequest.bit13'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(32);
       }
     },
     'floor1SterilOutTrayRequest.bit14'(newVal, oldVal) {
+      if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleSterilOutTrayRequest(33);
       }
@@ -2420,6 +2529,143 @@ export default {
     },
     floor1Sterilization33Complete(newVal, oldVal) {
       this.handleSterilizationCabinetQuantityChange(33, newVal, oldVal);
+    },
+    // 监听解析房内实际数量 DBW116-DBW148
+    floor2AnalysisRoom1Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(1, newVal, oldVal);
+    },
+    floor2AnalysisRoom2Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(2, newVal, oldVal);
+    },
+    floor2AnalysisRoom3Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(3, newVal, oldVal);
+    },
+    floor2AnalysisRoom4Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(4, newVal, oldVal);
+    },
+    floor2AnalysisRoom5Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(5, newVal, oldVal);
+    },
+    floor2AnalysisRoom6Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(6, newVal, oldVal);
+    },
+    floor2AnalysisRoom7Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(7, newVal, oldVal);
+    },
+    floor2AnalysisRoom8Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(8, newVal, oldVal);
+    },
+    floor2AnalysisRoom9Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(9, newVal, oldVal);
+    },
+    floor2AnalysisRoom10Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(10, newVal, oldVal);
+    },
+    floor2AnalysisRoom11Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(11, newVal, oldVal);
+    },
+    floor2AnalysisRoom12Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(12, newVal, oldVal);
+    },
+    floor2AnalysisRoom13Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(13, newVal, oldVal);
+    },
+    floor2AnalysisRoom14Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(14, newVal, oldVal);
+    },
+    floor2AnalysisRoom15Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(15, newVal, oldVal);
+    },
+    floor2AnalysisRoom16Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(16, newVal, oldVal);
+    },
+    floor2AnalysisRoom17Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(17, newVal, oldVal);
+    },
+    // 监听解析房出货请求 DB1000.DBW30 bit0~bit13 上升沿
+    'floor2AnalysisOutTrayRequest.bit0'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(1);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit1'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(2);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit2'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(3);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit3'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(4);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit4'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(5);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit5'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(6);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit6'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(7);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit7'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(8);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit8'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(9);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit9'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(10);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit10'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(11);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit11'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(12);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit12'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(13);
+      }
+    },
+    'floor2AnalysisOutTrayRequest.bit13'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest(14);
+      }
     }
   },
   methods: {
@@ -2940,8 +3186,14 @@ export default {
       return this[`floor1Sterilization${cabinetNo}Complete`] || 0;
     },
     updateSterilizationCompleteQuantity(cabinetNo, change) {
-      this.isDataReady = true;
       const key = `floor1Sterilization${cabinetNo}Complete`;
+      this[key] = Math.max(0, parseInt(this[key] || 0) + change);
+    },
+    getAnalysisRoomQuantity(roomNo) {
+      return this[`floor2AnalysisRoom${roomNo}Qty`] || 0;
+    },
+    updateAnalysisRoomQuantity(roomNo, change) {
+      const key = `floor2AnalysisRoom${roomNo}Qty`;
       this[key] = Math.max(0, parseInt(this[key] || 0) + change);
     },
     writePlcPulse(tag, value) {
@@ -2950,11 +3202,23 @@ export default {
         ipcRenderer.send('cancelWriteToPLC_0', tag);
       }, 2000);
     },
+    writeAnalysisOutPlcPulse(roomNo) {
+      const bitIndex = roomNo - 1;
+      if (bitIndex < 0 || bitIndex > 15) {
+        this.addLog(`解析房${roomNo}出货：无对应DB1001.DBW6位信号`, 'alarm');
+        return;
+      }
+      const tag = `W_DBW6_BIT${bitIndex}`;
+      ipcRenderer.send('writeSingleValueToPLC_1', tag, true);
+      setTimeout(() => {
+        ipcRenderer.send('cancelWriteToPLC_1', tag);
+      }, 2000);
+    },
     getSterilQueueIndex(cabinetNo) {
       return cabinetNo - 18;
     },
     getAnalysisQueueIndex(roomNo) {
-      return roomNo + 17;
+      return roomNo + 16;
     },
     getAnalysisRoomCount(roomNo) {
       const queueIndex = this.getAnalysisQueueIndex(roomNo);
@@ -3003,6 +3267,136 @@ export default {
           cabinetNo,
           newVal,
           oldVal
+        );
+      }
+    },
+    handleAnalysisRoomQuantityChange(roomNo, newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal > oldVal) {
+        this.handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal);
+      } else if (newVal < oldVal) {
+        this.handleAnalysisRoomQuantityDecrease(roomNo, newVal, oldVal);
+      }
+    },
+    handleAnalysisRoomQuantityDecrease(roomNo, newVal, oldVal) {
+      const decreaseCount = oldVal - newVal;
+      if (!this.analysisOutExecuting) {
+        this.addLog(
+          `解析房${roomNo}数量减少${decreaseCount}（${oldVal}→${newVal}），解析出货未执行，跳过队列移动`
+        );
+        return;
+      }
+      if (roomNo !== Number(this.analysisOutRoom)) return;
+
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const targetQueue = this.queues[queueIndex];
+      if (!targetQueue) {
+        this.addLog(`解析房${roomNo}数量减少，找不到对应队列`, 'alarm');
+        return;
+      }
+
+      for (let i = 0; i < decreaseCount; i++) {
+        if (targetQueue.trayInfo.length === 0) {
+          this.addLog(`解析房${roomNo}队列空，无法出库`, 'alarm');
+          break;
+        }
+
+        const tray = targetQueue.trayInfo[0];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'outAnalysisRoomTime', currentTime);
+        this.addLog(
+          `托盘 ${
+            tray.trayCode || tray.id
+          } 离开解析房${roomNo}，时间：${currentTime}`
+        );
+        targetQueue.trayInfo.shift();
+      }
+
+      this.checkAnalysisOutComplete(roomNo);
+    },
+    checkAnalysisOutComplete(roomNo) {
+      if (!this.analysisOutExecuting) return;
+      if (roomNo !== Number(this.analysisOutRoom)) return;
+
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const queueCount = this.getAnalysisRoomCount(roomNo);
+      if (queueCount <= 0) {
+        this.cancelAnalysisOut();
+        this.addLog(
+          `解析房${roomNo}出货执行完成，已无可用托盘，已自动停止执行`
+        );
+        return;
+      }
+
+      const nextTray = this.queues[queueIndex]?.trayInfo?.[0];
+      this.analysisOutTrayCode = nextTray?.trayCode || nextTray?.id || '';
+    },
+    handleAnalysisOutTrayRequest(roomNo) {
+      if (!this.analysisOutExecuting) return;
+      if (roomNo !== Number(this.analysisOutRoom)) return;
+      if (this.isHandlingAnalysisOutRequest) return;
+
+      this.isHandlingAnalysisOutRequest = true;
+      try {
+        const queueIndex = this.getAnalysisQueueIndex(roomNo);
+        const targetQueue = this.queues[queueIndex];
+        if (!targetQueue || targetQueue.trayInfo.length === 0) {
+          this.addLog(`解析房${roomNo}出货请求：队列空，无法出库`, 'alarm');
+          this.cancelAnalysisOut();
+          return;
+        }
+
+        this.writeAnalysisOutPlcPulse(roomNo);
+        const tray = targetQueue.trayInfo[0];
+        this.analysisOutTrayCode = tray.trayCode || tray.id || '';
+        this.addLog(
+          `解析房${roomNo}出货请求：已发送DB1001.DBW6信号，托盘 ${this.analysisOutTrayCode}`
+        );
+      } finally {
+        this.isHandlingAnalysisOutRequest = false;
+      }
+    },
+    handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal) {
+      const increaseCount = newVal - oldVal;
+      const destStr = String(roomNo);
+      const sourceQueue = this.queues[16];
+      const targetQueue = this.queues[this.getAnalysisQueueIndex(roomNo)];
+      if (!sourceQueue || !targetQueue) {
+        this.addLog(`解析房${roomNo}数量增加，找不到对应队列`, 'alarm');
+        return;
+      }
+
+      let movedCount = 0;
+      for (let i = 0; i < increaseCount; i++) {
+        const trayIndex = sourceQueue.trayInfo.findIndex(
+          (tray) => String(tray.analysisDestination) === destStr
+        );
+
+        if (trayIndex === -1) {
+          break;
+        }
+
+        const tray = sourceQueue.trayInfo[trayIndex];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'analysisRoom', destStr);
+        this.$set(tray, 'inAnalysisRoomTime', currentTime);
+        targetQueue.trayInfo.push(tray);
+        sourceQueue.trayInfo.splice(trayIndex, 1);
+        movedCount++;
+        this.addLog(
+          `托盘 ${
+            tray.trayCode || tray.id
+          } 离开输送线进入解析房${roomNo}，时间：${currentTime}`
+        );
+      }
+
+      if (movedCount > 0) {
+        this.addLog(`从输送线移动${movedCount}个托盘到解析房${roomNo}队列`);
+      }
+
+      if (movedCount < increaseCount) {
+        this.addLog(
+          `解析房${roomNo}数量增加${increaseCount}，输送线目的地为${roomNo}的托盘不足，仅移动${movedCount}个托盘`
         );
       }
     },
@@ -4001,6 +4395,54 @@ export default {
       this.sterToAnalysisResolvedTo = '';
       this.sterToAnalysisTrayCode = '';
       this.addLog('灭菌柜到解析房选择已取消，切换为不执行状态');
+    },
+    // ========== 解析房出货执行 ==========
+    executeAnalysisOut() {
+      if (!this.analysisOutRoom) {
+        this.$message.warning('请先选择出货解析房');
+        return;
+      }
+
+      const roomNo = Number(this.analysisOutRoom);
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const targetQueue = this.queues[queueIndex];
+      const systemQueueCount = targetQueue?.trayInfo?.length || 0;
+      const plcCount = this.getAnalysisRoomQuantity(roomNo);
+
+      if (systemQueueCount <= 0 || plcCount <= 0) {
+        this.$message.warning(
+          `解析房${roomNo}中没有可用的托盘，请检查起始地数量`
+        );
+        return;
+      }
+
+      this.$confirm(`确认执行解析房${roomNo}出货命令？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.analysisOutLoading = true;
+          this.analysisOutExecuting = true;
+          this.writeAnalysisOutPlcPulse(roomNo);
+          this.analysisOutTrayCode =
+            targetQueue.trayInfo[0]?.trayCode ||
+            targetQueue.trayInfo[0]?.id ||
+            '';
+          this.addLog(
+            `执行解析房${roomNo}出货命令（DB1001.DBW6 BIT${roomNo - 1}）`
+          );
+          this.$message.success(`已发送解析房${roomNo}出货执行命令`);
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
+    },
+    cancelAnalysisOut() {
+      this.analysisOutLoading = false;
+      this.analysisOutExecuting = false;
+      this.analysisOutTrayCode = '';
+      this.addLog('解析房出货选择已取消，切换为不执行状态');
     },
     // 切换到报警日志时清除未读状态
     switchToAlarmLog() {
