@@ -2574,8 +2574,8 @@ export default {
         }
         .order-item {
           position: relative;
-          background: #eaf2ff;
-          border: 1px solid #c4d8f5;
+          background: #ffffff;
+          border: 1px solid var(--mp-border-light);
           border-radius: 10px;
           padding: 6px 10px;
           display: flex;
@@ -2583,15 +2583,17 @@ export default {
           gap: 4px;
           cursor: pointer;
           &.pending {
-            border-left: 3px solid #9bb4d8;
+            border-left: 3px solid #b8c9e6;
+            background: #ffffff;
           }
           &.running {
-            border-left: 3px solid #67c23a;
-            background: #f0f9eb;
+            border-left: 3px solid var(--mp-accent);
+            background: #eaf2ff;
+            border-color: #c4d8f5;
           }
           &.complete {
-            border-left: 3px solid #529b2e;
-            background: #f1f9ec;
+            border-left: 3px solid #85a5d6;
+            background: #f3f7fc;
           }
           .order-header {
             display: flex;
@@ -2634,11 +2636,11 @@ export default {
                   flex-shrink: 0;
                 }
                 &.running {
-                  color: #e6a23c;
+                  color: var(--mp-accent-deep);
                   font-weight: 600;
                   &::before {
-                    background: #e6a23c;
-                    box-shadow: 0 0 0 3px rgba(230, 162, 60, 0.2);
+                    background: var(--mp-accent);
+                    box-shadow: 0 0 0 3px rgba(67, 133, 255, 0.2);
                   }
                 }
               }
