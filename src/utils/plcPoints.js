@@ -95,6 +95,7 @@ var variables1 = {
   W_DBW6: 'DB1001,INT6', // WCS-允许进料
   W_DBW8: 'DB1001,INT8', // WCS-故障复位
   W_DBW10: 'DB1001,INT10', // WCS上货位写虚拟ID
+  W_DBW12: 'DB1001,INT12', // WCS灭菌到解析出货执行/取消
   W_DBW14: 'DB1001,INT14', // WCS上货位写目的地
   W_DBW16: 'DB1001,INT16', // WCS执行进货预热柜编号
   W_DBW18: 'DB1001,INT18', // WCS执行进货灭菌柜进货执行命令
