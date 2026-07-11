@@ -2530,7 +2530,7 @@ export default {
     floor1Sterilization33Complete(newVal, oldVal) {
       this.handleSterilizationCabinetQuantityChange(33, newVal, oldVal);
     },
-    // 监听解析房内实际数量 DBW116-DBW148
+    // 监听解析房内实际数量 DBW116-DBW148（仅入房；出房由 DBW30 请求触发）
     floor2AnalysisRoom1Qty(newVal, oldVal) {
       this.handleAnalysisRoomQuantityChange(1, newVal, oldVal);
     },
@@ -2582,89 +2582,11 @@ export default {
     floor2AnalysisRoom17Qty(newVal, oldVal) {
       this.handleAnalysisRoomQuantityChange(17, newVal, oldVal);
     },
-    // 监听解析房出货请求 DB1000.DBW30 bit0~bit13 上升沿
+    // 监听解析房出货请求 DB1000.DBW30 bit0（DBX30.0）上升沿（货到出口→出队）
     'floor2AnalysisOutTrayRequest.bit0'(newVal, oldVal) {
       if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(1);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit1'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(2);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit2'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(3);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit3'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(4);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit4'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(5);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit5'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(6);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit6'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(7);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit7'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(8);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit8'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(9);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit9'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(10);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit10'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(11);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit11'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(12);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit12'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(13);
-      }
-    },
-    'floor2AnalysisOutTrayRequest.bit13'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleAnalysisOutTrayRequest(14);
+        this.handleAnalysisOutTrayRequest();
       }
     }
   },
@@ -3202,14 +3124,27 @@ export default {
         ipcRenderer.send('cancelWriteToPLC_0', tag);
       }, 2000);
     },
-    writeAnalysisOutPlcPulse(roomNo) {
+    getAnalysisOutPlcTag(roomNo) {
       const bitIndex = roomNo - 1;
       if (bitIndex < 0 || bitIndex > 15) {
+        return null;
+      }
+      return `W_DBW6_BIT${bitIndex}`;
+    },
+    // 解析出货执行中持续写 DB1001.DBW6 对应位=1
+    startAnalysisOutPlcSignal(roomNo) {
+      const tag = this.getAnalysisOutPlcTag(roomNo);
+      if (!tag) {
         this.addLog(`解析房${roomNo}出货：无对应DB1001.DBW6位信号`, 'alarm');
         return;
       }
-      const tag = `W_DBW6_BIT${bitIndex}`;
       ipcRenderer.send('writeSingleValueToPLC_1', tag, true);
+    },
+    // 解析条件不具备时清零并停止持续写入
+    stopAnalysisOutPlcSignal(roomNo) {
+      const tag = this.getAnalysisOutPlcTag(roomNo);
+      if (!tag) return;
+      ipcRenderer.send('writeSingleValueToPLC_1', tag, false);
       setTimeout(() => {
         ipcRenderer.send('cancelWriteToPLC_1', tag);
       }, 2000);
@@ -3293,47 +3228,10 @@ export default {
     },
     handleAnalysisRoomQuantityChange(roomNo, newVal, oldVal) {
       if (!this.isDataReady) return;
+      // 仅处理数量增加（入房）；出房改由 DB1000.DBW30 出货请求触发
       if (newVal > oldVal) {
         this.handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal);
-      } else if (newVal < oldVal) {
-        this.handleAnalysisRoomQuantityDecrease(roomNo, newVal, oldVal);
       }
-    },
-    handleAnalysisRoomQuantityDecrease(roomNo, newVal, oldVal) {
-      const decreaseCount = oldVal - newVal;
-      if (!this.analysisOutExecuting) {
-        this.addLog(
-          `解析房${roomNo}数量减少${decreaseCount}（${oldVal}→${newVal}），解析出货未执行，跳过队列移动`
-        );
-        return;
-      }
-      if (roomNo !== Number(this.analysisOutRoom)) return;
-
-      const queueIndex = this.getAnalysisQueueIndex(roomNo);
-      const targetQueue = this.queues[queueIndex];
-      if (!targetQueue) {
-        this.addLog(`解析房${roomNo}数量减少，找不到对应队列`, 'alarm');
-        return;
-      }
-
-      for (let i = 0; i < decreaseCount; i++) {
-        if (targetQueue.trayInfo.length === 0) {
-          this.addLog(`解析房${roomNo}队列空，无法出库`, 'alarm');
-          break;
-        }
-
-        const tray = targetQueue.trayInfo[0];
-        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        this.$set(tray, 'outAnalysisRoomTime', currentTime);
-        this.addLog(
-          `托盘 ${
-            tray.trayCode || tray.id
-          } 离开解析房${roomNo}，时间：${currentTime}`
-        );
-        targetQueue.trayInfo.shift();
-      }
-
-      this.checkAnalysisOutComplete(roomNo);
     },
     checkAnalysisOutComplete(roomNo) {
       if (!this.analysisOutExecuting) return;
@@ -3352,10 +3250,12 @@ export default {
       const nextTray = this.queues[queueIndex]?.trayInfo?.[0];
       this.analysisOutTrayCode = nextTray?.trayCode || nextTray?.id || '';
     },
-    handleAnalysisOutTrayRequest(roomNo) {
+    handleAnalysisOutTrayRequest() {
       if (!this.analysisOutExecuting) return;
-      if (roomNo !== Number(this.analysisOutRoom)) return;
       if (this.isHandlingAnalysisOutRequest) return;
+
+      const roomNo = Number(this.analysisOutRoom);
+      if (!roomNo) return;
 
       this.isHandlingAnalysisOutRequest = true;
       try {
@@ -3367,12 +3267,16 @@ export default {
           return;
         }
 
-        this.writeAnalysisOutPlcPulse(roomNo);
         const tray = targetQueue.trayInfo[0];
-        this.analysisOutTrayCode = tray.trayCode || tray.id || '';
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'outAnalysisRoomTime', currentTime);
         this.addLog(
-          `解析房${roomNo}出货请求：已发送DB1001.DBW6信号，托盘 ${this.analysisOutTrayCode}`
+          `解析房${roomNo}出货请求(DBW30.0)：托盘 ${
+            tray.trayCode || tray.id
+          } 离开解析房，时间：${currentTime}`
         );
+        targetQueue.trayInfo.shift();
+        this.checkAnalysisOutComplete(roomNo);
       } finally {
         this.isHandlingAnalysisOutRequest = false;
       }
@@ -4405,13 +4309,15 @@ export default {
         .then(() => {
           this.analysisOutLoading = true;
           this.analysisOutExecuting = true;
-          this.writeAnalysisOutPlcPulse(roomNo);
+          this.startAnalysisOutPlcSignal(roomNo);
           this.analysisOutTrayCode =
             targetQueue.trayInfo[0]?.trayCode ||
             targetQueue.trayInfo[0]?.id ||
             '';
           this.addLog(
-            `执行解析房${roomNo}出货命令（DB1001.DBW6 BIT${roomNo - 1}）`
+            `执行解析房${roomNo}出货命令（DB1001.DBW6 BIT${
+              roomNo - 1
+            }=1，持续下发）`
           );
           this.$message.success(`已发送解析房${roomNo}出货执行命令`);
         })
@@ -4420,10 +4326,21 @@ export default {
         });
     },
     cancelAnalysisOut() {
+      const wasExecuting = this.analysisOutExecuting;
+      const roomNo = Number(this.analysisOutRoom);
       this.analysisOutLoading = false;
       this.analysisOutExecuting = false;
       this.analysisOutTrayCode = '';
-      this.addLog('解析房出货选择已取消，切换为不执行状态');
+      if (wasExecuting && roomNo) {
+        this.stopAnalysisOutPlcSignal(roomNo);
+        this.addLog(
+          `解析房出货选择已取消，已发送DB1001.DBW6 BIT${
+            roomNo - 1
+          }=0，切换为不执行状态`
+        );
+      } else {
+        this.addLog('解析房出货选择已取消，切换为不执行状态');
+      }
     },
     // 切换到报警日志时清除未读状态
     switchToAlarmLog() {
