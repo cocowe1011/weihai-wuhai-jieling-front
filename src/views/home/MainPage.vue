@@ -625,15 +625,6 @@
                     <div class="tray-info">
                       <div class="tray-info-row">
                         <span class="tray-name">{{ tray.name }}</span>
-                        <div class="tray-batch-group">
-                          <span class="tray-batch">
-                            <span>
-                              {{
-                                tray.isTerile === 1 ? '消毒' : '不消毒'
-                              }}</span
-                            >
-                          </span>
-                        </div>
                       </div>
                       <div class="tray-info-row">
                         <span class="tray-detail"
@@ -1175,6 +1166,54 @@
 
     <!-- 订单查询对话框 -->
     <OrderQueryDialog :visible.sync="orderQueryDialogVisible" />
+
+    <!-- 添加托盘对话框 -->
+    <el-dialog
+      title="添加托盘"
+      :visible.sync="addTrayDialogVisible"
+      width="560px"
+      append-to-body
+      :close-on-click-modal="false"
+    >
+      <div class="add-tray-form">
+        <el-form
+          :model="newTrayForm"
+          ref="newTrayForm"
+          :rules="trayFormRules"
+          label-width="110px"
+          size="small"
+        >
+          <el-form-item label="虚拟ID" prop="virtualId">
+            <el-input
+              v-model="newTrayForm.virtualId"
+              placeholder="请输入虚拟ID（10000-29999）"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="订单编号">
+            <el-input :value="runningOrder?.orderId || '--'" disabled />
+          </el-form-item>
+          <el-form-item label="订单名称">
+            <el-input :value="runningOrder?.orderName || '--'" disabled />
+          </el-form-item>
+          <el-form-item label="产品名称">
+            <el-input :value="runningOrder?.productName || '--'" disabled />
+          </el-form-item>
+          <el-form-item label="批号">
+            <el-input :value="runningOrder?.batchNo || '--'" disabled />
+          </el-form-item>
+          <el-form-item label="目的地">
+            <el-input :value="runningOrder?.destination || '--'" disabled />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addTrayDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitAddTray" :loading="isSubmitting"
+          >确 定</el-button
+        >
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -1210,6 +1249,27 @@ export default {
       isQueueExpanded: false,
       selectedQueueIndex: 0,
       isDragging: false,
+      addTrayDialogVisible: false,
+      isSubmitting: false,
+      newTrayForm: {
+        virtualId: ''
+      },
+      trayFormRules: {
+        virtualId: [
+          { required: true, message: '请输入虚拟ID', trigger: 'blur' },
+          {
+            validator: (rule, value, callback) => {
+              const id = Number(value);
+              if (!Number.isInteger(id) || id < 10000 || id > 29999) {
+                callback(new Error('虚拟ID需为10000-29999的整数'));
+              } else {
+                callback();
+              }
+            },
+            trigger: 'blur'
+          }
+        ]
+      },
       queues: [
         { id: 1, queueName: '上货区', trayInfo: [] },
         { id: 2, queueName: '灭菌19', trayInfo: [] },
@@ -1894,6 +1954,9 @@ export default {
     },
     selectedQueue() {
       return this.queues[this.selectedQueueIndex];
+    },
+    runningOrder() {
+      return this.ordersList.find((o) => o.orderStatus === 1) || null;
     }
   },
   mounted() {
@@ -1915,454 +1978,454 @@ export default {
       });
     });
     this.refreshOrders();
-    // ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
-    //   const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
+    ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
+      const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
-    //   // 一楼基础状态
-    //   this.floor1ConveyorHeartbeat = Number(values.DBW0 ?? 0);
-    //   this.floor1ConveyorRunStatus = Number(values.DBW2 ?? 0);
+      // 一楼基础状态
+      this.floor1ConveyorHeartbeat = Number(values.DBW0 ?? 0);
+      this.floor1ConveyorRunStatus = Number(values.DBW2 ?? 0);
 
-    //   // 一楼区域报警 DBW4
-    //   let word4 = this.convertToWord(values.DBW4 ?? 0);
-    //   this.floor1AreaAlarm.bit0 = getBit(word4, 8);
-    //   this.floor1AreaAlarm.bit1 = getBit(word4, 9);
-    //   this.floor1AreaAlarm.bit2 = getBit(word4, 10);
+      // 一楼区域报警 DBW4
+      let word4 = this.convertToWord(values.DBW4 ?? 0);
+      this.floor1AreaAlarm.bit0 = getBit(word4, 8);
+      this.floor1AreaAlarm.bit1 = getBit(word4, 9);
+      this.floor1AreaAlarm.bit2 = getBit(word4, 10);
 
-    //   // 一楼区域急停 DBW6
-    //   let word6 = this.convertToWord(values.DBW6 ?? 0);
-    //   this.floor1AreaEstop.bit0 = getBit(word6, 8);
-    //   this.floor1AreaEstop.bit1 = getBit(word6, 9);
-    //   this.floor1AreaEstop.bit2 = getBit(word6, 10);
-    //   this.floor1AreaEstop.bit3 = getBit(word6, 11);
-    //   this.floor1AreaEstop.bit4 = getBit(word6, 12);
-    //   this.floor1AreaEstop.bit5 = getBit(word6, 13);
+      // 一楼区域急停 DBW6
+      let word6 = this.convertToWord(values.DBW6 ?? 0);
+      this.floor1AreaEstop.bit0 = getBit(word6, 8);
+      this.floor1AreaEstop.bit1 = getBit(word6, 9);
+      this.floor1AreaEstop.bit2 = getBit(word6, 10);
+      this.floor1AreaEstop.bit3 = getBit(word6, 11);
+      this.floor1AreaEstop.bit4 = getBit(word6, 12);
+      this.floor1AreaEstop.bit5 = getBit(word6, 13);
 
-    //   // 一楼电机运行信号--1 DBW8
-    //   let word8 = this.convertToWord(values.DBW8 ?? 0);
-    //   this.floor1MotorRunning1.bit0 = getBit(word8, 8);
-    //   this.floor1MotorRunning1.bit1 = getBit(word8, 9);
-    //   this.floor1MotorRunning1.bit2 = getBit(word8, 10);
-    //   this.floor1MotorRunning1.bit3 = getBit(word8, 11);
-    //   this.floor1MotorRunning1.bit4 = getBit(word8, 12);
-    //   this.floor1MotorRunning1.bit5 = getBit(word8, 13);
-    //   this.floor1MotorRunning1.bit6 = getBit(word8, 14);
-    //   this.floor1MotorRunning1.bit7 = getBit(word8, 15);
-    //   this.floor1MotorRunning1.bit8 = getBit(word8, 0);
-    //   this.floor1MotorRunning1.bit9 = getBit(word8, 1);
-    //   this.floor1MotorRunning1.bit10 = getBit(word8, 2);
-    //   this.floor1MotorRunning1.bit11 = getBit(word8, 3);
-    //   this.floor1MotorRunning1.bit12 = getBit(word8, 4);
-    //   this.floor1MotorRunning1.bit13 = getBit(word8, 5);
-    //   this.floor1MotorRunning1.bit14 = getBit(word8, 6);
-    //   this.floor1MotorRunning1.bit15 = getBit(word8, 7);
+      // 一楼电机运行信号--1 DBW8
+      let word8 = this.convertToWord(values.DBW8 ?? 0);
+      this.floor1MotorRunning1.bit0 = getBit(word8, 8);
+      this.floor1MotorRunning1.bit1 = getBit(word8, 9);
+      this.floor1MotorRunning1.bit2 = getBit(word8, 10);
+      this.floor1MotorRunning1.bit3 = getBit(word8, 11);
+      this.floor1MotorRunning1.bit4 = getBit(word8, 12);
+      this.floor1MotorRunning1.bit5 = getBit(word8, 13);
+      this.floor1MotorRunning1.bit6 = getBit(word8, 14);
+      this.floor1MotorRunning1.bit7 = getBit(word8, 15);
+      this.floor1MotorRunning1.bit8 = getBit(word8, 0);
+      this.floor1MotorRunning1.bit9 = getBit(word8, 1);
+      this.floor1MotorRunning1.bit10 = getBit(word8, 2);
+      this.floor1MotorRunning1.bit11 = getBit(word8, 3);
+      this.floor1MotorRunning1.bit12 = getBit(word8, 4);
+      this.floor1MotorRunning1.bit13 = getBit(word8, 5);
+      this.floor1MotorRunning1.bit14 = getBit(word8, 6);
+      this.floor1MotorRunning1.bit15 = getBit(word8, 7);
 
-    //   // 一楼电机运行信号--2 DBW10
-    //   let word10 = this.convertToWord(values.DBW10 ?? 0);
-    //   this.floor1MotorRunning2.bit0 = getBit(word10, 8);
+      // 一楼电机运行信号--2 DBW10
+      let word10 = this.convertToWord(values.DBW10 ?? 0);
+      this.floor1MotorRunning2.bit0 = getBit(word10, 8);
 
-    //   // 一楼传感器信号 DBW12
-    //   let word12 = this.convertToWord(values.DBW12 ?? 0);
-    //   this.floor1SensorSignal.bit0 = getBit(word12, 8);
-    //   this.floor1SensorSignal.bit1 = getBit(word12, 9);
-    //   this.floor1SensorSignal.bit2 = getBit(word12, 10);
-    //   this.floor1SensorSignal.bit3 = getBit(word12, 11);
-    //   this.floor1SensorSignal.bit4 = getBit(word12, 12);
-    //   this.floor1SensorSignal.bit5 = getBit(word12, 13);
-    //   this.floor1SensorSignal.bit6 = getBit(word12, 14);
-    //   this.floor1SensorSignal.bit7 = getBit(word12, 15);
-    //   this.floor1SensorSignal.bit8 = getBit(word12, 0);
+      // 一楼传感器信号 DBW12
+      let word12 = this.convertToWord(values.DBW12 ?? 0);
+      this.floor1SensorSignal.bit0 = getBit(word12, 8);
+      this.floor1SensorSignal.bit1 = getBit(word12, 9);
+      this.floor1SensorSignal.bit2 = getBit(word12, 10);
+      this.floor1SensorSignal.bit3 = getBit(word12, 11);
+      this.floor1SensorSignal.bit4 = getBit(word12, 12);
+      this.floor1SensorSignal.bit5 = getBit(word12, 13);
+      this.floor1SensorSignal.bit6 = getBit(word12, 14);
+      this.floor1SensorSignal.bit7 = getBit(word12, 15);
+      this.floor1SensorSignal.bit8 = getBit(word12, 0);
 
-    //   // 一楼小车位置
-    //   this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
-    //   this.floor1CartBeforeSteril2Pos = Number(values.DBW16 ?? 0);
-    //   this.floor1CartAfterSterilPos = Number(values.DBW18 ?? 0);
-    //   this.floor1CartBeforeSteril3Pos = Number(values.DBW20 ?? 0);
-    //   this.cartPositionValues.cart1 = Number(values.DBW14 ?? 0);
-    //   this.cartPositionValues.cart2 = Number(values.DBW16 ?? 0);
-    //   this.cartPositionValues.cart3 = Number(values.DBW18 ?? 0);
+      // 一楼小车位置
+      this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
+      this.floor1CartBeforeSteril2Pos = Number(values.DBW16 ?? 0);
+      this.floor1CartAfterSterilPos = Number(values.DBW18 ?? 0);
+      this.floor1CartBeforeSteril3Pos = Number(values.DBW20 ?? 0);
+      this.cartPositionValues.cart1 = Number(values.DBW14 ?? 0);
+      this.cartPositionValues.cart2 = Number(values.DBW16 ?? 0);
+      this.cartPositionValues.cart3 = Number(values.DBW18 ?? 0);
 
-    //   // 一楼上货请求托盘指定ID和目的地 DBW22
-    //   let word22 = this.convertToWord(values.DBW22 ?? 0);
-    //   this.floor1UploadTrayRequest.bit0 = getBit(word22, 8);
+      // 一楼上货请求托盘指定ID和目的地 DBW22
+      let word22 = this.convertToWord(values.DBW22 ?? 0);
+      this.floor1UploadTrayRequest.bit0 = getBit(word22, 8);
 
-    //   // 一楼灭菌出货请求托盘指定ID和目的地 DBW24
-    //   let word24 = this.convertToWord(values.DBW24 ?? 0);
-    //   this.floor1SterilOutTrayRequest.bit0 = getBit(word24, 8);
-    //   this.floor1SterilOutTrayRequest.bit1 = getBit(word24, 9);
-    //   this.floor1SterilOutTrayRequest.bit2 = getBit(word24, 10);
-    //   this.floor1SterilOutTrayRequest.bit3 = getBit(word24, 11);
-    //   this.floor1SterilOutTrayRequest.bit4 = getBit(word24, 12);
-    //   this.floor1SterilOutTrayRequest.bit5 = getBit(word24, 13);
-    //   this.floor1SterilOutTrayRequest.bit6 = getBit(word24, 14);
-    //   this.floor1SterilOutTrayRequest.bit7 = getBit(word24, 15);
-    //   this.floor1SterilOutTrayRequest.bit8 = getBit(word24, 0);
-    //   this.floor1SterilOutTrayRequest.bit9 = getBit(word24, 1);
-    //   this.floor1SterilOutTrayRequest.bit10 = getBit(word24, 2);
-    //   this.floor1SterilOutTrayRequest.bit11 = getBit(word24, 3);
-    //   this.floor1SterilOutTrayRequest.bit12 = getBit(word24, 4);
-    //   this.floor1SterilOutTrayRequest.bit13 = getBit(word24, 5);
-    //   this.floor1SterilOutTrayRequest.bit14 = getBit(word24, 6);
-    //   this.floor1SterilOutTrayRequest.bit15 = getBit(word24, 7);
+      // 一楼灭菌出货请求托盘指定ID和目的地 DBW24
+      let word24 = this.convertToWord(values.DBW24 ?? 0);
+      this.floor1SterilOutTrayRequest.bit0 = getBit(word24, 8);
+      this.floor1SterilOutTrayRequest.bit1 = getBit(word24, 9);
+      this.floor1SterilOutTrayRequest.bit2 = getBit(word24, 10);
+      this.floor1SterilOutTrayRequest.bit3 = getBit(word24, 11);
+      this.floor1SterilOutTrayRequest.bit4 = getBit(word24, 12);
+      this.floor1SterilOutTrayRequest.bit5 = getBit(word24, 13);
+      this.floor1SterilOutTrayRequest.bit6 = getBit(word24, 14);
+      this.floor1SterilOutTrayRequest.bit7 = getBit(word24, 15);
+      this.floor1SterilOutTrayRequest.bit8 = getBit(word24, 0);
+      this.floor1SterilOutTrayRequest.bit9 = getBit(word24, 1);
+      this.floor1SterilOutTrayRequest.bit10 = getBit(word24, 2);
+      this.floor1SterilOutTrayRequest.bit11 = getBit(word24, 3);
+      this.floor1SterilOutTrayRequest.bit12 = getBit(word24, 4);
+      this.floor1SterilOutTrayRequest.bit13 = getBit(word24, 5);
+      this.floor1SterilOutTrayRequest.bit14 = getBit(word24, 6);
+      this.floor1SterilOutTrayRequest.bit15 = getBit(word24, 7);
 
-    //   // 一楼电机占位虚拟ID
-    //   this.floor1MotorVirtualId1001 = Number(values.DBW26 ?? 0);
-    //   this.floor1MotorVirtualId1004 = Number(values.DBW28 ?? 0);
-    //   this.floor1MotorVirtualId1006A = Number(values.DBW30 ?? 0);
-    //   this.floor1MotorVirtualId1006B = Number(values.DBW32 ?? 0);
-    //   this.floor1MotorVirtualId1008 = Number(values.DBW34 ?? 0);
-    //   this.floor1MotorVirtualId1010 = Number(values.DBW36 ?? 0);
-    //   this.floor1MotorVirtualId1012 = Number(values.DBW38 ?? 0);
-    //   this.floor1MotorVirtualId1014 = Number(values.DBW40 ?? 0);
-    //   this.floor1MotorVirtualId1016 = Number(values.DBW42 ?? 0);
-    //   this.floor1MotorVirtualIdspare1 = Number(values.DBW44 ?? 0);
-    //   this.floor1MotorVirtualIdspare2 = Number(values.DBW46 ?? 0);
+      // 一楼电机占位虚拟ID
+      this.floor1MotorVirtualId1001 = Number(values.DBW26 ?? 0);
+      this.floor1MotorVirtualId1004 = Number(values.DBW28 ?? 0);
+      this.floor1MotorVirtualId1006A = Number(values.DBW30 ?? 0);
+      this.floor1MotorVirtualId1006B = Number(values.DBW32 ?? 0);
+      this.floor1MotorVirtualId1008 = Number(values.DBW34 ?? 0);
+      this.floor1MotorVirtualId1010 = Number(values.DBW36 ?? 0);
+      this.floor1MotorVirtualId1012 = Number(values.DBW38 ?? 0);
+      this.floor1MotorVirtualId1014 = Number(values.DBW40 ?? 0);
+      this.floor1MotorVirtualId1016 = Number(values.DBW42 ?? 0);
+      this.floor1MotorVirtualIdspare1 = Number(values.DBW44 ?? 0);
+      this.floor1MotorVirtualIdspare2 = Number(values.DBW46 ?? 0);
 
-    //   // 一楼电机货物目的地
-    //   this.floor1MotorDestination1001 = Number(values.DBW48 ?? 0);
-    //   this.floor1MotorDestination1004 = Number(values.DBW50 ?? 0);
-    //   this.floor1MotorDestination1006A = Number(values.DBW52 ?? 0);
-    //   this.floor1MotorDestination1006B = Number(values.DBW54 ?? 0);
-    //   this.floor1MotorDestination1008 = Number(values.DBW56 ?? 0);
-    //   this.floor1MotorDestination1010 = Number(values.DBW58 ?? 0);
-    //   this.floor1MotorDestination1012 = Number(values.DBW60 ?? 0);
-    //   this.floor1MotorDestination1014 = Number(values.DBW62 ?? 0);
-    //   this.floor1MotorDestination1016 = Number(values.DBW64 ?? 0);
-    //   this.floor1MotorDestinationspare1 = Number(values.DBW66 ?? 0);
-    //   this.floor1MotorDestinationspare2 = Number(values.DBW68 ?? 0);
+      // 一楼电机货物目的地
+      this.floor1MotorDestination1001 = Number(values.DBW48 ?? 0);
+      this.floor1MotorDestination1004 = Number(values.DBW50 ?? 0);
+      this.floor1MotorDestination1006A = Number(values.DBW52 ?? 0);
+      this.floor1MotorDestination1006B = Number(values.DBW54 ?? 0);
+      this.floor1MotorDestination1008 = Number(values.DBW56 ?? 0);
+      this.floor1MotorDestination1010 = Number(values.DBW58 ?? 0);
+      this.floor1MotorDestination1012 = Number(values.DBW60 ?? 0);
+      this.floor1MotorDestination1014 = Number(values.DBW62 ?? 0);
+      this.floor1MotorDestination1016 = Number(values.DBW64 ?? 0);
+      this.floor1MotorDestinationspare1 = Number(values.DBW66 ?? 0);
+      this.floor1MotorDestinationspare2 = Number(values.DBW68 ?? 0);
 
-    //   // 一楼灭菌柜内未完成实际数量
-    //   this.floor1Sterilization19Incomplete = Number(values.DBW70 ?? 0);
-    //   this.floor1Sterilization20Incomplete = Number(values.DBW72 ?? 0);
-    //   this.floor1Sterilization21Incomplete = Number(values.DBW74 ?? 0);
-    //   this.floor1Sterilization22Incomplete = Number(values.DBW76 ?? 0);
-    //   this.floor1Sterilization23Incomplete = Number(values.DBW78 ?? 0);
-    //   this.floor1Sterilization24Incomplete = Number(values.DBW80 ?? 0);
-    //   this.floor1Sterilization25Incomplete = Number(values.DBW82 ?? 0);
-    //   this.floor1Sterilization26Incomplete = Number(values.DBW84 ?? 0);
-    //   this.floor1Sterilization27Incomplete = Number(values.DBW86 ?? 0);
-    //   this.floor1Sterilization28Incomplete = Number(values.DBW88 ?? 0);
-    //   this.floor1Sterilization29Incomplete = Number(values.DBW90 ?? 0);
-    //   this.floor1Sterilization30Incomplete = Number(values.DBW92 ?? 0);
+      // 一楼灭菌柜内未完成实际数量
+      this.floor1Sterilization19Incomplete = Number(values.DBW70 ?? 0);
+      this.floor1Sterilization20Incomplete = Number(values.DBW72 ?? 0);
+      this.floor1Sterilization21Incomplete = Number(values.DBW74 ?? 0);
+      this.floor1Sterilization22Incomplete = Number(values.DBW76 ?? 0);
+      this.floor1Sterilization23Incomplete = Number(values.DBW78 ?? 0);
+      this.floor1Sterilization24Incomplete = Number(values.DBW80 ?? 0);
+      this.floor1Sterilization25Incomplete = Number(values.DBW82 ?? 0);
+      this.floor1Sterilization26Incomplete = Number(values.DBW84 ?? 0);
+      this.floor1Sterilization27Incomplete = Number(values.DBW86 ?? 0);
+      this.floor1Sterilization28Incomplete = Number(values.DBW88 ?? 0);
+      this.floor1Sterilization29Incomplete = Number(values.DBW90 ?? 0);
+      this.floor1Sterilization30Incomplete = Number(values.DBW92 ?? 0);
 
-    //   // 一楼灭菌柜内完成实际数量
-    //   this.floor1Sterilization19Complete = Number(values.DBW94 ?? 0);
-    //   this.floor1Sterilization20Complete = Number(values.DBW96 ?? 0);
-    //   this.floor1Sterilization21Complete = Number(values.DBW98 ?? 0);
-    //   this.floor1Sterilization22Complete = Number(values.DBW100 ?? 0);
-    //   this.floor1Sterilization23Complete = Number(values.DBW102 ?? 0);
-    //   this.floor1Sterilization24Complete = Number(values.DBW104 ?? 0);
-    //   this.floor1Sterilization25Complete = Number(values.DBW106 ?? 0);
-    //   this.floor1Sterilization26Complete = Number(values.DBW108 ?? 0);
-    //   this.floor1Sterilization27Complete = Number(values.DBW110 ?? 0);
-    //   this.floor1Sterilization28Complete = Number(values.DBW112 ?? 0);
-    //   this.floor1Sterilization29Complete = Number(values.DBW114 ?? 0);
-    //   this.floor1Sterilization30Complete = Number(values.DBW116 ?? 0);
-    //   this.floor1Sterilization31Complete = Number(values.DBW118 ?? 0);
-    //   this.floor1Sterilization32Complete = Number(values.DBW120 ?? 0);
-    //   this.floor1Sterilization33Complete = Number(values.DBW122 ?? 0);
+      // 一楼灭菌柜内完成实际数量
+      this.floor1Sterilization19Complete = Number(values.DBW94 ?? 0);
+      this.floor1Sterilization20Complete = Number(values.DBW96 ?? 0);
+      this.floor1Sterilization21Complete = Number(values.DBW98 ?? 0);
+      this.floor1Sterilization22Complete = Number(values.DBW100 ?? 0);
+      this.floor1Sterilization23Complete = Number(values.DBW102 ?? 0);
+      this.floor1Sterilization24Complete = Number(values.DBW104 ?? 0);
+      this.floor1Sterilization25Complete = Number(values.DBW106 ?? 0);
+      this.floor1Sterilization26Complete = Number(values.DBW108 ?? 0);
+      this.floor1Sterilization27Complete = Number(values.DBW110 ?? 0);
+      this.floor1Sterilization28Complete = Number(values.DBW112 ?? 0);
+      this.floor1Sterilization29Complete = Number(values.DBW114 ?? 0);
+      this.floor1Sterilization30Complete = Number(values.DBW116 ?? 0);
+      this.floor1Sterilization31Complete = Number(values.DBW118 ?? 0);
+      this.floor1Sterilization32Complete = Number(values.DBW120 ?? 0);
+      this.floor1Sterilization33Complete = Number(values.DBW122 ?? 0);
 
-    //   // 一楼故障信息
-    //   this.floor1FaultInfo1001 = Number(values.DBW124 ?? 0);
-    //   this.floor1FaultInfo1002 = Number(values.DBW126 ?? 0);
-    //   this.floor1FaultInfo1003 = Number(values.DBW128 ?? 0);
-    //   this.floor1FaultInfo1004 = Number(values.DBW130 ?? 0);
-    //   this.floor1FaultInfo1005 = Number(values.DBW132 ?? 0);
-    //   this.floor1FaultInfo1006 = Number(values.DBW134 ?? 0);
-    //   this.floor1FaultInfo1007 = Number(values.DBW136 ?? 0);
-    //   this.floor1FaultInfo1008 = Number(values.DBW138 ?? 0);
-    //   this.floor1FaultInfo1009 = Number(values.DBW140 ?? 0);
-    //   this.floor1FaultInfo1010 = Number(values.DBW142 ?? 0);
-    //   this.floor1FaultInfo1011 = Number(values.DBW144 ?? 0);
-    //   this.floor1FaultInfo1012 = Number(values.DBW146 ?? 0);
-    //   this.floor1FaultInfo1013 = Number(values.DBW148 ?? 0);
-    //   this.floor1FaultInfo1014 = Number(values.DBW150 ?? 0);
-    //   this.floor1FaultInfo1015 = Number(values.DBW152 ?? 0);
-    //   this.floor1FaultInfo1016 = Number(values.DBW154 ?? 0);
-    //   this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
-    //   this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
-    //   this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
-    // });
-    // ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
-    //   const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
+      // 一楼故障信息
+      this.floor1FaultInfo1001 = Number(values.DBW124 ?? 0);
+      this.floor1FaultInfo1002 = Number(values.DBW126 ?? 0);
+      this.floor1FaultInfo1003 = Number(values.DBW128 ?? 0);
+      this.floor1FaultInfo1004 = Number(values.DBW130 ?? 0);
+      this.floor1FaultInfo1005 = Number(values.DBW132 ?? 0);
+      this.floor1FaultInfo1006 = Number(values.DBW134 ?? 0);
+      this.floor1FaultInfo1007 = Number(values.DBW136 ?? 0);
+      this.floor1FaultInfo1008 = Number(values.DBW138 ?? 0);
+      this.floor1FaultInfo1009 = Number(values.DBW140 ?? 0);
+      this.floor1FaultInfo1010 = Number(values.DBW142 ?? 0);
+      this.floor1FaultInfo1011 = Number(values.DBW144 ?? 0);
+      this.floor1FaultInfo1012 = Number(values.DBW146 ?? 0);
+      this.floor1FaultInfo1013 = Number(values.DBW148 ?? 0);
+      this.floor1FaultInfo1014 = Number(values.DBW150 ?? 0);
+      this.floor1FaultInfo1015 = Number(values.DBW152 ?? 0);
+      this.floor1FaultInfo1016 = Number(values.DBW154 ?? 0);
+      this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
+      this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
+      this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
+    });
+    ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
+      const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
-    //   // 二楼基础状态
-    //   this.floor2ConveyorHeartbeat = Number(values.DBW0 ?? 0);
-    //   this.floor2ConveyorRunStatus = Number(values.DBW2 ?? 0);
+      // 二楼基础状态
+      this.floor2ConveyorHeartbeat = Number(values.DBW0 ?? 0);
+      this.floor2ConveyorRunStatus = Number(values.DBW2 ?? 0);
 
-    //   let word4 = this.convertToWord(values.DBW4 ?? 0);
-    //   this.floor2AreaAlarm.bit0 = getBit(word4, 8);
-    //   this.floor2AreaAlarm.bit1 = getBit(word4, 9);
-    //   this.floor2AreaAlarm.bit2 = getBit(word4, 10);
-    //   this.floor2AreaAlarm.bit3 = getBit(word4, 11);
-    //   this.floor2AreaAlarm.bit4 = getBit(word4, 12);
-    //   this.floor2AreaAlarm.bit5 = getBit(word4, 13);
+      let word4 = this.convertToWord(values.DBW4 ?? 0);
+      this.floor2AreaAlarm.bit0 = getBit(word4, 8);
+      this.floor2AreaAlarm.bit1 = getBit(word4, 9);
+      this.floor2AreaAlarm.bit2 = getBit(word4, 10);
+      this.floor2AreaAlarm.bit3 = getBit(word4, 11);
+      this.floor2AreaAlarm.bit4 = getBit(word4, 12);
+      this.floor2AreaAlarm.bit5 = getBit(word4, 13);
 
-    //   let word6 = this.convertToWord(values.DBW6 ?? 0);
-    //   this.floor2AreaEstop.bit0 = getBit(word6, 8);
-    //   this.floor2AreaEstop.bit1 = getBit(word6, 9);
-    //   this.floor2AreaEstop.bit2 = getBit(word6, 10);
-    //   this.floor2AreaEstop.bit3 = getBit(word6, 11);
-    //   this.floor2AreaEstop.bit4 = getBit(word6, 12);
-    //   this.floor2AreaEstop.bit5 = getBit(word6, 13);
+      let word6 = this.convertToWord(values.DBW6 ?? 0);
+      this.floor2AreaEstop.bit0 = getBit(word6, 8);
+      this.floor2AreaEstop.bit1 = getBit(word6, 9);
+      this.floor2AreaEstop.bit2 = getBit(word6, 10);
+      this.floor2AreaEstop.bit3 = getBit(word6, 11);
+      this.floor2AreaEstop.bit4 = getBit(word6, 12);
+      this.floor2AreaEstop.bit5 = getBit(word6, 13);
 
-    //   let word8 = this.convertToWord(values.DBW8 ?? 0);
-    //   this.floor2MotorRunning1.bit0 = getBit(word8, 8);
-    //   this.floor2MotorRunning1.bit1 = getBit(word8, 9);
-    //   this.floor2MotorRunning1.bit2 = getBit(word8, 10);
-    //   this.floor2MotorRunning1.bit3 = getBit(word8, 11);
-    //   this.floor2MotorRunning1.bit4 = getBit(word8, 12);
-    //   this.floor2MotorRunning1.bit5 = getBit(word8, 13);
-    //   this.floor2MotorRunning1.bit6 = getBit(word8, 14);
-    //   this.floor2MotorRunning1.bit7 = getBit(word8, 15);
-    //   this.floor2MotorRunning1.bit8 = getBit(word8, 0);
-    //   this.floor2MotorRunning1.bit9 = getBit(word8, 1);
-    //   this.floor2MotorRunning1.bit10 = getBit(word8, 2);
-    //   this.floor2MotorRunning1.bit11 = getBit(word8, 3);
-    //   this.floor2MotorRunning1.bit12 = getBit(word8, 4);
-    //   this.floor2MotorRunning1.bit13 = getBit(word8, 5);
-    //   this.floor2MotorRunning1.bit14 = getBit(word8, 6);
-    //   this.floor2MotorRunning1.bit15 = getBit(word8, 7);
+      let word8 = this.convertToWord(values.DBW8 ?? 0);
+      this.floor2MotorRunning1.bit0 = getBit(word8, 8);
+      this.floor2MotorRunning1.bit1 = getBit(word8, 9);
+      this.floor2MotorRunning1.bit2 = getBit(word8, 10);
+      this.floor2MotorRunning1.bit3 = getBit(word8, 11);
+      this.floor2MotorRunning1.bit4 = getBit(word8, 12);
+      this.floor2MotorRunning1.bit5 = getBit(word8, 13);
+      this.floor2MotorRunning1.bit6 = getBit(word8, 14);
+      this.floor2MotorRunning1.bit7 = getBit(word8, 15);
+      this.floor2MotorRunning1.bit8 = getBit(word8, 0);
+      this.floor2MotorRunning1.bit9 = getBit(word8, 1);
+      this.floor2MotorRunning1.bit10 = getBit(word8, 2);
+      this.floor2MotorRunning1.bit11 = getBit(word8, 3);
+      this.floor2MotorRunning1.bit12 = getBit(word8, 4);
+      this.floor2MotorRunning1.bit13 = getBit(word8, 5);
+      this.floor2MotorRunning1.bit14 = getBit(word8, 6);
+      this.floor2MotorRunning1.bit15 = getBit(word8, 7);
 
-    //   let word10 = this.convertToWord(values.DBW10 ?? 0);
-    //   this.floor2MotorRunning2.bit0 = getBit(word10, 8);
-    //   this.floor2MotorRunning2.bit1 = getBit(word10, 9);
-    //   this.floor2MotorRunning2.bit2 = getBit(word10, 10);
-    //   this.floor2MotorRunning2.bit3 = getBit(word10, 11);
-    //   this.floor2MotorRunning2.bit4 = getBit(word10, 12);
-    //   this.floor2MotorRunning2.bit5 = getBit(word10, 13);
-    //   this.floor2MotorRunning2.bit6 = getBit(word10, 14);
-    //   this.floor2MotorRunning2.bit7 = getBit(word10, 15);
-    //   this.floor2MotorRunning2.bit8 = getBit(word10, 0);
-    //   this.floor2MotorRunning2.bit9 = getBit(word10, 1);
-    //   this.floor2MotorRunning2.bit10 = getBit(word10, 2);
-    //   this.floor2MotorRunning2.bit11 = getBit(word10, 3);
-    //   this.floor2MotorRunning2.bit12 = getBit(word10, 4);
-    //   this.floor2MotorRunning2.bit13 = getBit(word10, 5);
-    //   this.floor2MotorRunning2.bit14 = getBit(word10, 6);
-    //   this.floor2MotorRunning2.bit15 = getBit(word10, 7);
+      let word10 = this.convertToWord(values.DBW10 ?? 0);
+      this.floor2MotorRunning2.bit0 = getBit(word10, 8);
+      this.floor2MotorRunning2.bit1 = getBit(word10, 9);
+      this.floor2MotorRunning2.bit2 = getBit(word10, 10);
+      this.floor2MotorRunning2.bit3 = getBit(word10, 11);
+      this.floor2MotorRunning2.bit4 = getBit(word10, 12);
+      this.floor2MotorRunning2.bit5 = getBit(word10, 13);
+      this.floor2MotorRunning2.bit6 = getBit(word10, 14);
+      this.floor2MotorRunning2.bit7 = getBit(word10, 15);
+      this.floor2MotorRunning2.bit8 = getBit(word10, 0);
+      this.floor2MotorRunning2.bit9 = getBit(word10, 1);
+      this.floor2MotorRunning2.bit10 = getBit(word10, 2);
+      this.floor2MotorRunning2.bit11 = getBit(word10, 3);
+      this.floor2MotorRunning2.bit12 = getBit(word10, 4);
+      this.floor2MotorRunning2.bit13 = getBit(word10, 5);
+      this.floor2MotorRunning2.bit14 = getBit(word10, 6);
+      this.floor2MotorRunning2.bit15 = getBit(word10, 7);
 
-    //   let word12 = this.convertToWord(values.DBW12 ?? 0);
-    //   this.floor2MotorRunning3.bit0 = getBit(word12, 8);
-    //   this.floor2MotorRunning3.bit1 = getBit(word12, 9);
-    //   this.floor2MotorRunning3.bit2 = getBit(word12, 10);
-    //   this.floor2MotorRunning3.bit3 = getBit(word12, 11);
-    //   this.floor2MotorRunning3.bit4 = getBit(word12, 12);
-    //   this.floor2MotorRunning3.bit5 = getBit(word12, 13);
-    //   this.floor2MotorRunning3.bit6 = getBit(word12, 14);
-    //   this.floor2MotorRunning3.bit7 = getBit(word12, 15);
-    //   this.floor2MotorRunning3.bit8 = getBit(word12, 0);
-    //   this.floor2MotorRunning3.bit9 = getBit(word12, 1);
-    //   this.floor2MotorRunning3.bit10 = getBit(word12, 2);
+      let word12 = this.convertToWord(values.DBW12 ?? 0);
+      this.floor2MotorRunning3.bit0 = getBit(word12, 8);
+      this.floor2MotorRunning3.bit1 = getBit(word12, 9);
+      this.floor2MotorRunning3.bit2 = getBit(word12, 10);
+      this.floor2MotorRunning3.bit3 = getBit(word12, 11);
+      this.floor2MotorRunning3.bit4 = getBit(word12, 12);
+      this.floor2MotorRunning3.bit5 = getBit(word12, 13);
+      this.floor2MotorRunning3.bit6 = getBit(word12, 14);
+      this.floor2MotorRunning3.bit7 = getBit(word12, 15);
+      this.floor2MotorRunning3.bit8 = getBit(word12, 0);
+      this.floor2MotorRunning3.bit9 = getBit(word12, 1);
+      this.floor2MotorRunning3.bit10 = getBit(word12, 2);
 
-    //   let word14 = this.convertToWord(values.DBW14 ?? 0);
-    //   this.floor2SensorSignal1.bit0 = getBit(word14, 8);
-    //   this.floor2SensorSignal1.bit1 = getBit(word14, 9);
-    //   this.floor2SensorSignal1.bit2 = getBit(word14, 10);
-    //   this.floor2SensorSignal1.bit3 = getBit(word14, 11);
-    //   this.floor2SensorSignal1.bit4 = getBit(word14, 12);
-    //   this.floor2SensorSignal1.bit5 = getBit(word14, 13);
-    //   this.floor2SensorSignal1.bit6 = getBit(word14, 14);
-    //   this.floor2SensorSignal1.bit7 = getBit(word14, 15);
-    //   this.floor2SensorSignal1.bit8 = getBit(word14, 0);
-    //   this.floor2SensorSignal1.bit9 = getBit(word14, 1);
-    //   this.floor2SensorSignal1.bit10 = getBit(word14, 2);
-    //   this.floor2SensorSignal1.bit11 = getBit(word14, 3);
-    //   this.floor2SensorSignal1.bit12 = getBit(word14, 4);
-    //   this.floor2SensorSignal1.bit13 = getBit(word14, 5);
-    //   this.floor2SensorSignal1.bit14 = getBit(word14, 6);
-    //   this.floor2SensorSignal1.bit15 = getBit(word14, 7);
+      let word14 = this.convertToWord(values.DBW14 ?? 0);
+      this.floor2SensorSignal1.bit0 = getBit(word14, 8);
+      this.floor2SensorSignal1.bit1 = getBit(word14, 9);
+      this.floor2SensorSignal1.bit2 = getBit(word14, 10);
+      this.floor2SensorSignal1.bit3 = getBit(word14, 11);
+      this.floor2SensorSignal1.bit4 = getBit(word14, 12);
+      this.floor2SensorSignal1.bit5 = getBit(word14, 13);
+      this.floor2SensorSignal1.bit6 = getBit(word14, 14);
+      this.floor2SensorSignal1.bit7 = getBit(word14, 15);
+      this.floor2SensorSignal1.bit8 = getBit(word14, 0);
+      this.floor2SensorSignal1.bit9 = getBit(word14, 1);
+      this.floor2SensorSignal1.bit10 = getBit(word14, 2);
+      this.floor2SensorSignal1.bit11 = getBit(word14, 3);
+      this.floor2SensorSignal1.bit12 = getBit(word14, 4);
+      this.floor2SensorSignal1.bit13 = getBit(word14, 5);
+      this.floor2SensorSignal1.bit14 = getBit(word14, 6);
+      this.floor2SensorSignal1.bit15 = getBit(word14, 7);
 
-    //   let word16 = this.convertToWord(values.DBW16 ?? 0);
-    //   this.floor2SensorSignal2.bit0 = getBit(word16, 8);
-    //   this.floor2SensorSignal2.bit1 = getBit(word16, 9);
-    //   this.floor2SensorSignal2.bit2 = getBit(word16, 10);
-    //   this.floor2SensorSignal2.bit3 = getBit(word16, 11);
-    //   this.floor2SensorSignal2.bit4 = getBit(word16, 12);
-    //   this.floor2SensorSignal2.bit5 = getBit(word16, 13);
-    //   this.floor2SensorSignal2.bit6 = getBit(word16, 14);
-    //   this.floor2SensorSignal2.bit7 = getBit(word16, 15);
-    //   this.floor2SensorSignal2.bit8 = getBit(word16, 0);
-    //   this.floor2SensorSignal2.bit9 = getBit(word16, 1);
-    //   this.floor2SensorSignal2.bit10 = getBit(word16, 2);
-    //   this.floor2SensorSignal2.bit11 = getBit(word16, 3);
-    //   this.floor2SensorSignal2.bit12 = getBit(word16, 4);
-    //   this.floor2SensorSignal2.bit13 = getBit(word16, 5);
-    //   this.floor2SensorSignal2.bit14 = getBit(word16, 6);
-    //   this.floor2SensorSignal2.bit15 = getBit(word16, 7);
+      let word16 = this.convertToWord(values.DBW16 ?? 0);
+      this.floor2SensorSignal2.bit0 = getBit(word16, 8);
+      this.floor2SensorSignal2.bit1 = getBit(word16, 9);
+      this.floor2SensorSignal2.bit2 = getBit(word16, 10);
+      this.floor2SensorSignal2.bit3 = getBit(word16, 11);
+      this.floor2SensorSignal2.bit4 = getBit(word16, 12);
+      this.floor2SensorSignal2.bit5 = getBit(word16, 13);
+      this.floor2SensorSignal2.bit6 = getBit(word16, 14);
+      this.floor2SensorSignal2.bit7 = getBit(word16, 15);
+      this.floor2SensorSignal2.bit8 = getBit(word16, 0);
+      this.floor2SensorSignal2.bit9 = getBit(word16, 1);
+      this.floor2SensorSignal2.bit10 = getBit(word16, 2);
+      this.floor2SensorSignal2.bit11 = getBit(word16, 3);
+      this.floor2SensorSignal2.bit12 = getBit(word16, 4);
+      this.floor2SensorSignal2.bit13 = getBit(word16, 5);
+      this.floor2SensorSignal2.bit14 = getBit(word16, 6);
+      this.floor2SensorSignal2.bit15 = getBit(word16, 7);
 
-    //   let word18 = this.convertToWord(values.DBW18 ?? 0);
-    //   this.floor2SensorSignal3.bit0 = getBit(word18, 8);
-    //   this.floor2SensorSignal3.bit1 = getBit(word18, 9);
-    //   this.floor2SensorSignal3.bit2 = getBit(word18, 10);
-    //   this.floor2SensorSignal3.bit3 = getBit(word18, 11);
-    //   this.floor2SensorSignal3.bit4 = getBit(word18, 12);
-    //   this.floor2SensorSignal3.bit5 = getBit(word18, 13);
-    //   this.floor2SensorSignal3.bit6 = getBit(word18, 14);
-    //   this.floor2SensorSignal3.bit7 = getBit(word18, 15);
-    //   this.floor2SensorSignal3.bit8 = getBit(word18, 0);
-    //   this.floor2SensorSignal3.bit9 = getBit(word18, 1);
-    //   this.floor2SensorSignal3.bit10 = getBit(word18, 2);
-    //   this.floor2SensorSignal3.bit11 = getBit(word18, 3);
-    //   this.floor2SensorSignal3.bit12 = getBit(word18, 4);
-    //   this.floor2SensorSignal3.bit13 = getBit(word18, 5);
-    //   this.floor2SensorSignal3.bit14 = getBit(word18, 6);
-    //   this.floor2SensorSignal3.bit15 = getBit(word18, 7);
+      let word18 = this.convertToWord(values.DBW18 ?? 0);
+      this.floor2SensorSignal3.bit0 = getBit(word18, 8);
+      this.floor2SensorSignal3.bit1 = getBit(word18, 9);
+      this.floor2SensorSignal3.bit2 = getBit(word18, 10);
+      this.floor2SensorSignal3.bit3 = getBit(word18, 11);
+      this.floor2SensorSignal3.bit4 = getBit(word18, 12);
+      this.floor2SensorSignal3.bit5 = getBit(word18, 13);
+      this.floor2SensorSignal3.bit6 = getBit(word18, 14);
+      this.floor2SensorSignal3.bit7 = getBit(word18, 15);
+      this.floor2SensorSignal3.bit8 = getBit(word18, 0);
+      this.floor2SensorSignal3.bit9 = getBit(word18, 1);
+      this.floor2SensorSignal3.bit10 = getBit(word18, 2);
+      this.floor2SensorSignal3.bit11 = getBit(word18, 3);
+      this.floor2SensorSignal3.bit12 = getBit(word18, 4);
+      this.floor2SensorSignal3.bit13 = getBit(word18, 5);
+      this.floor2SensorSignal3.bit14 = getBit(word18, 6);
+      this.floor2SensorSignal3.bit15 = getBit(word18, 7);
 
-    //   let word20 = this.convertToWord(values.DBW20 ?? 0);
-    //   this.floor2SensorSignal4.bit0 = getBit(word20, 8);
-    //   this.floor2SensorSignal4.bit1 = getBit(word20, 9);
-    //   this.floor2SensorSignal4.bit2 = getBit(word20, 10);
-    //   this.floor2SensorSignal4.bit3 = getBit(word20, 11);
-    //   this.floor2SensorSignal4.bit4 = getBit(word20, 12);
-    //   this.floor2SensorSignal4.bit5 = getBit(word20, 13);
-    //   this.floor2SensorSignal4.bit6 = getBit(word20, 14);
-    //   this.floor2SensorSignal4.bit7 = getBit(word20, 15);
-    //   this.floor2SensorSignal4.bit8 = getBit(word20, 0);
-    //   this.floor2SensorSignal4.bit9 = getBit(word20, 1);
+      let word20 = this.convertToWord(values.DBW20 ?? 0);
+      this.floor2SensorSignal4.bit0 = getBit(word20, 8);
+      this.floor2SensorSignal4.bit1 = getBit(word20, 9);
+      this.floor2SensorSignal4.bit2 = getBit(word20, 10);
+      this.floor2SensorSignal4.bit3 = getBit(word20, 11);
+      this.floor2SensorSignal4.bit4 = getBit(word20, 12);
+      this.floor2SensorSignal4.bit5 = getBit(word20, 13);
+      this.floor2SensorSignal4.bit6 = getBit(word20, 14);
+      this.floor2SensorSignal4.bit7 = getBit(word20, 15);
+      this.floor2SensorSignal4.bit8 = getBit(word20, 0);
+      this.floor2SensorSignal4.bit9 = getBit(word20, 1);
 
-    //   // 二楼小车位置
-    //   this.floor2CartAnalysisInPos = Number(values.DBW22 ?? 0);
-    //   this.floor2CartAnalysisOutPos = Number(values.DBW24 ?? 0);
-    //   this.floor2CartSpare1Pos = Number(values.DBW26 ?? 0);
-    //   this.floor2CartSpare2Pos = Number(values.DBW28 ?? 0);
-    //   this.cartPositionValues.cart4 = Number(values.DBW22 ?? 0);
-    //   this.cartPositionValues.cart5 = Number(values.DBW24 ?? 0);
+      // 二楼小车位置
+      this.floor2CartAnalysisInPos = Number(values.DBW22 ?? 0);
+      this.floor2CartAnalysisOutPos = Number(values.DBW24 ?? 0);
+      this.floor2CartSpare1Pos = Number(values.DBW26 ?? 0);
+      this.floor2CartSpare2Pos = Number(values.DBW28 ?? 0);
+      this.cartPositionValues.cart4 = Number(values.DBW22 ?? 0);
+      this.cartPositionValues.cart5 = Number(values.DBW24 ?? 0);
 
-    //   let word30 = this.convertToWord(values.DBW30 ?? 0);
-    //   this.floor2AnalysisOutTrayRequest.bit0 = getBit(word30, 8);
-    //   this.floor2AnalysisOutTrayRequest.bit1 = getBit(word30, 9);
-    //   this.floor2AnalysisOutTrayRequest.bit2 = getBit(word30, 10);
-    //   this.floor2AnalysisOutTrayRequest.bit3 = getBit(word30, 11);
-    //   this.floor2AnalysisOutTrayRequest.bit4 = getBit(word30, 12);
-    //   this.floor2AnalysisOutTrayRequest.bit5 = getBit(word30, 13);
-    //   this.floor2AnalysisOutTrayRequest.bit6 = getBit(word30, 14);
-    //   this.floor2AnalysisOutTrayRequest.bit7 = getBit(word30, 15);
-    //   this.floor2AnalysisOutTrayRequest.bit8 = getBit(word30, 0);
-    //   this.floor2AnalysisOutTrayRequest.bit9 = getBit(word30, 1);
-    //   this.floor2AnalysisOutTrayRequest.bit10 = getBit(word30, 2);
-    //   this.floor2AnalysisOutTrayRequest.bit11 = getBit(word30, 3);
-    //   this.floor2AnalysisOutTrayRequest.bit12 = getBit(word30, 4);
-    //   this.floor2AnalysisOutTrayRequest.bit13 = getBit(word30, 5);
+      let word30 = this.convertToWord(values.DBW30 ?? 0);
+      this.floor2AnalysisOutTrayRequest.bit0 = getBit(word30, 8);
+      this.floor2AnalysisOutTrayRequest.bit1 = getBit(word30, 9);
+      this.floor2AnalysisOutTrayRequest.bit2 = getBit(word30, 10);
+      this.floor2AnalysisOutTrayRequest.bit3 = getBit(word30, 11);
+      this.floor2AnalysisOutTrayRequest.bit4 = getBit(word30, 12);
+      this.floor2AnalysisOutTrayRequest.bit5 = getBit(word30, 13);
+      this.floor2AnalysisOutTrayRequest.bit6 = getBit(word30, 14);
+      this.floor2AnalysisOutTrayRequest.bit7 = getBit(word30, 15);
+      this.floor2AnalysisOutTrayRequest.bit8 = getBit(word30, 0);
+      this.floor2AnalysisOutTrayRequest.bit9 = getBit(word30, 1);
+      this.floor2AnalysisOutTrayRequest.bit10 = getBit(word30, 2);
+      this.floor2AnalysisOutTrayRequest.bit11 = getBit(word30, 3);
+      this.floor2AnalysisOutTrayRequest.bit12 = getBit(word30, 4);
+      this.floor2AnalysisOutTrayRequest.bit13 = getBit(word30, 5);
 
-    //   // 二楼电机占位虚拟ID
-    //   this.floor2MotorVirtualId1018A = Number(values.DBW32 ?? 0);
-    //   this.floor2MotorVirtualId1018B = Number(values.DBW34 ?? 0);
-    //   this.floor2MotorVirtualId1019 = Number(values.DBW36 ?? 0);
-    //   this.floor2MotorVirtualId2002 = Number(values.DBW38 ?? 0);
-    //   this.floor2MotorVirtualId2003 = Number(values.DBW40 ?? 0);
-    //   this.floor2MotorVirtualId2004 = Number(values.DBW42 ?? 0);
-    //   this.floor2MotorVirtualId2006 = Number(values.DBW44 ?? 0);
-    //   this.floor2MotorVirtualId2007 = Number(values.DBW46 ?? 0);
-    //   this.floor2MotorVirtualId2009 = Number(values.DBW48 ?? 0);
-    //   this.floor2MotorVirtualId2010 = Number(values.DBW50 ?? 0);
-    //   this.floor2MotorVirtualId2012 = Number(values.DBW52 ?? 0);
-    //   this.floor2MotorVirtualId2013 = Number(values.DBW54 ?? 0);
-    //   this.floor2MotorVirtualId2014 = Number(values.DBW56 ?? 0);
-    //   this.floor2MotorVirtualId2016 = Number(values.DBW58 ?? 0);
-    //   this.floor2MotorVirtualId2017 = Number(values.DBW60 ?? 0);
-    //   this.floor2MotorVirtualId2018 = Number(values.DBW62 ?? 0);
-    //   this.floor2MotorVirtualId2019 = Number(values.DBW64 ?? 0);
-    //   this.floor2MotorVirtualId2020 = Number(values.DBW66 ?? 0);
-    //   this.floor2MotorVirtualId2023 = Number(values.DBW68 ?? 0);
-    //   this.floor2MotorVirtualId2039 = Number(values.DBW70 ?? 0);
-    //   this.floor2MotorVirtualId2042 = Number(values.DBW72 ?? 0);
+      // 二楼电机占位虚拟ID
+      this.floor2MotorVirtualId1018A = Number(values.DBW32 ?? 0);
+      this.floor2MotorVirtualId1018B = Number(values.DBW34 ?? 0);
+      this.floor2MotorVirtualId1019 = Number(values.DBW36 ?? 0);
+      this.floor2MotorVirtualId2002 = Number(values.DBW38 ?? 0);
+      this.floor2MotorVirtualId2003 = Number(values.DBW40 ?? 0);
+      this.floor2MotorVirtualId2004 = Number(values.DBW42 ?? 0);
+      this.floor2MotorVirtualId2006 = Number(values.DBW44 ?? 0);
+      this.floor2MotorVirtualId2007 = Number(values.DBW46 ?? 0);
+      this.floor2MotorVirtualId2009 = Number(values.DBW48 ?? 0);
+      this.floor2MotorVirtualId2010 = Number(values.DBW50 ?? 0);
+      this.floor2MotorVirtualId2012 = Number(values.DBW52 ?? 0);
+      this.floor2MotorVirtualId2013 = Number(values.DBW54 ?? 0);
+      this.floor2MotorVirtualId2014 = Number(values.DBW56 ?? 0);
+      this.floor2MotorVirtualId2016 = Number(values.DBW58 ?? 0);
+      this.floor2MotorVirtualId2017 = Number(values.DBW60 ?? 0);
+      this.floor2MotorVirtualId2018 = Number(values.DBW62 ?? 0);
+      this.floor2MotorVirtualId2019 = Number(values.DBW64 ?? 0);
+      this.floor2MotorVirtualId2020 = Number(values.DBW66 ?? 0);
+      this.floor2MotorVirtualId2023 = Number(values.DBW68 ?? 0);
+      this.floor2MotorVirtualId2039 = Number(values.DBW70 ?? 0);
+      this.floor2MotorVirtualId2042 = Number(values.DBW72 ?? 0);
 
-    //   // 二楼电机货物目的地
-    //   this.floor2MotorDestination1018A = Number(values.DBW74 ?? 0);
-    //   this.floor2MotorDestination1018B = Number(values.DBW76 ?? 0);
-    //   this.floor2MotorDestination1019 = Number(values.DBW78 ?? 0);
-    //   this.floor2MotorDestination2002 = Number(values.DBW80 ?? 0);
-    //   this.floor2MotorDestination2003 = Number(values.DBW82 ?? 0);
-    //   this.floor2MotorDestination2004 = Number(values.DBW84 ?? 0);
-    //   this.floor2MotorDestination2006 = Number(values.DBW86 ?? 0);
-    //   this.floor2MotorDestination2007 = Number(values.DBW88 ?? 0);
-    //   this.floor2MotorDestination2009 = Number(values.DBW90 ?? 0);
-    //   this.floor2MotorDestination2010 = Number(values.DBW92 ?? 0);
-    //   this.floor2MotorDestination2012 = Number(values.DBW94 ?? 0);
-    //   this.floor2MotorDestination2013 = Number(values.DBW96 ?? 0);
-    //   this.floor2MotorDestination2014 = Number(values.DBW98 ?? 0);
-    //   this.floor2MotorDestination2016 = Number(values.DBW100 ?? 0);
-    //   this.floor2MotorDestination2017 = Number(values.DBW102 ?? 0);
-    //   this.floor2MotorDestination2018 = Number(values.DBW104 ?? 0);
-    //   this.floor2MotorDestination2019 = Number(values.DBW106 ?? 0);
-    //   this.floor2MotorDestination2020 = Number(values.DBW108 ?? 0);
-    //   this.floor2MotorDestination2023 = Number(values.DBW110 ?? 0);
-    //   this.floor2MotorDestination2039 = Number(values.DBW112 ?? 0);
-    //   this.floor2MotorDestination2042 = Number(values.DBW114 ?? 0);
+      // 二楼电机货物目的地
+      this.floor2MotorDestination1018A = Number(values.DBW74 ?? 0);
+      this.floor2MotorDestination1018B = Number(values.DBW76 ?? 0);
+      this.floor2MotorDestination1019 = Number(values.DBW78 ?? 0);
+      this.floor2MotorDestination2002 = Number(values.DBW80 ?? 0);
+      this.floor2MotorDestination2003 = Number(values.DBW82 ?? 0);
+      this.floor2MotorDestination2004 = Number(values.DBW84 ?? 0);
+      this.floor2MotorDestination2006 = Number(values.DBW86 ?? 0);
+      this.floor2MotorDestination2007 = Number(values.DBW88 ?? 0);
+      this.floor2MotorDestination2009 = Number(values.DBW90 ?? 0);
+      this.floor2MotorDestination2010 = Number(values.DBW92 ?? 0);
+      this.floor2MotorDestination2012 = Number(values.DBW94 ?? 0);
+      this.floor2MotorDestination2013 = Number(values.DBW96 ?? 0);
+      this.floor2MotorDestination2014 = Number(values.DBW98 ?? 0);
+      this.floor2MotorDestination2016 = Number(values.DBW100 ?? 0);
+      this.floor2MotorDestination2017 = Number(values.DBW102 ?? 0);
+      this.floor2MotorDestination2018 = Number(values.DBW104 ?? 0);
+      this.floor2MotorDestination2019 = Number(values.DBW106 ?? 0);
+      this.floor2MotorDestination2020 = Number(values.DBW108 ?? 0);
+      this.floor2MotorDestination2023 = Number(values.DBW110 ?? 0);
+      this.floor2MotorDestination2039 = Number(values.DBW112 ?? 0);
+      this.floor2MotorDestination2042 = Number(values.DBW114 ?? 0);
 
-    //   // 二楼解析房内实际数量
-    //   this.floor2AnalysisRoom1Qty = Number(values.DBW116 ?? 0);
-    //   this.floor2AnalysisRoom2Qty = Number(values.DBW118 ?? 0);
-    //   this.floor2AnalysisRoom3Qty = Number(values.DBW120 ?? 0);
-    //   this.floor2AnalysisRoom4Qty = Number(values.DBW122 ?? 0);
-    //   this.floor2AnalysisRoom5Qty = Number(values.DBW124 ?? 0);
-    //   this.floor2AnalysisRoom6Qty = Number(values.DBW126 ?? 0);
-    //   this.floor2AnalysisRoom7Qty = Number(values.DBW128 ?? 0);
-    //   this.floor2AnalysisRoom8Qty = Number(values.DBW130 ?? 0);
-    //   this.floor2AnalysisRoom9Qty = Number(values.DBW132 ?? 0);
-    //   this.floor2AnalysisRoom10Qty = Number(values.DBW134 ?? 0);
-    //   this.floor2AnalysisRoom11Qty = Number(values.DBW136 ?? 0);
-    //   this.floor2AnalysisRoom12Qty = Number(values.DBW138 ?? 0);
-    //   this.floor2AnalysisRoom13Qty = Number(values.DBW140 ?? 0);
-    //   this.floor2AnalysisRoom14Qty = Number(values.DBW142 ?? 0);
-    //   this.floor2AnalysisRoom15Qty = Number(values.DBW144 ?? 0);
-    //   this.floor2AnalysisRoom16Qty = Number(values.DBW146 ?? 0);
-    //   this.floor2AnalysisRoom17Qty = Number(values.DBW148 ?? 0);
+      // 二楼解析房内实际数量
+      this.floor2AnalysisRoom1Qty = Number(values.DBW116 ?? 0);
+      this.floor2AnalysisRoom2Qty = Number(values.DBW118 ?? 0);
+      this.floor2AnalysisRoom3Qty = Number(values.DBW120 ?? 0);
+      this.floor2AnalysisRoom4Qty = Number(values.DBW122 ?? 0);
+      this.floor2AnalysisRoom5Qty = Number(values.DBW124 ?? 0);
+      this.floor2AnalysisRoom6Qty = Number(values.DBW126 ?? 0);
+      this.floor2AnalysisRoom7Qty = Number(values.DBW128 ?? 0);
+      this.floor2AnalysisRoom8Qty = Number(values.DBW130 ?? 0);
+      this.floor2AnalysisRoom9Qty = Number(values.DBW132 ?? 0);
+      this.floor2AnalysisRoom10Qty = Number(values.DBW134 ?? 0);
+      this.floor2AnalysisRoom11Qty = Number(values.DBW136 ?? 0);
+      this.floor2AnalysisRoom12Qty = Number(values.DBW138 ?? 0);
+      this.floor2AnalysisRoom13Qty = Number(values.DBW140 ?? 0);
+      this.floor2AnalysisRoom14Qty = Number(values.DBW142 ?? 0);
+      this.floor2AnalysisRoom15Qty = Number(values.DBW144 ?? 0);
+      this.floor2AnalysisRoom16Qty = Number(values.DBW146 ?? 0);
+      this.floor2AnalysisRoom17Qty = Number(values.DBW148 ?? 0);
 
-    //   // 二楼备用
-    //   this.floor2SpareDBW150 = Number(values.DBW150 ?? 0);
-    //   this.floor2SpareDBW152 = Number(values.DBW152 ?? 0);
-    //   this.floor2SpareDBW154 = Number(values.DBW154 ?? 0);
-    //   this.floor2SpareDBW156 = Number(values.DBW156 ?? 0);
-    //   this.floor2SpareDBW158 = Number(values.DBW158 ?? 0);
+      // 二楼备用
+      this.floor2SpareDBW150 = Number(values.DBW150 ?? 0);
+      this.floor2SpareDBW152 = Number(values.DBW152 ?? 0);
+      this.floor2SpareDBW154 = Number(values.DBW154 ?? 0);
+      this.floor2SpareDBW156 = Number(values.DBW156 ?? 0);
+      this.floor2SpareDBW158 = Number(values.DBW158 ?? 0);
 
-    //   // 二楼故障信息
-    //   this.floor2FaultInfo1018 = Number(values.DBW160 ?? 0);
-    //   this.floor2FaultInfo1019 = Number(values.DBW162 ?? 0);
-    //   this.floor2FaultInfo2001 = Number(values.DBW164 ?? 0);
-    //   this.floor2FaultInfo2002 = Number(values.DBW166 ?? 0);
-    //   this.floor2FaultInfo2003 = Number(values.DBW168 ?? 0);
-    //   this.floor2FaultInfo2004 = Number(values.DBW170 ?? 0);
-    //   this.floor2FaultInfo2005 = Number(values.DBW172 ?? 0);
-    //   this.floor2FaultInfo2006 = Number(values.DBW174 ?? 0);
-    //   this.floor2FaultInfo2007 = Number(values.DBW176 ?? 0);
-    //   this.floor2FaultInfo2008 = Number(values.DBW178 ?? 0);
-    //   this.floor2FaultInfo2009 = Number(values.DBW180 ?? 0);
-    //   this.floor2FaultInfo2010 = Number(values.DBW182 ?? 0);
-    //   this.floor2FaultInfo2011 = Number(values.DBW184 ?? 0);
-    //   this.floor2FaultInfo2012 = Number(values.DBW186 ?? 0);
-    //   this.floor2FaultInfo2013 = Number(values.DBW188 ?? 0);
-    //   this.floor2FaultInfo2014 = Number(values.DBW190 ?? 0);
-    //   this.floor2FaultInfo2015 = Number(values.DBW192 ?? 0);
-    //   this.floor2FaultInfo2016 = Number(values.DBW194 ?? 0);
-    //   this.floor2FaultInfo2017 = Number(values.DBW196 ?? 0);
-    //   this.floor2FaultInfo2018 = Number(values.DBW198 ?? 0);
-    //   this.floor2FaultInfo2019 = Number(values.DBW200 ?? 0);
-    //   this.floor2FaultInfo2020 = Number(values.DBW202 ?? 0);
-    //   this.floor2FaultInfo2021 = Number(values.DBW204 ?? 0);
-    //   this.floor2FaultInfo2022 = Number(values.DBW206 ?? 0);
-    //   this.floor2FaultInfo2023 = Number(values.DBW208 ?? 0);
-    //   this.floor2FaultInfo2024 = Number(values.DBW210 ?? 0);
-    //   this.floor2FaultInfo2025 = Number(values.DBW212 ?? 0);
-    //   this.floor2FaultInfo2026 = Number(values.DBW214 ?? 0);
-    //   this.floor2FaultInfo2027 = Number(values.DBW216 ?? 0);
-    //   this.floor2FaultInfo2028 = Number(values.DBW218 ?? 0);
-    //   this.floor2FaultInfo2029 = Number(values.DBW220 ?? 0);
-    //   this.floor2FaultInfo2030 = Number(values.DBW222 ?? 0);
-    //   this.floor2FaultInfo2031 = Number(values.DBW224 ?? 0);
-    //   this.floor2FaultInfo2032 = Number(values.DBW226 ?? 0);
-    //   this.floor2FaultInfo2033 = Number(values.DBW228 ?? 0);
-    //   this.floor2FaultInfo2034 = Number(values.DBW230 ?? 0);
-    //   this.floor2FaultInfo2035 = Number(values.DBW232 ?? 0);
-    //   this.floor2FaultInfo2036 = Number(values.DBW234 ?? 0);
-    //   this.floor2FaultInfo2037 = Number(values.DBW236 ?? 0);
-    //   this.floor2FaultInfo2038 = Number(values.DBW238 ?? 0);
-    //   this.floor2FaultInfo2039 = Number(values.DBW240 ?? 0);
-    //   this.floor2FaultInfo2040 = Number(values.DBW242 ?? 0);
-    //   this.floor2FaultInfo2041 = Number(values.DBW244 ?? 0);
-    //   this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
-    //   this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
-    // });
+      // 二楼故障信息
+      this.floor2FaultInfo1018 = Number(values.DBW160 ?? 0);
+      this.floor2FaultInfo1019 = Number(values.DBW162 ?? 0);
+      this.floor2FaultInfo2001 = Number(values.DBW164 ?? 0);
+      this.floor2FaultInfo2002 = Number(values.DBW166 ?? 0);
+      this.floor2FaultInfo2003 = Number(values.DBW168 ?? 0);
+      this.floor2FaultInfo2004 = Number(values.DBW170 ?? 0);
+      this.floor2FaultInfo2005 = Number(values.DBW172 ?? 0);
+      this.floor2FaultInfo2006 = Number(values.DBW174 ?? 0);
+      this.floor2FaultInfo2007 = Number(values.DBW176 ?? 0);
+      this.floor2FaultInfo2008 = Number(values.DBW178 ?? 0);
+      this.floor2FaultInfo2009 = Number(values.DBW180 ?? 0);
+      this.floor2FaultInfo2010 = Number(values.DBW182 ?? 0);
+      this.floor2FaultInfo2011 = Number(values.DBW184 ?? 0);
+      this.floor2FaultInfo2012 = Number(values.DBW186 ?? 0);
+      this.floor2FaultInfo2013 = Number(values.DBW188 ?? 0);
+      this.floor2FaultInfo2014 = Number(values.DBW190 ?? 0);
+      this.floor2FaultInfo2015 = Number(values.DBW192 ?? 0);
+      this.floor2FaultInfo2016 = Number(values.DBW194 ?? 0);
+      this.floor2FaultInfo2017 = Number(values.DBW196 ?? 0);
+      this.floor2FaultInfo2018 = Number(values.DBW198 ?? 0);
+      this.floor2FaultInfo2019 = Number(values.DBW200 ?? 0);
+      this.floor2FaultInfo2020 = Number(values.DBW202 ?? 0);
+      this.floor2FaultInfo2021 = Number(values.DBW204 ?? 0);
+      this.floor2FaultInfo2022 = Number(values.DBW206 ?? 0);
+      this.floor2FaultInfo2023 = Number(values.DBW208 ?? 0);
+      this.floor2FaultInfo2024 = Number(values.DBW210 ?? 0);
+      this.floor2FaultInfo2025 = Number(values.DBW212 ?? 0);
+      this.floor2FaultInfo2026 = Number(values.DBW214 ?? 0);
+      this.floor2FaultInfo2027 = Number(values.DBW216 ?? 0);
+      this.floor2FaultInfo2028 = Number(values.DBW218 ?? 0);
+      this.floor2FaultInfo2029 = Number(values.DBW220 ?? 0);
+      this.floor2FaultInfo2030 = Number(values.DBW222 ?? 0);
+      this.floor2FaultInfo2031 = Number(values.DBW224 ?? 0);
+      this.floor2FaultInfo2032 = Number(values.DBW226 ?? 0);
+      this.floor2FaultInfo2033 = Number(values.DBW228 ?? 0);
+      this.floor2FaultInfo2034 = Number(values.DBW230 ?? 0);
+      this.floor2FaultInfo2035 = Number(values.DBW232 ?? 0);
+      this.floor2FaultInfo2036 = Number(values.DBW234 ?? 0);
+      this.floor2FaultInfo2037 = Number(values.DBW236 ?? 0);
+      this.floor2FaultInfo2038 = Number(values.DBW238 ?? 0);
+      this.floor2FaultInfo2039 = Number(values.DBW240 ?? 0);
+      this.floor2FaultInfo2040 = Number(values.DBW242 ?? 0);
+      this.floor2FaultInfo2041 = Number(values.DBW244 ?? 0);
+      this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
+      this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
+    });
     // 给PLC数据加载时间
     setTimeout(() => {
       this.addLog('isDataReady数据加载完成');
@@ -3009,7 +3072,6 @@ export default {
           trayCode: String(virtualId),
           virtualId: virtualId,
           trayTime: timeStr,
-          isTerile: 0,
           sendTo: String(destination),
           state: 'loaded',
           sequenceNumber: String(this.queues[0].trayInfo.length + 1),
@@ -3729,7 +3791,6 @@ export default {
             id: tray.trayCode || '',
             name: tray.trayCode ? `托盘 ${tray.trayCode}` : '未知托盘',
             time: tray.trayTime || '',
-            isTerile: tray.isTerile,
             sendTo: tray.sendTo || '', // 添加sendTo属性
             state: tray.state || '', // 添加state属性
             sequenceNumber: tray.sequenceNumber || '', // 添加sequenceNumber属性
@@ -3999,6 +4060,116 @@ export default {
           return;
         }
         this.$message.error('托盘下移失败，请重试');
+      }
+    },
+    showAddTrayDialog() {
+      if (!this.runningOrder) {
+        this.$message.warning('当前没有执行中的订单，无法添加托盘');
+        return;
+      }
+      this.newTrayForm = {
+        virtualId: ''
+      };
+      this.addTrayDialogVisible = true;
+      this.$nextTick(() => {
+        this.$refs.newTrayForm && this.$refs.newTrayForm.clearValidate();
+      });
+    },
+    async submitAddTray() {
+      if (!this.selectedQueue) return;
+
+      const selectedOrder = this.runningOrder;
+      if (!selectedOrder) {
+        this.$message.warning('当前没有执行中的订单，无法添加托盘');
+        this.addTrayDialogVisible = false;
+        return;
+      }
+
+      try {
+        await this.$refs.newTrayForm.validate();
+
+        const virtualId = Number(this.newTrayForm.virtualId);
+        const exists = this.queues.some((queue) =>
+          (queue.trayInfo || []).some(
+            (tray) => Number(tray.virtualId || tray.trayCode) === virtualId
+          )
+        );
+        if (exists) {
+          this.$message.warning(`虚拟ID ${virtualId} 已存在于队列中`);
+          return;
+        }
+
+        this.isSubmitting = true;
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        const destination = selectedOrder.destination
+          ? String(selectedOrder.destination)
+          : '';
+        const newTray = {
+          trayCode: String(virtualId),
+          virtualId: virtualId,
+          trayTime: currentTime,
+          sendTo: destination,
+          state: 'loaded',
+          sequenceNumber: String(
+            (this.selectedQueue.trayInfo || []).length + 1
+          ),
+          orderId: selectedOrder.orderId || '',
+          orderDbId: selectedOrder.id,
+          productCode: selectedOrder.productCode || '',
+          productName: selectedOrder.productName || '',
+          unit: selectedOrder.unit || '',
+          batchNo: selectedOrder.batchNo || '',
+          processName: selectedOrder.processName || '',
+          destination: destination,
+          remark: `订单${selectedOrder.orderId}手动添加`
+        };
+
+        if (!Array.isArray(this.selectedQueue.trayInfo)) {
+          this.selectedQueue.trayInfo = [];
+        }
+
+        this.selectedQueue.trayInfo.push(newTray);
+
+        this.updateQueueTrays(
+          this.selectedQueue.id,
+          this.selectedQueue.trayInfo
+        );
+
+        this.showTrays(this.selectedQueueIndex);
+
+        const newLoadedQty = (selectedOrder.loadedQuantity || 0) + 1;
+        try {
+          const res = await HttpUtil.post('/order_info/update', {
+            id: selectedOrder.id,
+            loadedQuantity: newLoadedQty
+          });
+          if (res.code === '200') {
+            this.refreshOrders();
+          } else {
+            this.addLog(
+              `订单 ${selectedOrder.orderId} 已上货数量更新失败`,
+              'alarm'
+            );
+          }
+        } catch (err) {
+          this.addLog(
+            `订单 ${selectedOrder.orderId} 已上货数量更新异常: ${err}`,
+            'alarm'
+          );
+        }
+
+        this.addLog(
+          `新托盘 ${newTray.trayCode} 已添加到 ${this.selectedQueue.queueName}，订单：${newTray.orderId}，批号：${newTray.batchNo}`
+        );
+
+        this.$message.success('托盘添加成功');
+        this.addTrayDialogVisible = false;
+      } catch (error) {
+        if (error !== false) {
+          this.$message.error('添加托盘失败，请重试');
+        }
+      } finally {
+        this.isSubmitting = false;
       }
     },
     // 点击队列标识
@@ -6051,29 +6222,6 @@ export default {
                       font-weight: 500;
                       color: rgba(255, 255, 255, 0.9);
                       font-size: 14px;
-                    }
-
-                    .tray-batch-group {
-                      display: flex;
-                      align-items: center;
-                      gap: 4px;
-                      flex-wrap: wrap;
-                      justify-content: flex-end;
-                    }
-
-                    .tray-batch {
-                      font-size: 12px;
-                      color: #7eb8ff;
-                      background: rgba(64, 158, 255, 0.1);
-                      padding: 2px 8px;
-                      border-radius: 4px;
-                      white-space: nowrap;
-
-                      .sequence-number {
-                        color: #ffa500;
-                        font-weight: bold;
-                        margin-left: 4px;
-                      }
                     }
 
                     .tray-detail {
