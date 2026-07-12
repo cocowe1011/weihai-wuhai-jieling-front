@@ -797,36 +797,6 @@
           <i class="el-icon-close" @click.stop="showTestPanel = false"></i>
         </div>
         <div class="test-panel-content">
-          <div class="test-section">
-            <span class="test-label">小车位置测试:</span>
-            <div class="cart-position-test-container">
-              <div
-                v-for="cartId in 5"
-                :key="'cart-slider-' + cartId"
-                class="cart-position-group"
-              >
-                <div class="cart-position-label">
-                  <span
-                    >小车{{ cartId }} ({{
-                      cartPlcRanges['cart' + cartId].min
-                    }}-{{ cartPlcRanges['cart' + cartId].max }}):</span
-                  >
-                  <span class="cart-value">{{
-                    cartPositionValues['cart' + cartId]
-                  }}</span>
-                </div>
-                <div class="cart-position-slider-container">
-                  <el-slider
-                    v-model="cartPositionValues['cart' + cartId]"
-                    :min="cartPlcRanges['cart' + cartId].min"
-                    :max="cartPlcRanges['cart' + cartId].max"
-                    :step="1"
-                    class="cart-position-slider"
-                  ></el-slider>
-                </div>
-              </div>
-            </div>
-          </div>
           <!-- 上货请求信号手动触发 -->
           <div class="test-section">
             <span class="test-label">上货请求信号测试:</span>
@@ -936,6 +906,36 @@
                   >
                     -
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="test-section">
+            <span class="test-label">小车位置测试:</span>
+            <div class="cart-position-test-container">
+              <div
+                v-for="cartId in 8"
+                :key="'cart-slider-' + cartId"
+                class="cart-position-group"
+              >
+                <div class="cart-position-label">
+                  <span
+                    >小车{{ cartId }} ({{
+                      cartPlcRanges['cart' + cartId].min
+                    }}-{{ cartPlcRanges['cart' + cartId].max }}):</span
+                  >
+                  <span class="cart-value">{{
+                    cartPositionValues['cart' + cartId]
+                  }}</span>
+                </div>
+                <div class="cart-position-slider-container">
+                  <el-slider
+                    v-model="cartPositionValues['cart' + cartId]"
+                    :min="cartPlcRanges['cart' + cartId].min"
+                    :max="cartPlcRanges['cart' + cartId].max"
+                    :step="1"
+                    class="cart-position-slider"
+                  ></el-slider>
                 </div>
               </div>
             </div>
@@ -2984,7 +2984,7 @@ export default {
         {
           id: 1,
           name: '小车1',
-          x: 112,
+          x: 900, // 右侧原点
           y: 1175,
           width: 100,
           image: require('@/assets/changzhou-img/cart1.png')
@@ -2992,7 +2992,7 @@ export default {
         {
           id: 2,
           name: '小车2',
-          x: 780,
+          x: 1300, // 右侧原点
           y: 1090,
           width: 90,
           image: require('@/assets/changzhou-img/cart2.png')
@@ -3000,7 +3000,7 @@ export default {
         {
           id: 3,
           name: '小车3',
-          x: 98,
+          x: 1295, // 右侧原点
           y: 465,
           width: 95,
           image: require('@/assets/changzhou-img/cart3.png')
@@ -3008,7 +3008,7 @@ export default {
         {
           id: 4,
           name: '小车4',
-          x: 1493,
+          x: 2317, // 右侧原点
           y: 1065,
           width: 90,
           image: require('@/assets/changzhou-img/cart4.png')
@@ -3016,7 +3016,7 @@ export default {
         {
           id: 5,
           name: '小车5',
-          x: 1493,
+          x: 2317, // 右侧原点
           y: 1800,
           width: 80,
           image: require('@/assets/changzhou-img/cart5.png')
@@ -3024,7 +3024,7 @@ export default {
         {
           id: 6,
           name: '小车6',
-          x: 100,
+          x: 605, // 右侧原点
           y: 1090,
           width: 90,
           image: require('@/assets/changzhou-img/cart2.png')
@@ -3032,7 +3032,7 @@ export default {
         {
           id: 7,
           name: '小车7',
-          x: 2520,
+          x: 2830, // 右侧原点
           y: 295,
           width: 90,
           image: require('@/assets/changzhou-img/cart1.png')
@@ -3040,13 +3040,14 @@ export default {
         {
           id: 8,
           name: '小车8',
-          x: 2520,
+          x: 2830, // 右侧原点
           y: 1785,
           width: 100,
           image: require('@/assets/changzhou-img/cart1.png')
         }
       ],
-      // 小车位置数值-读取PLC（一楼 cart1~3：DBW14/16/18，二楼 cart4~5：DBW22/24）
+      // 小车位置数值-读取PLC
+      // 一楼 cart1/2/3/6：DBW14/16/18/20；二楼 cart4/5/7/8：DBW22/24/26/28
       cartPositionValues: {
         cart1: 0,
         cart2: 0,
@@ -3057,7 +3058,7 @@ export default {
         cart7: 0,
         cart8: 0
       },
-      // 小车 x 轴行走范围（地图坐标，可按实际轨道调整）
+      // 小车 x 轴行走范围（地图坐标；max=右侧原点，min=左侧终点）
       cartXRanges: {
         cart1: { min: 112, max: 900 },
         cart2: { min: 780, max: 1300 },
@@ -3068,16 +3069,16 @@ export default {
         cart7: { min: 2520, max: 2830 },
         cart8: { min: 2520, max: 2830 }
       },
-      // 小车 PLC 数值范围配置
+      // 小车 PLC 数值范围配置（右侧原点对应 min）
       cartPlcRanges: {
-        cart1: { min: 0, max: 3000 },
-        cart2: { min: 0, max: 3000 },
-        cart3: { min: 0, max: 3000 },
-        cart4: { min: 0, max: 3000 },
-        cart5: { min: 0, max: 3000 },
-        cart6: { min: 0, max: 3000 },
-        cart7: { min: 0, max: 3000 },
-        cart8: { min: 0, max: 3000 }
+        cart1: { min: 100, max: 2346 },
+        cart2: { min: 100, max: 1982 },
+        cart3: { min: 100, max: 4426 },
+        cart4: { min: 100, max: 2479 },
+        cart5: { min: 100, max: 2478 },
+        cart6: { min: 100, max: 1899 },
+        cart7: { min: 100, max: 3000 }, // 暂无，后续对照
+        cart8: { min: 100, max: 3000 } // 暂无，后续对照
       },
       // ========== 订单管理相关 ==========
       ordersList: [],
@@ -3254,7 +3255,7 @@ export default {
       this.floor1AreaEstop.bit4 = getBit(word6, 12);
       this.floor1AreaEstop.bit5 = getBit(word6, 13);
 
-      // 一楼小车位置
+      // 一楼小车位置：cart1=DBW14、cart2=DBW16、cart3=DBW18、cart6=DBW20
       this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
       this.floor1CartBeforeSteril2Pos = Number(values.DBW16 ?? 0);
       this.floor1CartAfterSterilPos = Number(values.DBW18 ?? 0);
@@ -3262,6 +3263,7 @@ export default {
       this.cartPositionValues.cart1 = Number(values.DBW14 ?? 0);
       this.cartPositionValues.cart2 = Number(values.DBW16 ?? 0);
       this.cartPositionValues.cart3 = Number(values.DBW18 ?? 0);
+      this.cartPositionValues.cart6 = Number(values.DBW20 ?? 0);
 
       // 一楼上货请求托盘指定ID和目的地 DBW22
       let word22 = this.convertToWord(values.DBW22 ?? 0);
@@ -3362,13 +3364,15 @@ export default {
       this.floor2AreaEstop.bit4 = getBit(word6, 12);
       this.floor2AreaEstop.bit5 = getBit(word6, 13);
 
-      // 二楼小车位置
+      // 二楼小车位置：cart4=DBW22、cart5=DBW24、cart7=DBW26、cart8=DBW28
       this.floor2CartAnalysisInPos = Number(values.DBW22 ?? 0);
       this.floor2CartAnalysisOutPos = Number(values.DBW24 ?? 0);
       this.floor2CartSpare1Pos = Number(values.DBW26 ?? 0);
       this.floor2CartSpare2Pos = Number(values.DBW28 ?? 0);
       this.cartPositionValues.cart4 = Number(values.DBW22 ?? 0);
       this.cartPositionValues.cart5 = Number(values.DBW24 ?? 0);
+      this.cartPositionValues.cart7 = Number(values.DBW26 ?? 0);
+      this.cartPositionValues.cart8 = Number(values.DBW28 ?? 0);
 
       let word30 = this.convertToWord(values.DBW30 ?? 0);
       this.floor2AnalysisOutTrayRequest.bit0 = getBit(word30, 8);
@@ -3481,6 +3485,15 @@ export default {
     },
     'cartPositionValues.cart5'(newVal) {
       this.updateCartPositionByValue(5, newVal);
+    },
+    'cartPositionValues.cart6'(newVal) {
+      this.updateCartPositionByValue(6, newVal);
+    },
+    'cartPositionValues.cart7'(newVal) {
+      this.updateCartPositionByValue(7, newVal);
+    },
+    'cartPositionValues.cart8'(newVal) {
+      this.updateCartPositionByValue(8, newVal);
     },
     // 监听上货请求信号 DB1000.DBW22.BIT0 的上升沿
     'floor1UploadTrayRequest.bit0'(newVal, oldVal) {
@@ -5556,8 +5569,9 @@ export default {
       if (!xRange || !plcRange) return;
       if (value < plcRange.min) value = plcRange.min;
       if (value > plcRange.max) value = plcRange.max;
+      // 右侧为原点：PLC min → x max（右），PLC max → x min（左），从右往左滑动
       const ratio = (value - plcRange.min) / (plcRange.max - plcRange.min);
-      cart.x = Math.round(xRange.min + (xRange.max - xRange.min) * ratio);
+      cart.x = Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
       this.$nextTick(() => {
         this.updateCartPositionOnly(cartId);
       });
