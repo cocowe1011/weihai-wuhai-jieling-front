@@ -842,9 +842,43 @@
               </div>
             </div>
           </div>
+          <!-- 灭菌柜未完成数量模拟（仅19-30） -->
+          <div class="test-section">
+            <span class="test-label">灭菌柜数量测试(未完成 19-30):</span>
+            <div class="steril-quantity-test-grid">
+              <div
+                v-for="cabinetNo in 12"
+                :key="'steril-incomplete-qty-' + (cabinetNo + 18)"
+                class="steril-quantity-item"
+              >
+                <span class="steril-quantity-label">{{ cabinetNo + 18 }}</span>
+                <span class="steril-quantity-value">{{
+                  getSterilizationIncompleteQuantity(cabinetNo + 18)
+                }}</span>
+                <div class="steril-quantity-buttons">
+                  <button
+                    class="quantity-btn plus"
+                    @click="
+                      updateSterilizationIncompleteQuantity(cabinetNo + 18, 1)
+                    "
+                  >
+                    +
+                  </button>
+                  <button
+                    class="quantity-btn minus"
+                    @click="
+                      updateSterilizationIncompleteQuantity(cabinetNo + 18, -1)
+                    "
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           <!-- 灭菌柜完成数量模拟 -->
           <div class="test-section">
-            <span class="test-label">灭菌柜数量测试(完成):</span>
+            <span class="test-label">灭菌柜数量测试(已完成 19-33):</span>
             <div class="steril-quantity-test-grid">
               <div
                 v-for="cabinetNo in 15"
@@ -1364,18 +1398,18 @@ export default {
       },
       queues: [
         { id: 1, queueName: '上货区', trayInfo: [] },
-        { id: 2, queueName: '灭菌19', trayInfo: [] },
-        { id: 3, queueName: '灭菌20', trayInfo: [] },
-        { id: 4, queueName: '灭菌21', trayInfo: [] },
-        { id: 5, queueName: '灭菌22', trayInfo: [] },
-        { id: 6, queueName: '灭菌23', trayInfo: [] },
-        { id: 7, queueName: '灭菌24', trayInfo: [] },
-        { id: 8, queueName: '灭菌25', trayInfo: [] },
-        { id: 9, queueName: '灭菌26', trayInfo: [] },
-        { id: 10, queueName: '灭菌27', trayInfo: [] },
-        { id: 11, queueName: '灭菌28', trayInfo: [] },
-        { id: 12, queueName: '灭菌29', trayInfo: [] },
-        { id: 13, queueName: '灭菌30', trayInfo: [] },
+        { id: 2, queueName: '未灭菌19', trayInfo: [] },
+        { id: 3, queueName: '未灭菌20', trayInfo: [] },
+        { id: 4, queueName: '未灭菌21', trayInfo: [] },
+        { id: 5, queueName: '未灭菌22', trayInfo: [] },
+        { id: 6, queueName: '未灭菌23', trayInfo: [] },
+        { id: 7, queueName: '未灭菌24', trayInfo: [] },
+        { id: 8, queueName: '未灭菌25', trayInfo: [] },
+        { id: 9, queueName: '未灭菌26', trayInfo: [] },
+        { id: 10, queueName: '未灭菌27', trayInfo: [] },
+        { id: 11, queueName: '未灭菌28', trayInfo: [] },
+        { id: 12, queueName: '未灭菌29', trayInfo: [] },
+        { id: 13, queueName: '未灭菌30', trayInfo: [] },
         { id: 14, queueName: '灭菌31', trayInfo: [] },
         { id: 15, queueName: '灭菌32', trayInfo: [] },
         { id: 16, queueName: '灭菌33', trayInfo: [] },
@@ -1398,23 +1432,35 @@ export default {
         { id: 33, queueName: '解析16', trayInfo: [] },
         { id: 34, queueName: '解析17', trayInfo: [] },
         { id: 35, queueName: '解析18', trayInfo: [] },
-        { id: 36, queueName: '解析19', trayInfo: [] }
+        { id: 36, queueName: '解析19', trayInfo: [] },
+        { id: 37, queueName: '已灭菌19', trayInfo: [] },
+        { id: 38, queueName: '已灭菌20', trayInfo: [] },
+        { id: 39, queueName: '已灭菌21', trayInfo: [] },
+        { id: 40, queueName: '已灭菌22', trayInfo: [] },
+        { id: 41, queueName: '已灭菌23', trayInfo: [] },
+        { id: 42, queueName: '已灭菌24', trayInfo: [] },
+        { id: 43, queueName: '已灭菌25', trayInfo: [] },
+        { id: 44, queueName: '已灭菌26', trayInfo: [] },
+        { id: 45, queueName: '已灭菌27', trayInfo: [] },
+        { id: 46, queueName: '已灭菌28', trayInfo: [] },
+        { id: 47, queueName: '已灭菌29', trayInfo: [] },
+        { id: 48, queueName: '已灭菌30', trayInfo: [] }
       ],
       // 添加队列位置标识数据
       queueMarkers: [
         { id: 1, name: '上货', queueId: 1, x: 1050, y: 1190 },
-        { id: 2, name: '灭菌19', queueId: 2, x: 1295, y: 755 },
-        { id: 3, name: '灭菌20', queueId: 3, x: 1185, y: 755 },
-        { id: 4, name: '灭菌21', queueId: 4, x: 1085, y: 755 },
-        { id: 5, name: '灭菌22', queueId: 5, x: 982, y: 755 },
-        { id: 6, name: '灭菌23', queueId: 6, x: 875, y: 755 },
-        { id: 7, name: '灭菌24', queueId: 7, x: 780, y: 755 },
-        { id: 8, name: '灭菌25', queueId: 8, x: 608, y: 755 },
-        { id: 9, name: '灭菌26', queueId: 9, x: 500, y: 755 },
-        { id: 10, name: '灭菌27', queueId: 10, x: 405, y: 755 },
-        { id: 11, name: '灭菌28', queueId: 11, x: 298, y: 755 },
-        { id: 12, name: '灭菌29', queueId: 12, x: 195, y: 755 },
-        { id: 13, name: '灭菌30', queueId: 13, x: 95, y: 755 },
+        { id: 2, name: '(未)\n灭菌19', queueId: 2, x: 1295, y: 880 },
+        { id: 3, name: '(未)\n灭菌20', queueId: 3, x: 1185, y: 880 },
+        { id: 4, name: '(未)\n灭菌21', queueId: 4, x: 1085, y: 880 },
+        { id: 5, name: '(未)\n灭菌22', queueId: 5, x: 982, y: 880 },
+        { id: 6, name: '(未)\n灭菌23', queueId: 6, x: 875, y: 880 },
+        { id: 7, name: '(未)\n灭菌24', queueId: 7, x: 780, y: 880 },
+        { id: 8, name: '(未)\n灭菌25', queueId: 8, x: 608, y: 880 },
+        { id: 9, name: '(未)\n灭菌26', queueId: 9, x: 500, y: 880 },
+        { id: 10, name: '(未)\n灭菌27', queueId: 10, x: 405, y: 880 },
+        { id: 11, name: '(未)\n灭菌28', queueId: 11, x: 298, y: 880 },
+        { id: 12, name: '(未)\n灭菌29', queueId: 12, x: 195, y: 880 },
+        { id: 13, name: '(未)\n灭菌30', queueId: 13, x: 95, y: 880 },
         { id: 14, name: '灭菌31', queueId: 14, x: 105, y: 1600 },
         { id: 15, name: '灭菌32', queueId: 15, x: 252, y: 1600 },
         { id: 16, name: '灭菌33', queueId: 16, x: 385, y: 1600 },
@@ -1437,7 +1483,19 @@ export default {
         { id: 33, name: '解析16', queueId: 33, x: 2588, y: 1050 },
         { id: 34, name: '解析17', queueId: 34, x: 2670, y: 1050 },
         { id: 35, name: '解析18', queueId: 35, x: 2747, y: 1050 },
-        { id: 36, name: '解析19', queueId: 36, x: 2830, y: 1050 }
+        { id: 36, name: '解析19', queueId: 36, x: 2830, y: 1050 },
+        { id: 37, name: '(已)\n灭菌19', queueId: 37, x: 1295, y: 660 },
+        { id: 38, name: '(已)\n灭菌20', queueId: 38, x: 1185, y: 660 },
+        { id: 39, name: '(已)\n灭菌21', queueId: 39, x: 1085, y: 660 },
+        { id: 40, name: '(已)\n灭菌22', queueId: 40, x: 982, y: 660 },
+        { id: 41, name: '(已)\n灭菌23', queueId: 41, x: 875, y: 660 },
+        { id: 42, name: '(已)\n灭菌24', queueId: 42, x: 780, y: 660 },
+        { id: 43, name: '(已)\n灭菌25', queueId: 43, x: 608, y: 660 },
+        { id: 44, name: '(已)\n灭菌26', queueId: 44, x: 500, y: 660 },
+        { id: 45, name: '(已)\n灭菌27', queueId: 45, x: 405, y: 660 },
+        { id: 46, name: '(已)\n灭菌28', queueId: 46, x: 298, y: 660 },
+        { id: 47, name: '(已)\n灭菌29', queueId: 47, x: 195, y: 660 },
+        { id: 48, name: '(已)\n灭菌30', queueId: 48, x: 95, y: 660 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
@@ -3490,51 +3548,89 @@ export default {
         this.handleSterilOutTrayRequest(33);
       }
     },
+    // 监听灭菌柜内未完成实际数量 DBW70-DBW92（19-30：上货区→未灭菌）
+    floor1Sterilization19Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(19, newVal, oldVal);
+    },
+    floor1Sterilization20Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(20, newVal, oldVal);
+    },
+    floor1Sterilization21Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(21, newVal, oldVal);
+    },
+    floor1Sterilization22Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(22, newVal, oldVal);
+    },
+    floor1Sterilization23Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(23, newVal, oldVal);
+    },
+    floor1Sterilization24Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(24, newVal, oldVal);
+    },
+    floor1Sterilization25Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(25, newVal, oldVal);
+    },
+    floor1Sterilization26Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(26, newVal, oldVal);
+    },
+    floor1Sterilization27Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(27, newVal, oldVal);
+    },
+    floor1Sterilization28Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(28, newVal, oldVal);
+    },
+    floor1Sterilization29Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(29, newVal, oldVal);
+    },
+    floor1Sterilization30Incomplete(newVal, oldVal) {
+      this.handleSterilizationIncompleteQuantityChange(30, newVal, oldVal);
+    },
     // 监听灭菌柜内完成实际数量 DBW94-DBW122
+    // 19-30：未灭菌→已灭菌；31-33：上货区→灭菌柜
     floor1Sterilization19Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(19, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(19, newVal, oldVal);
     },
     floor1Sterilization20Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(20, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(20, newVal, oldVal);
     },
     floor1Sterilization21Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(21, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(21, newVal, oldVal);
     },
     floor1Sterilization22Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(22, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(22, newVal, oldVal);
     },
     floor1Sterilization23Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(23, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(23, newVal, oldVal);
     },
     floor1Sterilization24Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(24, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(24, newVal, oldVal);
     },
     floor1Sterilization25Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(25, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(25, newVal, oldVal);
     },
     floor1Sterilization26Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(26, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(26, newVal, oldVal);
     },
     floor1Sterilization27Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(27, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(27, newVal, oldVal);
     },
     floor1Sterilization28Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(28, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(28, newVal, oldVal);
     },
     floor1Sterilization29Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(29, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(29, newVal, oldVal);
     },
     floor1Sterilization30Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(30, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(30, newVal, oldVal);
     },
     floor1Sterilization31Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(31, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(31, newVal, oldVal);
     },
     floor1Sterilization32Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(32, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(32, newVal, oldVal);
     },
     floor1Sterilization33Complete(newVal, oldVal) {
-      this.handleSterilizationCabinetQuantityChange(33, newVal, oldVal);
+      this.handleSterilizationCompleteQuantityChange(33, newVal, oldVal);
     },
     // 监听解析房内实际数量 DBW116-DBW148（仅入房；出房由 DBW30 请求触发）
     floor2AnalysisRoom1Qty(newVal, oldVal) {
@@ -4116,6 +4212,13 @@ export default {
       const key = `floor1Sterilization${cabinetNo}Complete`;
       this[key] = Math.max(0, parseInt(this[key] || 0) + change);
     },
+    getSterilizationIncompleteQuantity(cabinetNo) {
+      return this[`floor1Sterilization${cabinetNo}Incomplete`] || 0;
+    },
+    updateSterilizationIncompleteQuantity(cabinetNo, change) {
+      const key = `floor1Sterilization${cabinetNo}Incomplete`;
+      this[key] = Math.max(0, parseInt(this[key] || 0) + change);
+    },
     getAnalysisRoomQuantity(roomNo) {
       return this[`floor2AnalysisRoom${roomNo}Qty`] || 0;
     },
@@ -4154,7 +4257,15 @@ export default {
         ipcRenderer.send('cancelWriteToPLC_1', tag);
       }, 2000);
     },
+    // 未灭菌队列索引（仅 19-30）：id 2-13
+    getSterilIncompleteQueueIndex(cabinetNo) {
+      return cabinetNo - 18;
+    },
+    // 出货源队列索引：19-30 为已灭菌(id 37-48)，31-33 为原灭菌队列(id 14-16)
     getSterilQueueIndex(cabinetNo) {
+      if (cabinetNo >= 19 && cabinetNo <= 30) {
+        return cabinetNo + 17;
+      }
       return cabinetNo - 18;
     },
     getAnalysisQueueIndex(roomNo) {
@@ -4165,7 +4276,7 @@ export default {
       const queue = this.queues[queueIndex];
       return queue && Array.isArray(queue.trayInfo) ? queue.trayInfo.length : 0;
     },
-    // 解析房有效占用：房内 + 输送线已发往该房 + 灭菌柜队列已指定该房
+    // 解析房有效占用：房内 + 输送线已发往该房 + 灭菌柜/已灭菌队列已指定该房
     getAnalysisRoomEffectiveLoad(roomNo) {
       const destStr = String(roomNo);
       let count = this.getAnalysisRoomCount(roomNo);
@@ -4175,7 +4286,17 @@ export default {
           (tray) => String(tray.analysisDestination) === destStr
         ).length;
       }
+      // 未灭菌19-30 + 灭菌31-33
       for (let q = 1; q <= 15; q++) {
+        const queue = this.queues[q];
+        if (queue && Array.isArray(queue.trayInfo)) {
+          count += queue.trayInfo.filter(
+            (tray) => String(tray.analysisDestination) === destStr
+          ).length;
+        }
+      }
+      // 已灭菌19-30（id 37-48，index 36-47）
+      for (let q = 36; q <= 47; q++) {
         const queue = this.queues[q];
         if (queue && Array.isArray(queue.trayInfo)) {
           count += queue.trayInfo.filter(
@@ -4220,15 +4341,17 @@ export default {
         this.writePlcPulse('W_DBW30', destination);
       }
     },
-    handleSterilizationCabinetQuantityChange(cabinetNo, newVal, oldVal) {
+    handleSterilizationIncompleteQuantityChange(cabinetNo, newVal, oldVal) {
       if (!this.isDataReady) return;
-      // 仅处理数量增加（入柜）；出柜改由 DBW24 灭菌出货请求触发
       if (newVal > oldVal) {
-        this.handleSterilizationCabinetQuantityIncrease(
-          cabinetNo,
-          newVal,
-          oldVal
-        );
+        this.handleSterilizationIncompleteIncrease(cabinetNo, newVal, oldVal);
+      }
+    },
+    handleSterilizationCompleteQuantityChange(cabinetNo, newVal, oldVal) {
+      if (!this.isDataReady) return;
+      // 仅处理数量增加；出柜改由 DBW24 灭菌出货请求触发
+      if (newVal > oldVal) {
+        this.handleSterilizationCompleteIncrease(cabinetNo, newVal, oldVal);
       }
     },
     handleAnalysisRoomQuantityChange(roomNo, newVal, oldVal) {
@@ -4330,6 +4453,110 @@ export default {
         );
       }
     },
+    // 19-30：DBW70-92 增加 → 上货区 → 未灭菌队列
+    handleSterilizationIncompleteIncrease(cabinetNo, newVal, oldVal) {
+      const increaseCount = newVal - oldVal;
+      const destStr = String(cabinetNo);
+      const sourceQueue = this.queues[0];
+      const targetQueue =
+        this.queues[this.getSterilIncompleteQueueIndex(cabinetNo)];
+      if (!sourceQueue || !targetQueue) {
+        this.addLog(
+          `灭菌柜${cabinetNo}未完成数量增加，找不到对应队列`,
+          'alarm'
+        );
+        return;
+      }
+
+      let movedCount = 0;
+      for (let i = 0; i < increaseCount; i++) {
+        const trayIndex = sourceQueue.trayInfo.findIndex(
+          (tray) =>
+            String(tray.sendTo) === destStr ||
+            String(tray.destination) === destStr
+        );
+
+        if (trayIndex === -1) {
+          break;
+        }
+
+        const tray = sourceQueue.trayInfo[trayIndex];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'sterilizationRoom', destStr);
+        this.$set(tray, 'inSterilizationRoomTime', currentTime);
+        targetQueue.trayInfo.push(tray);
+        sourceQueue.trayInfo.splice(trayIndex, 1);
+        movedCount++;
+        this.addLog(
+          `托盘 ${tray.trayCode} 从上货区进入未灭菌${cabinetNo}，时间：${currentTime}`
+        );
+      }
+
+      if (movedCount > 0) {
+        this.addLog(`从上货区移动${movedCount}个托盘到未灭菌${cabinetNo}队列`);
+      }
+
+      if (movedCount < increaseCount) {
+        this.addLog(
+          `灭菌柜${cabinetNo}未完成数量增加${increaseCount}，上货区目的地为${cabinetNo}的托盘不足，仅移动${movedCount}个托盘`
+        );
+      }
+    },
+    // 完成数量增加：19-30 未灭菌→已灭菌；31-33 上货区→灭菌柜
+    handleSterilizationCompleteIncrease(cabinetNo, newVal, oldVal) {
+      if (cabinetNo >= 19 && cabinetNo <= 30) {
+        this.handleSterilizationCompleteToSterilized(cabinetNo, newVal, oldVal);
+      } else {
+        this.handleSterilizationCabinetQuantityIncrease(
+          cabinetNo,
+          newVal,
+          oldVal
+        );
+      }
+    },
+    // 19-30：DBW94-116 增加 → 未灭菌 → 已灭菌
+    handleSterilizationCompleteToSterilized(cabinetNo, newVal, oldVal) {
+      const increaseCount = newVal - oldVal;
+      const sourceQueue =
+        this.queues[this.getSterilIncompleteQueueIndex(cabinetNo)];
+      const targetQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      if (!sourceQueue || !targetQueue) {
+        this.addLog(`灭菌柜${cabinetNo}完成数量增加，找不到对应队列`, 'alarm');
+        return;
+      }
+
+      let movedCount = 0;
+      for (let i = 0; i < increaseCount; i++) {
+        if (sourceQueue.trayInfo.length === 0) {
+          break;
+        }
+
+        const tray = sourceQueue.trayInfo[0];
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        this.$set(tray, 'sterilizationCompleteTime', currentTime);
+        targetQueue.trayInfo.push(tray);
+        sourceQueue.trayInfo.shift();
+        movedCount++;
+        this.addLog(
+          `托盘 ${
+            tray.trayCode || tray.id
+          } 从未灭菌${cabinetNo}进入已灭菌${cabinetNo}，时间：${currentTime}`
+        );
+      }
+
+      if (movedCount > 0) {
+        this.addLog(
+          `从未灭菌${cabinetNo}移动${movedCount}个托盘到已灭菌${cabinetNo}队列`
+        );
+      }
+
+      if (movedCount < increaseCount) {
+        this.addLog(
+          `灭菌柜${cabinetNo}完成数量增加${increaseCount}，未灭菌队列托盘不足，仅移动${movedCount}个托盘`
+        );
+      }
+    },
+    // 31-33：完成数量增加 → 上货区 → 灭菌柜队列
     handleSterilizationCabinetQuantityIncrease(cabinetNo, newVal, oldVal) {
       const increaseCount = newVal - oldVal;
       const destStr = String(cabinetNo);
@@ -7274,6 +7501,7 @@ export default {
                     width: 2em;
                     line-height: 1.3;
                     word-break: break-all;
+                    white-space: pre-line;
                     text-align: center;
                   }
                   .queue-marker-count {
