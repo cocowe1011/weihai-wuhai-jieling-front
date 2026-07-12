@@ -3666,10 +3666,14 @@ export default {
       };
     },
     deviceList() {
-      return Object.keys(this.deviceNodes).map((key) => ({
-        id: key,
-        ...this.deviceNodes[key]
-      }));
+      // 返回原始节点引用，避免每次展开新对象导致 v-for 与状态脱节
+      return Object.keys(this.deviceNodes).map((key) => {
+        const node = this.deviceNodes[key];
+        if (node.id !== key) {
+          this.$set(node, 'id', key);
+        }
+        return node;
+      });
     }
   },
   mounted() {
@@ -5515,27 +5519,40 @@ export default {
         const actualBit = bit < 8 ? bit + 8 : bit - 8;
         return getBit(getParsedWord(db), actualBit) === '1';
       };
+      const assignIfChanged = (node, key, nextVal) => {
+        if (node[key] !== nextVal) {
+          node[key] = nextVal;
+        }
+      };
 
       Object.values(this.deviceNodes).forEach((node) => {
         if (node.plcChannel !== plcChannel) return;
 
         if (node.motorAddr) {
-          node.motorStatus = readBit(node.motorAddr);
+          assignIfChanged(node, 'motorStatus', readBit(node.motorAddr));
         } else if (node.motorAddrs && node.motorAddrs.length) {
-          node.motorStatus = node.motorAddrs.some((addr) => readBit(addr));
+          assignIfChanged(
+            node,
+            'motorStatus',
+            node.motorAddrs.some((addr) => readBit(addr))
+          );
         }
 
         if (node.sensorAddr) {
-          node.sensorStatus = readBit(node.sensorAddr);
+          assignIfChanged(node, 'sensorStatus', readBit(node.sensorAddr));
         }
 
         if (node.trayIdAddr) {
           const v = Number(values[node.trayIdAddr] ?? 0);
-          node.trayId = v !== 0 ? String(v) : '';
+          assignIfChanged(node, 'trayId', v !== 0 ? String(v) : '');
         }
 
         if (node.destinationAddr) {
-          node.destination = Number(values[node.destinationAddr] ?? 0);
+          assignIfChanged(
+            node,
+            'destination',
+            Number(values[node.destinationAddr] ?? 0)
+          );
         }
       });
     },
@@ -7429,7 +7446,6 @@ export default {
                 z-index: 100;
                 transition: transform 0.2s ease, filter 0.2s ease;
                 box-sizing: border-box;
-                will-change: transform;
 
                 &:hover {
                   transform: translate(-50%, -50%) scale(1.12);
