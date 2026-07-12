@@ -318,7 +318,7 @@
               </div>
               <div class="image-wrapper">
                 <img
-                  src="@/assets/changzhou-img/image.png"
+                  src="@/assets/changzhou-img/image.webp"
                   alt="一楼平面图"
                   class="floor-image"
                   @load="updateMarkerPositions"
