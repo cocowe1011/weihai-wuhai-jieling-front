@@ -4167,7 +4167,6 @@ export default {
           unit: runningOrder.unit || '',
           batchNo: runningOrder.batchNo || '',
           processName: runningOrder.processName || '',
-          destination: String(destination),
           remark: `订单${runningOrder.orderId}自动上货`
         };
 
@@ -4517,9 +4516,7 @@ export default {
       let movedCount = 0;
       for (let i = 0; i < increaseCount; i++) {
         const trayIndex = sourceQueue.trayInfo.findIndex(
-          (tray) =>
-            String(tray.sendTo) === destStr ||
-            String(tray.destination) === destStr
+          (tray) => String(tray.sendTo) === destStr
         );
 
         if (trayIndex === -1) {
@@ -4616,9 +4613,7 @@ export default {
       let movedCount = 0;
       for (let i = 0; i < increaseCount; i++) {
         const trayIndex = sourceQueue.trayInfo.findIndex(
-          (tray) =>
-            String(tray.sendTo) === destStr ||
-            String(tray.destination) === destStr
+          (tray) => String(tray.sendTo) === destStr
         );
 
         if (trayIndex === -1) {
@@ -5448,7 +5443,6 @@ export default {
           unit: selectedOrder.unit || '',
           batchNo: selectedOrder.batchNo || '',
           processName: selectedOrder.processName || '',
-          destination: destination,
           remark: `订单${selectedOrder.orderId}手动添加`
         };
 
