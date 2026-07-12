@@ -340,6 +340,157 @@
                     <span class="queue-marker-name">{{ marker.name }}</span>
                   </div>
                 </div>
+                <!-- 灭菌完成状态标志（已灭菌队列上方） -->
+                <!-- 19 -->
+                <div class="analysis-status-marker" data-x="1295" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord124.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 20 -->
+                <div class="analysis-status-marker" data-x="1185" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord124.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 21 -->
+                <div class="analysis-status-marker" data-x="1085" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord126.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 22 -->
+                <div class="analysis-status-marker" data-x="982" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord126.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 23 -->
+                <div class="analysis-status-marker" data-x="875" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord128.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 24 -->
+                <div class="analysis-status-marker" data-x="780" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord128.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 25 -->
+                <div class="analysis-status-marker" data-x="608" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord130.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 26 -->
+                <div class="analysis-status-marker" data-x="500" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord130.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 27 -->
+                <div class="analysis-status-marker" data-x="405" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord132.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 28 -->
+                <div class="analysis-status-marker" data-x="298" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord132.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 29 -->
+                <div class="analysis-status-marker" data-x="195" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord134.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 30 -->
+                <div class="analysis-status-marker" data-x="95" data-y="540">
+                  <el-tag
+                    v-show="sterilizationCompleteWord134.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 31 -->
+                <div class="analysis-status-marker" data-x="105" data-y="1380">
+                  <el-tag
+                    v-show="sterilizationCompleteWord136.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 32 -->
+                <div class="analysis-status-marker" data-x="252" data-y="1380">
+                  <el-tag
+                    v-show="sterilizationCompleteWord136.bit14 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 33 -->
+                <div class="analysis-status-marker" data-x="385" data-y="1380">
+                  <el-tag
+                    v-show="sterilizationCompleteWord138.bit6 === '1'"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
                 <!-- 小车元素 -->
                 <div
                   v-for="cart in carts"
@@ -888,6 +1039,26 @@
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          <!-- 灭菌完成状态手动触发 -->
+          <div class="test-section">
+            <span class="test-label">灭菌完成状态测试(19-33):</span>
+            <div class="steril-complete-status-test-grid">
+              <button
+                class="steril-complete-status-btn"
+                :class="{ active: sterilizationCompleteWord124.bit6 === '1' }"
+                @click="toggleBitValue(sterilizationCompleteWord124, 'bit6')"
+              >
+                19 ({{ sterilizationCompleteWord124.bit6 }})
+              </button>
+              <button
+                class="steril-complete-status-btn"
+                :class="{ active: sterilizationCompleteWord136.bit6 === '1' }"
+                @click="toggleBitValue(sterilizationCompleteWord136, 'bit6')"
+              >
+                31 ({{ sterilizationCompleteWord136.bit6 }})
+              </button>
             </div>
           </div>
           <!-- 解析房实际数量模拟 -->
@@ -1582,14 +1753,38 @@ export default {
       floor1Sterilization31Complete: 0, // DBW118 灭菌柜31内实际数量--完成
       floor1Sterilization32Complete: 0, // DBW120 灭菌柜32内实际数量--完成
       floor1Sterilization33Complete: 0, // DBW122 灭菌柜33内实际数量--完成
-      floor1FaultInfo1001: 0, // DBW124 1001故障信息
-      floor1FaultInfo1002: 0, // DBW126 1002故障信息
-      floor1FaultInfo1003: 0, // DBW128 1003故障信息
-      floor1FaultInfo1004: 0, // DBW130 1004故障信息
-      floor1FaultInfo1005: 0, // DBW132 1005故障信息
-      floor1FaultInfo1006: 0, // DBW134 1006故障信息
-      floor1FaultInfo1007: 0, // DBW136 1007故障信息
-      floor1FaultInfo1008: 0, // DBW138 1008故障信息
+      // 灭菌完成状态（DBW124~138 BIT6/BIT14）
+      sterilizationCompleteWord124: {
+        bit6: '0', // 19
+        bit14: '0' // 20
+      },
+      sterilizationCompleteWord126: {
+        bit6: '0', // 21
+        bit14: '0' // 22
+      },
+      sterilizationCompleteWord128: {
+        bit6: '0', // 23
+        bit14: '0' // 24
+      },
+      sterilizationCompleteWord130: {
+        bit6: '0', // 25
+        bit14: '0' // 26
+      },
+      sterilizationCompleteWord132: {
+        bit6: '0', // 27
+        bit14: '0' // 28
+      },
+      sterilizationCompleteWord134: {
+        bit6: '0', // 29
+        bit14: '0' // 30
+      },
+      sterilizationCompleteWord136: {
+        bit6: '0', // 31
+        bit14: '0' // 32
+      },
+      sterilizationCompleteWord138: {
+        bit6: '0' // 33
+      },
       floor1FaultInfo1009: 0, // DBW140 1009故障信息
       floor1FaultInfo1010: 0, // DBW142 1010故障信息
       floor1FaultInfo1011: 0, // DBW144 1011故障信息
@@ -3329,15 +3524,32 @@ export default {
       this.floor1Sterilization32Complete = Number(values.DBW120 ?? 0);
       this.floor1Sterilization33Complete = Number(values.DBW122 ?? 0);
 
-      // 一楼故障信息
-      this.floor1FaultInfo1001 = Number(values.DBW124 ?? 0);
-      this.floor1FaultInfo1002 = Number(values.DBW126 ?? 0);
-      this.floor1FaultInfo1003 = Number(values.DBW128 ?? 0);
-      this.floor1FaultInfo1004 = Number(values.DBW130 ?? 0);
-      this.floor1FaultInfo1005 = Number(values.DBW132 ?? 0);
-      this.floor1FaultInfo1006 = Number(values.DBW134 ?? 0);
-      this.floor1FaultInfo1007 = Number(values.DBW136 ?? 0);
-      this.floor1FaultInfo1008 = Number(values.DBW138 ?? 0);
+      // 一楼灭菌完成状态 DBW124~138 BIT6/BIT14
+      let word124 = this.convertToWord(values.DBW124 ?? 0);
+      this.sterilizationCompleteWord124.bit6 = getBit(word124, 14);
+      this.sterilizationCompleteWord124.bit14 = getBit(word124, 6);
+      let word126 = this.convertToWord(values.DBW126 ?? 0);
+      this.sterilizationCompleteWord126.bit6 = getBit(word126, 14);
+      this.sterilizationCompleteWord126.bit14 = getBit(word126, 6);
+      let word128 = this.convertToWord(values.DBW128 ?? 0);
+      this.sterilizationCompleteWord128.bit6 = getBit(word128, 14);
+      this.sterilizationCompleteWord128.bit14 = getBit(word128, 6);
+      let word130 = this.convertToWord(values.DBW130 ?? 0);
+      this.sterilizationCompleteWord130.bit6 = getBit(word130, 14);
+      this.sterilizationCompleteWord130.bit14 = getBit(word130, 6);
+      let word132 = this.convertToWord(values.DBW132 ?? 0);
+      this.sterilizationCompleteWord132.bit6 = getBit(word132, 14);
+      this.sterilizationCompleteWord132.bit14 = getBit(word132, 6);
+      let word134 = this.convertToWord(values.DBW134 ?? 0);
+      this.sterilizationCompleteWord134.bit6 = getBit(word134, 14);
+      this.sterilizationCompleteWord134.bit14 = getBit(word134, 6);
+      let word136 = this.convertToWord(values.DBW136 ?? 0);
+      this.sterilizationCompleteWord136.bit6 = getBit(word136, 14);
+      this.sterilizationCompleteWord136.bit14 = getBit(word136, 6);
+      let word138 = this.convertToWord(values.DBW138 ?? 0);
+      this.sterilizationCompleteWord138.bit6 = getBit(word138, 14);
+
+      // 一楼故障信息（DBW124~138 已改作灭菌完成状态）
       this.floor1FaultInfo1009 = Number(values.DBW140 ?? 0);
       this.floor1FaultInfo1010 = Number(values.DBW142 ?? 0);
       this.floor1FaultInfo1011 = Number(values.DBW144 ?? 0);
@@ -8479,6 +8691,38 @@ export default {
   padding: 6px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
+}
+
+.steril-complete-status-test-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.steril-complete-status-btn {
+  width: calc((100% - 8px) / 3);
+  box-sizing: border-box;
+  padding: 4px 2px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(30, 42, 56, 0.85);
+  border: 1px solid rgba(64, 158, 255, 0.2);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.steril-complete-status-btn.active {
+  color: #fff;
+  background: #00aa33;
+  border-color: #00cc44;
+}
+
+.steril-complete-status-btn:hover {
+  border-color: rgba(64, 158, 255, 0.5);
 }
 
 .steril-quantity-item {
