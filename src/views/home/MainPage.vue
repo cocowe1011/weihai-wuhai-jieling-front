@@ -4001,7 +4001,7 @@ export default {
           orderStatus: 2,
           finisherName: userInfo.userName || '',
           finisherCode: userInfo.userCode || '',
-          finishTime: new Date()
+          finishTime: moment().format('YYYY-MM-DD HH:mm:ss')
         };
         await HttpUtil.post('/order_info/update', param)
           .then((res) => {
