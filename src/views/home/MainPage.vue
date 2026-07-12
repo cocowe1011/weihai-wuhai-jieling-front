@@ -1920,6 +1920,8 @@ export default {
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
       isDataReady: false,
+      // 渲染就绪标志位：先让UI完成首次渲染，再处理PLC数据，避免高频响应式更新阻塞图片绘制导致GPU 100%
+      isRenderReady: false,
       // ========== 一楼 PLC 读取点位（一楼-读取点位.csv）==========
       floor1ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳（高电平1秒持续，低电平1秒持续，一直循环）
       floor1ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
@@ -3703,6 +3705,8 @@ export default {
     }, 30000);
     this.refreshOrders();
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
+      // 渲染未完成时跳过PLC数据处理，避免高频响应式更新阻塞首次绘制
+      if (!this.isRenderReady) return;
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 一楼基础状态
@@ -3828,6 +3832,8 @@ export default {
       this.syncDeviceNodesFromPlc(values, 0);
     });
     ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
+      // 渲染未完成时跳过PLC数据处理，避免高频响应式更新阻塞首次绘制
+      if (!this.isRenderReady) return;
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 二楼基础状态
@@ -3950,11 +3956,20 @@ export default {
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
       this.syncDeviceNodesFromPlc(values, 1);
     });
-    // 给PLC数据加载时间
-    setTimeout(() => {
-      this.addLog('isDataReady数据加载完成');
-      this.isDataReady = true;
-    }, 3000);
+    // 先让浏览器完成首次绘制（双rAF确保至少一帧paint），再放开PLC数据处理
+    this.$nextTick(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.isRenderReady = true;
+          this.addLog('渲染完成，开始接收PLC数据');
+          // 给PLC数据加载时间，再做上升沿检测
+          setTimeout(() => {
+            this.addLog('isDataReady数据加载完成');
+            this.isDataReady = true;
+          }, 3000);
+        });
+      });
+    });
   },
   watch: {
     'cartPositionValues.cart1'(newVal) {
