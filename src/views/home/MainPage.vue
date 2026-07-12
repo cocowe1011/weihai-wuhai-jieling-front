@@ -1419,7 +1419,8 @@
           <el-input-number
             v-model="newOrderForm.orderQuantity"
             :min="1"
-            placeholder="请输入订单数量"
+            :max="13"
+            placeholder="请输入订单数量（最大13）"
             style="width: 100%"
           />
         </el-form-item>
@@ -1691,7 +1692,8 @@
           <el-input-number
             v-model="editOrderForm.orderQuantity"
             :min="1"
-            placeholder="请输入订单数量"
+            :max="13"
+            placeholder="请输入订单数量（最大13）"
             style="width: 100%"
           />
         </el-form-item>
@@ -3549,7 +3551,13 @@ export default {
           { required: true, message: '请输入产品名称', trigger: 'blur' }
         ],
         orderQuantity: [
-          { required: true, message: '请输入订单数量', trigger: 'blur' }
+          { required: true, message: '请输入订单数量', trigger: 'blur' },
+          {
+            type: 'number',
+            max: 13,
+            message: '订单数量最大不能超过13个',
+            trigger: 'blur'
+          }
         ]
       },
       // 修改订单弹窗
@@ -3575,7 +3583,13 @@ export default {
           { required: true, message: '请输入产品名称', trigger: 'blur' }
         ],
         orderQuantity: [
-          { required: true, message: '请输入订单数量', trigger: 'blur' }
+          { required: true, message: '请输入订单数量', trigger: 'blur' },
+          {
+            type: 'number',
+            max: 13,
+            message: '订单数量最大不能超过13个',
+            trigger: 'blur'
+          }
         ]
       },
       isEditingOrder: false,
