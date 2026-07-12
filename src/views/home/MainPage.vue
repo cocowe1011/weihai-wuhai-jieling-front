@@ -491,6 +491,197 @@
                     <i class="el-icon-check"></i>
                   </el-tag>
                 </div>
+                <!-- 解析完成状态标志（解析队列下方） -->
+                <!-- 解析1 -->
+                <div class="analysis-status-marker" data-x="2345" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(1)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析2 -->
+                <div class="analysis-status-marker" data-x="2280" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(2)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析3 -->
+                <div class="analysis-status-marker" data-x="2215" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(3)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析4 -->
+                <div class="analysis-status-marker" data-x="2150" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(4)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析5 -->
+                <div class="analysis-status-marker" data-x="2080" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(5)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析6 -->
+                <div class="analysis-status-marker" data-x="2015" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(6)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析7 -->
+                <div class="analysis-status-marker" data-x="1950" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(7)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析8 -->
+                <div class="analysis-status-marker" data-x="1885" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(8)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析9 -->
+                <div class="analysis-status-marker" data-x="1810" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(9)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析10 -->
+                <div class="analysis-status-marker" data-x="1745" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(10)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析11 -->
+                <div class="analysis-status-marker" data-x="1680" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(11)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析12 -->
+                <div class="analysis-status-marker" data-x="1615" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(12)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析13 -->
+                <div class="analysis-status-marker" data-x="1540" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(13)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析14 -->
+                <div class="analysis-status-marker" data-x="1475" data-y="1550">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(14)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析15 -->
+                <div class="analysis-status-marker" data-x="2510" data-y="1170">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(15)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析16 -->
+                <div class="analysis-status-marker" data-x="2588" data-y="1170">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(16)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析17 -->
+                <div class="analysis-status-marker" data-x="2670" data-y="1170">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(17)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析18 -->
+                <div class="analysis-status-marker" data-x="2747" data-y="1170">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(18)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
+                <!-- 解析19 -->
+                <div class="analysis-status-marker" data-x="2830" data-y="1170">
+                  <el-tag
+                    v-show="hasAnalysisCompleteTray(19)"
+                    type="success"
+                    size="small"
+                  >
+                    <i class="el-icon-check"></i>
+                  </el-tag>
+                </div>
                 <!-- 小车元素 -->
                 <div
                   v-for="cart in carts"
@@ -889,9 +1080,17 @@
                         >
                         <span class="tray-detail"
                           >解析周期：{{
-                            tray.analysisTime != null
-                              ? tray.analysisTime + 'h'
-                              : '--'
+                            formatAnalysisTimeText(tray.analysisTime)
+                          }}</span
+                        >
+                      </div>
+                      <div class="tray-info-row">
+                        <span class="tray-detail"
+                          >解析开始：{{ tray.inAnalysisRoomTime || '--' }}</span
+                        >
+                        <span class="tray-detail"
+                          >剩余周期：{{
+                            getTrayAnalysisRemainingText(tray)
                           }}</span
                         >
                       </div>
@@ -971,6 +1170,46 @@
                   模拟上货信号 ({{ floor1UploadTrayRequest.bit0 }})
                 </el-button>
               </div>
+            </div>
+          </div>
+          <!-- 灭菌目的地请求信号模拟（19-33） -->
+          <div class="test-section">
+            <span class="test-label">灭菌目的地请求信号测试(19-33):</span>
+            <div class="steril-complete-status-test-grid">
+              <button
+                v-for="cabinetNo in 15"
+                :key="'steril-out-req-' + (cabinetNo + 18)"
+                class="steril-complete-status-btn"
+                :class="{
+                  active:
+                    floor1SterilOutTrayRequest['bit' + (cabinetNo - 1)] === '1'
+                }"
+                @click="manualTriggerSterilOutRequest(cabinetNo + 18)"
+              >
+                {{ cabinetNo + 18 }} ({{
+                  floor1SterilOutTrayRequest['bit' + (cabinetNo - 1)]
+                }})
+              </button>
+            </div>
+          </div>
+          <!-- 解析目的地请求信号模拟（1-14） -->
+          <div class="test-section">
+            <span class="test-label">解析目的地请求信号测试(1-14):</span>
+            <div class="steril-complete-status-test-grid">
+              <button
+                v-for="roomNo in 14"
+                :key="'analysis-out-req-' + roomNo"
+                class="steril-complete-status-btn"
+                :class="{
+                  active:
+                    floor2AnalysisOutTrayRequest['bit' + (roomNo - 1)] === '1'
+                }"
+                @click="manualTriggerAnalysisOutRequest(roomNo)"
+              >
+                {{ roomNo }} ({{
+                  floor2AnalysisOutTrayRequest['bit' + (roomNo - 1)]
+                }})
+              </button>
             </div>
           </div>
           <!-- 灭菌柜未完成数量模拟（仅19-30） -->
@@ -1239,8 +1478,10 @@
         <el-form-item label="解析时间" prop="analysisTime">
           <el-input-number
             v-model="executeOrderForm.analysisTime"
-            :min="1"
+            :min="0.1"
             :max="720"
+            :precision="1"
+            :step="0.1"
             placeholder="请输入解析时间"
             style="width: calc(100% - 42px)"
           />
@@ -1344,11 +1585,7 @@
           <el-table-column prop="destination" label="目的地" width="80" />
           <el-table-column prop="analysisTime" label="解析时间" width="90">
             <template slot-scope="scope">
-              {{
-                scope.row.analysisTime != null
-                  ? scope.row.analysisTime + 'h'
-                  : '--'
-              }}
+              {{ formatAnalysisTimeText(scope.row.analysisTime) }}
             </template>
           </el-table-column>
           <el-table-column
@@ -3388,7 +3625,9 @@ export default {
       analysisOutLoading: false,
       analysisOutExecuting: false,
       analysisOutTrayCode: '', // 当前处理托盘展示
-      isHandlingAnalysisOutRequest: false
+      isHandlingAnalysisOutRequest: false,
+      // 解析完成状态时钟（驱动剩余时间/完成标志刷新）
+      analysisClockTick: 0
     };
   },
   computed: {
@@ -3437,6 +3676,13 @@ export default {
         this._queueWatchers.push(unwatch);
       });
     });
+    // 解析完成状态：约 30s 刷新剩余时间与完成标志
+    this._analysisClockTimer = setInterval(() => {
+      this.analysisClockTick += 1;
+      if (this.selectedQueueIndex >= 17 && this.selectedQueueIndex <= 35) {
+        this.showTrays(this.selectedQueueIndex);
+      }
+    }, 30000);
     this.refreshOrders();
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
@@ -4173,7 +4419,10 @@ export default {
         const param = {
           id: this.executeOrderForm.id,
           destination: this.executeOrderForm.destination,
-          analysisTime: this.executeOrderForm.analysisTime,
+          analysisTime:
+            this.executeOrderForm.analysisTime != null
+              ? Number(Number(this.executeOrderForm.analysisTime).toFixed(1))
+              : null,
           executorName: userInfo.userName || '',
           executorCode: userInfo.userCode || ''
         };
@@ -4396,7 +4645,10 @@ export default {
           unit: runningOrder.unit || '',
           batchNo: runningOrder.batchNo || '',
           processName: runningOrder.processName || '',
-          analysisTime: runningOrder.analysisTime ?? null, // 解析周期（小时）
+          analysisTime:
+            runningOrder.analysisTime != null
+              ? Number(Number(runningOrder.analysisTime).toFixed(1))
+              : null, // 解析周期（小时，一位小数）
           remark: `订单${runningOrder.orderId}自动上货`
         };
 
@@ -4480,6 +4732,24 @@ export default {
         this.floor1UploadTrayRequest.bit0 = '0';
       }, 1000);
     },
+    // 手动触发灭菌出货目的地请求信号（测试用，柜号 19-33 → bit0-14）
+    manualTriggerSterilOutRequest(cabinetNo) {
+      const bit = 'bit' + (cabinetNo - 19);
+      if (!(bit in this.floor1SterilOutTrayRequest)) return;
+      this.floor1SterilOutTrayRequest[bit] = '1';
+      setTimeout(() => {
+        this.floor1SterilOutTrayRequest[bit] = '0';
+      }, 1000);
+    },
+    // 手动触发解析出货目的地请求信号（测试用，房号 1-14 → bit0-13）
+    manualTriggerAnalysisOutRequest(roomNo) {
+      const bit = 'bit' + (roomNo - 1);
+      if (!(bit in this.floor2AnalysisOutTrayRequest)) return;
+      this.floor2AnalysisOutTrayRequest[bit] = '1';
+      setTimeout(() => {
+        this.floor2AnalysisOutTrayRequest[bit] = '0';
+      }, 1000);
+    },
     getSterilizationCompleteQuantity(cabinetNo) {
       return this[`floor1Sterilization${cabinetNo}Complete`] || 0;
     },
@@ -4545,6 +4815,61 @@ export default {
     },
     getAnalysisQueueIndex(roomNo) {
       return roomNo + 16;
+    },
+    // 依赖 analysisClockTick，确保模板/计算随定时器刷新
+    formatAnalysisTimeText(val) {
+      if (val == null || val === '') return '--';
+      const n = Number(val);
+      if (Number.isNaN(n)) return '--';
+      return n.toFixed(1) + 'h';
+    },
+    isTrayAnalysisComplete(tray) {
+      void this.analysisClockTick;
+      if (!tray || !tray.inAnalysisRoomTime || tray.analysisTime == null) {
+        return false;
+      }
+      const hours = Number(tray.analysisTime);
+      if (Number.isNaN(hours) || hours < 0) return false;
+      const due = moment(tray.inAnalysisRoomTime).add(hours, 'hours');
+      return moment().isSameOrAfter(due);
+    },
+    getTrayAnalysisRemainingText(tray) {
+      void this.analysisClockTick;
+      if (!tray || !tray.inAnalysisRoomTime || tray.analysisTime == null) {
+        return '--';
+      }
+      const hours = Number(tray.analysisTime);
+      if (Number.isNaN(hours) || hours < 0) return '--';
+      if (this.isTrayAnalysisComplete(tray)) {
+        return '已完成';
+      }
+      const due = moment(tray.inAnalysisRoomTime).add(hours, 'hours');
+      const remainHours = Math.max(0, due.diff(moment(), 'minutes', true) / 60);
+      return remainHours.toFixed(1) + 'h';
+    },
+    hasAnalysisCompleteTray(roomNo) {
+      void this.analysisClockTick;
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const queue = this.queues[queueIndex];
+      if (!queue || !Array.isArray(queue.trayInfo)) return false;
+      return queue.trayInfo.some((tray) => this.isTrayAnalysisComplete(tray));
+    },
+    getAnalysisQueueHead(roomNo) {
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const queue = this.queues[queueIndex];
+      if (
+        !queue ||
+        !Array.isArray(queue.trayInfo) ||
+        queue.trayInfo.length === 0
+      ) {
+        return null;
+      }
+      return queue.trayInfo[0];
+    },
+    // 解析房出货：无可出货完成托盘（无队首，或队首未完成）
+    canShipAnalysisQueueHead(roomNo) {
+      const head = this.getAnalysisQueueHead(roomNo);
+      return !!(head && this.isTrayAnalysisComplete(head));
     },
     getAnalysisRoomCount(roomNo) {
       const queueIndex = this.getAnalysisQueueIndex(roomNo);
@@ -4640,17 +4965,16 @@ export default {
       if (!this.analysisOutExecuting) return;
       if (roomNo !== Number(this.analysisOutRoom)) return;
 
-      const queueIndex = this.getAnalysisQueueIndex(roomNo);
-      const queueCount = this.getAnalysisRoomCount(roomNo);
-      if (queueCount <= 0) {
+      // 无可出货的解析完成托盘（队列空、无完成托盘、或队首未完成）→ 停止
+      if (!this.canShipAnalysisQueueHead(roomNo)) {
         this.cancelAnalysisOut();
         this.addLog(
-          `解析房${roomNo}出货执行完成，已无可用托盘，已自动停止执行`
+          `解析房${roomNo}出货执行完成，已无解析完成托盘，已自动停止执行`
         );
         return;
       }
 
-      const nextTray = this.queues[queueIndex]?.trayInfo?.[0];
+      const nextTray = this.getAnalysisQueueHead(roomNo);
       this.analysisOutTrayCode = nextTray?.trayCode || nextTray?.id || '';
     },
     handleAnalysisOutTrayRequest() {
@@ -4671,6 +4995,17 @@ export default {
         }
 
         const tray = targetQueue.trayInfo[0];
+        if (!this.isTrayAnalysisComplete(tray)) {
+          this.addLog(
+            `解析房${roomNo}出货请求：队首托盘 ${
+              tray.trayCode || tray.id
+            } 解析未完成，已停止执行`,
+            'alarm'
+          );
+          this.cancelAnalysisOut();
+          return;
+        }
+
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：解析房出库离开时间，随后从队列移除
         this.$set(tray, 'outAnalysisRoomTime', currentTime);
@@ -5362,6 +5697,7 @@ export default {
             unit: tray.unit || '',
             batchNo: tray.batchNo || '',
             analysisTime: tray.analysisTime ?? null,
+            inAnalysisRoomTime: tray.inAnalysisRoomTime || '',
             remark: tray.remark || ''
           }))
           .filter((tray) => tray.id); // 过滤掉没有 id 的托盘
@@ -5684,7 +6020,10 @@ export default {
           unit: selectedOrder.unit || '',
           batchNo: selectedOrder.batchNo || '',
           processName: selectedOrder.processName || '',
-          analysisTime: selectedOrder.analysisTime ?? null, // 解析周期（小时）
+          analysisTime:
+            selectedOrder.analysisTime != null
+              ? Number(Number(selectedOrder.analysisTime).toFixed(1))
+              : null, // 解析周期（小时，一位小数）
           remark: `订单${selectedOrder.orderId}手动添加`
         };
 
@@ -6037,6 +6376,18 @@ export default {
         return;
       }
 
+      if (!this.hasAnalysisCompleteTray(roomNo)) {
+        this.$message.warning(`解析房${roomNo}中没有解析完成的托盘，无法出货`);
+        return;
+      }
+
+      if (!this.canShipAnalysisQueueHead(roomNo)) {
+        this.$message.warning(
+          `解析房${roomNo}队首托盘解析未完成，无法出货（仅可出解析完成托盘）`
+        );
+        return;
+      }
+
       this.$confirm(`确认执行解析房${roomNo}出货命令？`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -6095,6 +6446,10 @@ export default {
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
+    }
+    if (this._analysisClockTimer) {
+      clearInterval(this._analysisClockTimer);
+      this._analysisClockTimer = null;
     }
     // 取消队列监听器
     if (this._queueWatchers && this._queueWatchers.length > 0) {
