@@ -288,7 +288,11 @@
           <!-- 左侧区域 -->
           <div class="floor-left">
             <div class="floor-title">生产线监控</div>
-            <div class="floor-image-container">
+            <div
+              ref="floorImageContainer"
+              class="floor-image-container"
+              @click="handleGlobalClick"
+            >
               <div class="floor-map-legend">
                 <span class="legend-item">
                   <i class="legend-dot legend-dot--photo"></i>
@@ -535,6 +539,94 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- 光电 / 电机设备点位 -->
+                <div
+                  v-for="node in deviceList"
+                  :key="node.id"
+                  class="device-signal-node"
+                  :class="{
+                    'is-sensor': node.nodeType === 'sensor',
+                    'is-motor': node.nodeType === 'motor',
+                    'status-active':
+                      hasDisplayableStatus(node) && getDisplayStatus(node),
+                    'status-idle':
+                      hasDisplayableStatus(node) && !getDisplayStatus(node),
+                    'is-selected': currentSelectedNodeId === node.id
+                  }"
+                  :data-x="node.x"
+                  :data-y="node.y"
+                  @click.stop="handleNodeClick(node, $event)"
+                >
+                  <div class="signal-base">
+                    <div class="signal-core"></div>
+                  </div>
+                </div>
+
+                <transition name="fade-scale">
+                  <div
+                    v-if="popoverVisible && popoverData"
+                    class="singleton-popover"
+                    :class="popoverDirection === 'down' ? 'popover-down' : ''"
+                    :style="popoverStyle"
+                    @click.stop
+                  >
+                    <div class="popover-header">
+                      <span class="device-title">{{ popoverData.name }}</span>
+                      <i
+                        class="el-icon-close close-btn"
+                        @click="closePopover"
+                      ></i>
+                    </div>
+                    <div class="status-lines">
+                      <div
+                        v-if="hasMotorStatus(popoverData)"
+                        class="status-line"
+                        :class="
+                          popoverData.motorStatus ? 'is-running' : 'is-stopped'
+                        "
+                      >
+                        <span class="line-label"
+                          >{{ popoverData.motorName || '' }} 电机状态</span
+                        >
+                        <span class="line-value">
+                          {{ popoverData.motorStatus ? '启动' : '停止' }}
+                        </span>
+                      </div>
+                      <div
+                        v-if="hasSensorStatus(popoverData)"
+                        class="status-line"
+                        :class="
+                          popoverData.sensorStatus ? 'is-active' : 'is-empty'
+                        "
+                      >
+                        <span class="line-label"
+                          >{{ popoverData.sensorName || '' }} 光电检测</span
+                        >
+                        <span class="line-value">
+                          {{ popoverData.sensorStatus ? '有信号' : '无信号' }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="data-capsules">
+                      <div v-if="hasTrayId(popoverData)" class="capsule-item">
+                        <span class="capsule-label">托盘虚拟ID</span>
+                        <span class="capsule-value highlight">
+                          {{ popoverData.trayId || '--' }}
+                        </span>
+                      </div>
+                      <div
+                        v-if="hasDestination(popoverData)"
+                        class="capsule-item"
+                      >
+                        <span class="capsule-label">任务目的地</span>
+                        <span class="capsule-value">
+                          {{ popoverData.destination || '--' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </transition>
               </div>
             </div>
           </div>
@@ -1368,41 +1460,6 @@ export default {
         bit4: '0', // 灭菌前小车2急停
         bit5: '0' // 灭菌后小车急停
       },
-      floor1MotorRunning1: {
-        // DBW8 电机运行信号--1
-        bit0: '0', // 1001电机运行（上货口输送电机）
-        bit1: '0', // 1002电机运行（上货口过渡电机）
-        bit2: '0', // 1003电机运行（上货口升降电机）
-        bit3: '0', // 1008电机正转运行（灭菌柜进货）
-        bit4: '0', // 1008电机反转运行（灭菌柜出货）
-        bit5: '0', // 1009电机正转运行（灭菌柜进货）
-        bit6: '0', // 1009电机反转运行（灭菌柜出货）
-        bit7: '0', // 1010电机正转运行（灭菌柜进货）
-        bit8: '0', // 1010电机反转运行（灭菌柜出货）
-        bit9: '0', // 1011电机正转运行（灭菌柜进货）
-        bit10: '0', // 1011电机反转运行（灭菌柜出货）
-        bit11: '0', // 1012电机正转运行（灭菌柜进货）
-        bit12: '0', // 1012电机反转运行（灭菌柜出货）
-        bit13: '0', // 1013电机正转运行（灭菌柜进货）
-        bit14: '0', // 1013电机反转运行（灭菌柜出货）
-        bit15: '0' // 1014电机运行
-      },
-      floor1MotorRunning2: {
-        // DBW10 电机运行信号--2
-        bit0: '0' // 1015电机运行
-      },
-      floor1SensorSignal: {
-        // DBW12 传感器信号
-        bit0: '0', // 光电1001
-        bit1: '0', // 光电1008-1
-        bit2: '0', // 光电1008-2
-        bit3: '0', // 光电1010-1
-        bit4: '0', // 光电1010-2
-        bit5: '0', // 光电1012-1
-        bit6: '0', // 光电1012-2
-        bit7: '0', // 光电1014
-        bit8: '0' // 光电1015
-      },
       floor1CartBeforeSteril1Pos: 0, // DBW14 灭菌前小车1位置信息（0-3000）
       floor1CartBeforeSteril2Pos: 0, // DBW16 灭菌前小车2位置信息（0-3000）
       floor1CartAfterSterilPos: 0, // DBW18 灭菌后小车位置信息（0-3000/6000）
@@ -1430,28 +1487,6 @@ export default {
         bit14: '0', // 33号（灭菌柜出货）处请求写ID和目的地
         bit15: '0' // M1015电机处请求写ID和目的地
       },
-      floor1MotorVirtualId1001: 0, // DBW26 1001电机占位虚拟ID
-      floor1MotorVirtualId1004: 0, // DBW28 1004电机占位虚拟ID
-      floor1MotorVirtualId1006A: 0, // DBW30 1006A电机占位虚拟ID
-      floor1MotorVirtualId1006B: 0, // DBW32 1006B电机占位虚拟ID
-      floor1MotorVirtualId1008: 0, // DBW34 1008电机占位虚拟ID
-      floor1MotorVirtualId1010: 0, // DBW36 1010电机占位虚拟ID
-      floor1MotorVirtualId1012: 0, // DBW38 1012电机占位虚拟ID
-      floor1MotorVirtualId1014: 0, // DBW40 1014电机占位虚拟ID
-      floor1MotorVirtualId1016: 0, // DBW42 1016电机占位虚拟ID
-      floor1MotorVirtualIdspare1: 0, // DBW44 电机占位虚拟ID备用
-      floor1MotorVirtualIdspare2: 0, // DBW46 电机占位虚拟ID备用
-      floor1MotorDestination1001: 0, // DBW48 1001电机货物目的地
-      floor1MotorDestination1004: 0, // DBW50 1004电机货物目的地
-      floor1MotorDestination1006A: 0, // DBW52 1006A电机货物目的地
-      floor1MotorDestination1006B: 0, // DBW54 1006B电机货物目的地
-      floor1MotorDestination1008: 0, // DBW56 1008电机货物目的地
-      floor1MotorDestination1010: 0, // DBW58 1010电机货物目的地
-      floor1MotorDestination1012: 0, // DBW60 1012电机货物目的地
-      floor1MotorDestination1014: 0, // DBW62 1014电机货物目的地
-      floor1MotorDestination1016: 0, // DBW64 1016电机货物目的地
-      floor1MotorDestinationspare1: 0, // DBW66 电机货物目的地备用
-      floor1MotorDestinationspare2: 0, // DBW68 电机货物目的地备用
       floor1Sterilization19Incomplete: 0, // DBW70 灭菌柜19内实际数量--未完成
       floor1Sterilization20Incomplete: 0, // DBW72 灭菌柜20内实际数量--未完成
       floor1Sterilization21Incomplete: 0, // DBW74 灭菌柜21内实际数量--未完成
@@ -1519,128 +1554,6 @@ export default {
         bit4: '0', // 解析进货小车急停
         bit5: '0' // 解析出货小车急停
       },
-      floor2MotorRunning1: {
-        // DBW8 电机运行信号--1
-        bit0: '0', // 1018电机运行
-        bit1: '0', // 1019电机运行
-        bit2: '0', // 2001电机正转（提升机上升）
-        bit3: '0', // 2001电机反转（提升机下降）
-        bit4: '0', // 2002电机正转（提升机轿厢进货）
-        bit5: '0', // 2002电机反转（提升机轿厢出货）
-        bit6: '0', // 2003电机运行
-        bit7: '0', // 2004电机运行（转盘输送电机）
-        bit8: '0', // 2005电机运行（转盘旋转电机）
-        bit9: '0', // 2006电机运行
-        bit10: '0', // 2007电机运行（转盘输送电机）
-        bit11: '0', // 2008电机运行（转盘旋转电机）
-        bit12: '0', // 2009电机运行
-        bit13: '0', // 2010电机运行（转盘输送电机）
-        bit14: '0', // 2011电机运行（转盘旋转电机）
-        bit15: '0' // 2012电机运行
-      },
-      floor2MotorRunning2: {
-        // DBW10 电机运行信号--2
-        bit0: '0', // 2013电机运行
-        bit1: '0', // 2014电机运行（转盘输送电机）
-        bit2: '0', // 2015电机运行（转盘旋转电机）
-        bit3: '0', // 2016电机运行
-        bit4: '0', // 2017电机运行
-        bit5: '0', // 2018电机运行
-        bit6: '0', // 2019电机运行
-        bit7: '0', // 2020电机运行（转盘输送电机）
-        bit8: '0', // 2021电机运行（转盘旋转电机）
-        bit9: '0', // 2022电机运行
-        bit10: '0', // 2025电机运行
-        bit11: '0', // 2026电机运行
-        bit12: '0', // 2027电机运行
-        bit13: '0', // 2028电机运行
-        bit14: '0', // 2029电机运行
-        bit15: '0' // 2030电机运行
-      },
-      floor2MotorRunning3: {
-        // DBW12 电机运行信号--3
-        bit0: '0', // 2031电机运行
-        bit1: '0', // 2032电机运行
-        bit2: '0', // 2033电机运行
-        bit3: '0', // 2034电机运行
-        bit4: '0', // 2035电机运行
-        bit5: '0', // 2036电机运行
-        bit6: '0', // 2037电机运行
-        bit7: '0', // 2038电机运行
-        bit8: '0', // 2041电机运行（出货口过渡电机）
-        bit9: '0', // 2042电机运行（出货口输送电机）
-        bit10: '0' // 2043电机运行（出货口升降电机）
-      },
-      floor2SensorSignal1: {
-        // DBW14 传感器信号--1
-        bit0: '0', // 光电1018
-        bit1: '0', // 光电1019
-        bit2: '0', // 提升机一楼到位（轿厢位置信号）
-        bit3: '0', // 提升机二楼到位（轿厢位置信号）
-        bit4: '0', // 光电2002
-        bit5: '0', // 光电2003
-        bit6: '0', // 光电2004
-        bit7: '0', // 行程2005-1（转盘1进货位）
-        bit8: '0', // 行程2005-2（转盘1出货位）
-        bit9: '0', // 光电2006
-        bit10: '0', // 光电2007
-        bit11: '0', // 行程2008-1（转盘2进货位）
-        bit12: '0', // 行程2008-2（转盘2出货位）
-        bit13: '0', // 光电2009
-        bit14: '0', // 光电2010
-        bit15: '0' // 行程2011-1（转盘3进货位）
-      },
-      floor2SensorSignal2: {
-        // DBW16 传感器信号--2
-        bit0: '0', // 行程2011-2（转盘3出货位）
-        bit1: '0', // 光电2012
-        bit2: '0', // 光电2013
-        bit3: '0', // 光电2014
-        bit4: '0', // 行程2015-1（转盘4进货位）
-        bit5: '0', // 行程2015-2（转盘4出货位）
-        bit6: '0', // 光电2016
-        bit7: '0', // 光电2017
-        bit8: '0', // 光电2018
-        bit9: '0', // 光电2019
-        bit10: '0', // 光电2020
-        bit11: '0', // 行程2021-1（转盘5进货位）
-        bit12: '0', // 行程2021-2（转盘5出货位）
-        bit13: '0', // 光电2025-1
-        bit14: '0', // 光电2025-2
-        bit15: '0' // 光电2026-1
-      },
-      floor2SensorSignal3: {
-        // DBW18 传感器信号--3
-        bit0: '0', // 光电2026-2
-        bit1: '0', // 光电2027-1
-        bit2: '0', // 光电2027-2
-        bit3: '0', // 光电2028-1
-        bit4: '0', // 光电2028-2
-        bit5: '0', // 光电2029-1
-        bit6: '0', // 光电2029-2
-        bit7: '0', // 光电2030-1
-        bit8: '0', // 光电2030-2
-        bit9: '0', // 光电2031-1
-        bit10: '0', // 光电2031-2
-        bit11: '0', // 光电2032-1
-        bit12: '0', // 光电2032-2
-        bit13: '0', // 光电2033-1
-        bit14: '0', // 光电2033-2
-        bit15: '0' // 光电2034-1
-      },
-      floor2SensorSignal4: {
-        // DBW20 传感器信号--4
-        bit0: '0', // 光电2034-2
-        bit1: '0', // 光电2035-1
-        bit2: '0', // 光电2035-2
-        bit3: '0', // 光电2036-1
-        bit4: '0', // 光电2036-2
-        bit5: '0', // 光电2037-1
-        bit6: '0', // 光电2037-2
-        bit7: '0', // 光电2038-1
-        bit8: '0', // 光电2038-2
-        bit9: '0' // 光电2042
-      },
       floor2CartAnalysisInPos: 0, // DBW22 解析进货小车位置信息（0-3000）
       floor2CartAnalysisOutPos: 0, // DBW24 解析出货小车位置信息（0-3000）
       floor2CartSpare1Pos: 0, // DBW26 小车位置信息（二期小车备用1，0-3000）
@@ -1662,48 +1575,6 @@ export default {
         bit12: '0', // 13
         bit13: '0' // 14
       },
-      floor2MotorVirtualId1018A: 0, // DBW32 1018A电机占位虚拟ID
-      floor2MotorVirtualId1018B: 0, // DBW34 1018B电机占位虚拟ID（备用）
-      floor2MotorVirtualId1019: 0, // DBW36 1019电机占位虚拟ID
-      floor2MotorVirtualId2002: 0, // DBW38 2002电机占位虚拟ID
-      floor2MotorVirtualId2003: 0, // DBW40 2003电机占位虚拟ID
-      floor2MotorVirtualId2004: 0, // DBW42 2004电机占位虚拟ID
-      floor2MotorVirtualId2006: 0, // DBW44 2006电机占位虚拟ID
-      floor2MotorVirtualId2007: 0, // DBW46 2007电机占位虚拟ID
-      floor2MotorVirtualId2009: 0, // DBW48 2009电机占位虚拟ID
-      floor2MotorVirtualId2010: 0, // DBW50 2010电机占位虚拟ID
-      floor2MotorVirtualId2012: 0, // DBW52 2012电机占位虚拟ID
-      floor2MotorVirtualId2013: 0, // DBW54 2013电机占位虚拟ID
-      floor2MotorVirtualId2014: 0, // DBW56 2014电机占位虚拟ID
-      floor2MotorVirtualId2016: 0, // DBW58 2016电机占位虚拟ID
-      floor2MotorVirtualId2017: 0, // DBW60 2017电机占位虚拟ID
-      floor2MotorVirtualId2018: 0, // DBW62 2018电机占位虚拟ID
-      floor2MotorVirtualId2019: 0, // DBW64 2019电机占位虚拟ID
-      floor2MotorVirtualId2020: 0, // DBW66 2020电机占位虚拟ID
-      floor2MotorVirtualId2023: 0, // DBW68 2023电机占位虚拟ID
-      floor2MotorVirtualId2039: 0, // DBW70 2039电机占位虚拟ID
-      floor2MotorVirtualId2042: 0, // DBW72 2042电机占位虚拟ID
-      floor2MotorDestination1018A: 0, // DBW74 1018A电机货物目的地
-      floor2MotorDestination1018B: 0, // DBW76 1018B电机货物目的地
-      floor2MotorDestination1019: 0, // DBW78 1019电机货物目的地
-      floor2MotorDestination2002: 0, // DBW80 2002电机货物目的地
-      floor2MotorDestination2003: 0, // DBW82 2003电机货物目的地
-      floor2MotorDestination2004: 0, // DBW84 2004电机货物目的地
-      floor2MotorDestination2006: 0, // DBW86 2006电机货物目的地
-      floor2MotorDestination2007: 0, // DBW88 2007电机货物目的地
-      floor2MotorDestination2009: 0, // DBW90 2009电机货物目的地
-      floor2MotorDestination2010: 0, // DBW92 2010电机货物目的地
-      floor2MotorDestination2012: 0, // DBW94 2012电机货物目的地
-      floor2MotorDestination2013: 0, // DBW96 2013电机货物目的地
-      floor2MotorDestination2014: 0, // DBW98 2014电机货物目的地
-      floor2MotorDestination2016: 0, // DBW100 2016电机货物目的地
-      floor2MotorDestination2017: 0, // DBW102 2017电机货物目的地
-      floor2MotorDestination2018: 0, // DBW104 2018电机货物目的地
-      floor2MotorDestination2019: 0, // DBW106 2019电机货物目的地
-      floor2MotorDestination2020: 0, // DBW108 2020电机货物目的地
-      floor2MotorDestination2023: 0, // DBW110 2023电机货物目的地
-      floor2MotorDestination2039: 0, // DBW112 2039电机货物目的地
-      floor2MotorDestination2042: 0, // DBW114 2042电机货物目的地
       floor2AnalysisRoom1Qty: 0, // DBW116 解析1（2025电机）内实际数量
       floor2AnalysisRoom2Qty: 0, // DBW118 解析2（2026电机）内实际数量
       floor2AnalysisRoom3Qty: 0, // DBW120 解析3（2027电机）内实际数量
@@ -1771,6 +1642,1286 @@ export default {
       floor2FaultInfo2041: 0, // DBW244 2041故障信息
       floor2FaultInfo2042: 0, // DBW246 2042故障信息
       floor2FaultInfo2043: 0, // DBW248 2043故障信息
+      // 设备点位弹窗状态
+      popoverVisible: false,
+      popoverData: null,
+      popoverPosition: { top: 0, left: 0 },
+      popoverDirection: 'up',
+      currentSelectedNodeId: null,
+      deviceNodes: {
+        S_F1_1001: {
+          name: '光电1001',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 850,
+          y: 1230,
+          sensorStatus: false,
+          sensorName: '光电1001',
+          sensorAddr: { db: 'DBW12', bit: 0 }
+        },
+        S_F1_1008_1: {
+          name: '光电1008-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 360,
+          y: 1230,
+          sensorStatus: false,
+          sensorName: '光电1008-1',
+          sensorAddr: { db: 'DBW12', bit: 1 }
+        },
+        S_F1_1008_2: {
+          name: '光电1008-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 360,
+          y: 1310,
+          sensorStatus: false,
+          sensorName: '光电1008-2',
+          sensorAddr: { db: 'DBW12', bit: 2 }
+        },
+        S_F1_1010_1: {
+          name: '光电1010-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 230,
+          y: 1230,
+          sensorStatus: false,
+          sensorName: '光电1010-1',
+          sensorAddr: { db: 'DBW12', bit: 3 }
+        },
+        S_F1_1010_2: {
+          name: '光电1010-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 230,
+          y: 1310,
+          sensorStatus: false,
+          sensorName: '光电1010-2',
+          sensorAddr: { db: 'DBW12', bit: 4 }
+        },
+        S_F1_1012_1: {
+          name: '光电1012-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 80,
+          y: 1230,
+          sensorStatus: false,
+          sensorName: '光电1012-1',
+          sensorAddr: { db: 'DBW12', bit: 5 }
+        },
+        S_F1_1012_2: {
+          name: '光电1012-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 80,
+          y: 1310,
+          sensorStatus: false,
+          sensorName: '光电1012-2',
+          sensorAddr: { db: 'DBW12', bit: 6 }
+        },
+        S_F1_1014_2: {
+          name: '光电1014-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 690,
+          y: 1125,
+          sensorStatus: false,
+          sensorName: '光电1014-2',
+          sensorAddr: { db: 'DBW12', bit: 7 }
+        },
+        S_F1_1015_2: {
+          name: '光电1015-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 690,
+          y: 520,
+          sensorStatus: false,
+          sensorName: '光电1015-2',
+          sensorAddr: { db: 'DBW12', bit: 8 }
+        },
+        S_F1_1014_1: {
+          name: '光电1014-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 690,
+          y: 1055,
+          sensorStatus: false,
+          sensorName: '光电1014-1',
+          sensorAddr: { db: 'DBW12', bit: 10 }
+        },
+        S_F1_1015_1: {
+          name: '光电1015-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 690,
+          y: 1015,
+          sensorStatus: false,
+          sensorName: '光电1015-1',
+          sensorAddr: { db: 'DBW12', bit: 11 }
+        },
+        M_F1_1001: {
+          name: '1001',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 900,
+          y: 1230,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1001',
+          motorAddr: { db: 'DBW8', bit: 0 },
+          trayIdAddr: 'DBW26',
+          destinationAddr: 'DBW48'
+        },
+        // M_F1_1002: {
+        //   name: '1002',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 900,
+        //   y: 1230,
+        //   motorStatus: false,
+        //   motorName: '1002',
+        //   motorAddr: { db: 'DBW8', bit: 1 }
+        // },
+        // M_F1_1003: {
+        //   name: '1003',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 900,
+        //   y: 1200,
+        //   motorStatus: false,
+        //   motorName: '1003',
+        //   motorAddr: { db: 'DBW8', bit: 2 }
+        // },
+        // M_F1_1004: {
+        //   name: '1004',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 530,
+        //   y: 1177,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW28',
+        //   destinationAddr: 'DBW50'
+        // },
+        // M_F1_1006A: {
+        //   name: '1006A',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1080,
+        //   y: 1390,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW30',
+        //   destinationAddr: 'DBW52'
+        // },
+        // M_F1_1006B: {
+        //   name: '1006B',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1080,
+        //   y: 1390,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW32',
+        //   destinationAddr: 'DBW54'
+        // },
+        M_F1_1008: {
+          name: '1008',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 387,
+          y: 1270,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1008',
+          motorAddrs: [
+            { db: 'DBW8', bit: 3 },
+            { db: 'DBW8', bit: 4 }
+          ],
+          trayIdAddr: 'DBW34',
+          destinationAddr: 'DBW56'
+        },
+        M_F1_1009: {
+          name: '1009',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 387,
+          y: 1490,
+          motorStatus: false,
+          motorName: '1009',
+          motorAddrs: [
+            { db: 'DBW8', bit: 5 },
+            { db: 'DBW8', bit: 6 }
+          ]
+        },
+        M_F1_1010: {
+          name: '1010',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 255,
+          y: 1270,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1010',
+          motorAddrs: [
+            { db: 'DBW8', bit: 7 },
+            { db: 'DBW8', bit: 8 }
+          ],
+          trayIdAddr: 'DBW36',
+          destinationAddr: 'DBW58'
+        },
+        M_F1_1011: {
+          name: '1011',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 255,
+          y: 1490,
+          motorStatus: false,
+          motorName: '1011',
+          motorAddrs: [
+            { db: 'DBW8', bit: 9 },
+            { db: 'DBW8', bit: 10 }
+          ]
+        },
+        M_F1_1012: {
+          name: '1012',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 110,
+          y: 1270,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1012',
+          motorAddrs: [
+            { db: 'DBW8', bit: 11 },
+            { db: 'DBW8', bit: 12 }
+          ],
+          trayIdAddr: 'DBW38',
+          destinationAddr: 'DBW60'
+        },
+        M_F1_1013: {
+          name: '1013',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 110,
+          y: 1490,
+          motorStatus: false,
+          motorName: '1013',
+          motorAddrs: [
+            { db: 'DBW8', bit: 13 },
+            { db: 'DBW8', bit: 14 }
+          ]
+        },
+        M_F1_1014: {
+          name: '1014',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 710,
+          y: 1092,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1014',
+          motorAddr: { db: 'DBW8', bit: 15 },
+          trayIdAddr: 'DBW40',
+          destinationAddr: 'DBW62'
+        },
+        M_F1_1015: {
+          name: '1015',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 710,
+          y: 750,
+          motorStatus: false,
+          motorName: '1015',
+          motorAddr: { db: 'DBW10', bit: 0 }
+        },
+        // M_F1_1016: {
+        //   name: '1016',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 710,
+        //   y: 510,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW42',
+        //   destinationAddr: 'DBW64'
+        // },
+        S_F2_1018: {
+          name: '光电1018',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1260,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电1018',
+          sensorAddr: { db: 'DBW14', bit: 0 }
+        },
+        S_F2_1019: {
+          name: '光电1019',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1260,
+          y: 270,
+          sensorStatus: false,
+          sensorName: '光电1019',
+          sensorAddr: { db: 'DBW14', bit: 1 }
+        },
+        S_F2_2002: {
+          name: '光电2002',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2840,
+          y: 0,
+          sensorStatus: false,
+          sensorName: '光电2002',
+          sensorAddr: { db: 'DBW14', bit: 4 }
+        },
+        S_F2_2003: {
+          name: '光电2003',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2850,
+          y: 160,
+          sensorStatus: false,
+          sensorName: '光电2003',
+          sensorAddr: { db: 'DBW14', bit: 5 }
+        },
+        S_F2_2004: {
+          name: '光电2004',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2850,
+          y: 240,
+          sensorStatus: false,
+          sensorName: '光电2004',
+          sensorAddr: { db: 'DBW14', bit: 6 }
+        },
+        S_F2_2006: {
+          name: '光电2006',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2730,
+          y: 200,
+          sensorStatus: false,
+          sensorName: '光电2006',
+          sensorAddr: { db: 'DBW14', bit: 9 }
+        },
+        S_F2_2007: {
+          name: '光电2007',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2650,
+          y: 200,
+          sensorStatus: false,
+          sensorName: '光电2007',
+          sensorAddr: { db: 'DBW14', bit: 10 }
+        },
+        S_F2_2009: {
+          name: '光电2009',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2460,
+          y: 200,
+          sensorStatus: false,
+          sensorName: '光电2009',
+          sensorAddr: { db: 'DBW14', bit: 13 }
+        },
+        S_F2_2010: {
+          name: '光电2010',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2380,
+          y: 220,
+          sensorStatus: false,
+          sensorName: '光电2010',
+          sensorAddr: { db: 'DBW14', bit: 14 }
+        },
+        S_F2_2012: {
+          name: '光电2012',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2380,
+          y: 270,
+          sensorStatus: false,
+          sensorName: '光电2012',
+          sensorAddr: { db: 'DBW16', bit: 1 }
+        },
+        S_F2_2013: {
+          name: '光电2013',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2380,
+          y: 680,
+          sensorStatus: false,
+          sensorName: '光电2013',
+          sensorAddr: { db: 'DBW16', bit: 2 }
+        },
+        S_F2_2014: {
+          name: '光电2014',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2450,
+          y: 920,
+          sensorStatus: false,
+          sensorName: '光电2014',
+          sensorAddr: { db: 'DBW16', bit: 3 }
+        },
+        S_F2_2016: {
+          name: '光电2016',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2360,
+          y: 930,
+          sensorStatus: false,
+          sensorName: '光电2016',
+          sensorAddr: { db: 'DBW16', bit: 6 }
+        },
+        S_F2_2017: {
+          name: '光电2017',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2240,
+          y: 930,
+          sensorStatus: false,
+          sensorName: '光电2017',
+          sensorAddr: { db: 'DBW16', bit: 7 }
+        },
+        S_F2_2018: {
+          name: '光电2018',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2110,
+          y: 930,
+          sensorStatus: false,
+          sensorName: '光电2018',
+          sensorAddr: { db: 'DBW16', bit: 8 }
+        },
+        S_F2_2019: {
+          name: '光电2019',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2000,
+          y: 930,
+          sensorStatus: false,
+          sensorName: '光电2019',
+          sensorAddr: { db: 'DBW16', bit: 9 }
+        },
+        S_F2_2020: {
+          name: '光电2020',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1900,
+          y: 960,
+          sensorStatus: false,
+          sensorName: '光电2020',
+          sensorAddr: { db: 'DBW16', bit: 10 }
+        },
+        S_F2_2025_1: {
+          name: '光电2025-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2320,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2025-1',
+          sensorAddr: { db: 'DBW16', bit: 13 }
+        },
+        S_F2_2025_2: {
+          name: '光电2025-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2320,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2025-2',
+          sensorAddr: { db: 'DBW16', bit: 14 }
+        },
+        S_F2_2026_1: {
+          name: '光电2026-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2265,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2026-1',
+          sensorAddr: { db: 'DBW16', bit: 15 }
+        },
+        S_F2_2026_2: {
+          name: '光电2026-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2265,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2026-2',
+          sensorAddr: { db: 'DBW18', bit: 0 }
+        },
+        S_F2_2027_1: {
+          name: '光电2027-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2205,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2027-1',
+          sensorAddr: { db: 'DBW18', bit: 1 }
+        },
+        S_F2_2027_2: {
+          name: '光电2027-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2205,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2027-2',
+          sensorAddr: { db: 'DBW18', bit: 2 }
+        },
+        S_F2_2028_1: {
+          name: '光电2028-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2150,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2028-1',
+          sensorAddr: { db: 'DBW18', bit: 3 }
+        },
+        S_F2_2028_2: {
+          name: '光电2028-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2150,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2028-2',
+          sensorAddr: { db: 'DBW18', bit: 4 }
+        },
+        S_F2_2029_1: {
+          name: '光电2029-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2055,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2029-1',
+          sensorAddr: { db: 'DBW18', bit: 5 }
+        },
+        S_F2_2029_2: {
+          name: '光电2029-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2055,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2029-2',
+          sensorAddr: { db: 'DBW18', bit: 6 }
+        },
+        S_F2_2030_1: {
+          name: '光电2030-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1997,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2030-1',
+          sensorAddr: { db: 'DBW18', bit: 7 }
+        },
+        S_F2_2030_2: {
+          name: '光电2030-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1997,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2030-2',
+          sensorAddr: { db: 'DBW18', bit: 8 }
+        },
+        S_F2_2031_1: {
+          name: '光电2031-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1943,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2031-1',
+          sensorAddr: { db: 'DBW18', bit: 9 }
+        },
+        S_F2_2031_2: {
+          name: '光电2031-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1943,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2031-2',
+          sensorAddr: { db: 'DBW18', bit: 10 }
+        },
+        S_F2_2032_1: {
+          name: '光电2032-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1887,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2032-1',
+          sensorAddr: { db: 'DBW18', bit: 11 }
+        },
+        S_F2_2032_2: {
+          name: '光电2032-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1887,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2032-2',
+          sensorAddr: { db: 'DBW18', bit: 12 }
+        },
+        S_F2_2033_1: {
+          name: '光电2033-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1790,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2033-1',
+          sensorAddr: { db: 'DBW18', bit: 13 }
+        },
+        S_F2_2033_2: {
+          name: '光电2033-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1790,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2033-2',
+          sensorAddr: { db: 'DBW18', bit: 14 }
+        },
+        S_F2_2034_1: {
+          name: '光电2034-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1733,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2034-1',
+          sensorAddr: { db: 'DBW18', bit: 15 }
+        },
+        S_F2_2034_2: {
+          name: '光电2034-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1733,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2034-2',
+          sensorAddr: { db: 'DBW20', bit: 0 }
+        },
+        S_F2_2035_1: {
+          name: '光电2035-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1678,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2035-1',
+          sensorAddr: { db: 'DBW20', bit: 1 }
+        },
+        S_F2_2035_2: {
+          name: '光电2035-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1678,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2035-2',
+          sensorAddr: { db: 'DBW20', bit: 2 }
+        },
+        S_F2_2036_1: {
+          name: '光电2036-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1623,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2036-1',
+          sensorAddr: { db: 'DBW20', bit: 3 }
+        },
+        S_F2_2036_2: {
+          name: '光电2036-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1623,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2036-2',
+          sensorAddr: { db: 'DBW20', bit: 4 }
+        },
+        S_F2_2037_1: {
+          name: '光电2037-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1538,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2037-1',
+          sensorAddr: { db: 'DBW20', bit: 5 }
+        },
+        S_F2_2037_2: {
+          name: '光电2037-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1538,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2037-2',
+          sensorAddr: { db: 'DBW20', bit: 6 }
+        },
+        S_F2_2038_1: {
+          name: '光电2038-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1490,
+          y: 1130,
+          sensorStatus: false,
+          sensorName: '光电2038-1',
+          sensorAddr: { db: 'DBW20', bit: 7 }
+        },
+        S_F2_2038_2: {
+          name: '光电2038-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1490,
+          y: 1740,
+          sensorStatus: false,
+          sensorName: '光电2038-2',
+          sensorAddr: { db: 'DBW20', bit: 8 }
+        },
+        S_F2_2042: {
+          name: '光电2042',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 1890,
+          y: 1880,
+          sensorStatus: false,
+          sensorName: '光电2042',
+          sensorAddr: { db: 'DBW20', bit: 9 }
+        },
+        M_F2_1018: {
+          name: '1018',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1285,
+          y: 360,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1018',
+          motorAddr: { db: 'DBW8', bit: 0 },
+          trayIdAddr: 'DBW32',
+          destinationAddr: 'DBW74'
+        },
+        M_F2_1019: {
+          name: '1019',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1285,
+          y: 240,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '1019',
+          motorAddr: { db: 'DBW8', bit: 1 },
+          trayIdAddr: 'DBW36',
+          destinationAddr: 'DBW78'
+        },
+        M_F2_2001: {
+          name: '2001',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2815,
+          y: 40,
+          motorStatus: false,
+          motorName: '2001',
+          motorAddrs: [
+            { db: 'DBW8', bit: 2 },
+            { db: 'DBW8', bit: 3 }
+          ]
+        },
+        M_F2_2002: {
+          name: '2002',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2815,
+          y: 80,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2002',
+          motorAddrs: [
+            { db: 'DBW8', bit: 4 },
+            { db: 'DBW8', bit: 5 }
+          ],
+          trayIdAddr: 'DBW38',
+          destinationAddr: 'DBW80'
+        },
+        M_F2_2003: {
+          name: '2003',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2815,
+          y: 180,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2003',
+          motorAddr: { db: 'DBW8', bit: 6 },
+          trayIdAddr: 'DBW40',
+          destinationAddr: 'DBW82'
+        },
+        M_F2_2004: {
+          name: '2004',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2815,
+          y: 220,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2004',
+          motorAddr: { db: 'DBW8', bit: 7 },
+          trayIdAddr: 'DBW42',
+          destinationAddr: 'DBW84'
+        },
+        M_F2_2005: {
+          name: '2005',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2815,
+          y: 250,
+          motorStatus: false,
+          motorName: '2005',
+          motorAddr: { db: 'DBW8', bit: 8 }
+        },
+        M_F2_2006: {
+          name: '2006',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2757,
+          y: 238,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2006',
+          motorAddr: { db: 'DBW8', bit: 9 },
+          trayIdAddr: 'DBW44',
+          destinationAddr: 'DBW86'
+        },
+        M_F2_2007: {
+          name: '2007',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2683,
+          y: 220,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2007',
+          motorAddr: { db: 'DBW8', bit: 10 },
+          trayIdAddr: 'DBW46',
+          destinationAddr: 'DBW88'
+        },
+        M_F2_2008: {
+          name: '2008',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2683,
+          y: 250,
+          motorStatus: false,
+          motorName: '2008',
+          motorAddr: { db: 'DBW8', bit: 11 }
+        },
+        M_F2_2009: {
+          name: '2009',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2550,
+          y: 238,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2009',
+          motorAddr: { db: 'DBW8', bit: 12 },
+          trayIdAddr: 'DBW48',
+          destinationAddr: 'DBW90'
+        },
+        M_F2_2010: {
+          name: '2010',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 220,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2010',
+          motorAddr: { db: 'DBW8', bit: 13 },
+          trayIdAddr: 'DBW50',
+          destinationAddr: 'DBW92'
+        },
+        M_F2_2011: {
+          name: '2011',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 250,
+          motorStatus: false,
+          motorName: '2011',
+          motorAddr: { db: 'DBW8', bit: 14 }
+        },
+        M_F2_2012: {
+          name: '2012',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 400,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2012',
+          motorAddr: { db: 'DBW8', bit: 15 },
+          trayIdAddr: 'DBW52',
+          destinationAddr: 'DBW94'
+        },
+        M_F2_2013: {
+          name: '2013',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 780,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2013',
+          motorAddr: { db: 'DBW10', bit: 0 },
+          trayIdAddr: 'DBW54',
+          destinationAddr: 'DBW96'
+        },
+        M_F2_2014: {
+          name: '2014',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 950,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2014',
+          motorAddr: { db: 'DBW10', bit: 1 },
+          trayIdAddr: 'DBW56',
+          destinationAddr: 'DBW98'
+        },
+        M_F2_2015: {
+          name: '2015',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2415,
+          y: 980,
+          motorStatus: false,
+          motorName: '2015',
+          motorAddr: { db: 'DBW10', bit: 2 }
+        },
+        M_F2_2016: {
+          name: '2016',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2360,
+          y: 972,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2016',
+          motorAddr: { db: 'DBW10', bit: 3 },
+          trayIdAddr: 'DBW58',
+          destinationAddr: 'DBW100'
+        },
+        M_F2_2017: {
+          name: '2017',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2240,
+          y: 972,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2017',
+          motorAddr: { db: 'DBW10', bit: 4 },
+          trayIdAddr: 'DBW60',
+          destinationAddr: 'DBW102'
+        },
+        M_F2_2018: {
+          name: '2018',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2110,
+          y: 972,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2018',
+          motorAddr: { db: 'DBW10', bit: 5 },
+          trayIdAddr: 'DBW62',
+          destinationAddr: 'DBW104'
+        },
+        M_F2_2019: {
+          name: '2019',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2000,
+          y: 972,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2019',
+          motorAddr: { db: 'DBW10', bit: 6 },
+          trayIdAddr: 'DBW64',
+          destinationAddr: 'DBW106'
+        },
+        M_F2_2020: {
+          name: '2020',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1942,
+          y: 950,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2020',
+          motorAddr: { db: 'DBW10', bit: 7 },
+          trayIdAddr: 'DBW66',
+          destinationAddr: 'DBW108'
+        },
+        M_F2_2021: {
+          name: '2021',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1942,
+          y: 980,
+          motorStatus: false,
+          motorName: '2021',
+          motorAddr: { db: 'DBW10', bit: 8 }
+        },
+        M_F2_2022: {
+          name: '2022',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1942,
+          y: 1020,
+          motorStatus: false,
+          motorName: '2022',
+          motorAddr: { db: 'DBW10', bit: 9 }
+        },
+        // M_F2_2023: {
+        //   name: '2023',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 1080,
+        //   y: 1390,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW68',
+        //   destinationAddr: 'DBW110'
+        // },
+        M_F2_2025: {
+          name: '2025',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2320,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2025',
+          motorAddr: { db: 'DBW10', bit: 10 }
+        },
+        M_F2_2026: {
+          name: '2026',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2265,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2026',
+          motorAddr: { db: 'DBW10', bit: 11 }
+        },
+        M_F2_2027: {
+          name: '2027',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2205,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2027',
+          motorAddr: { db: 'DBW10', bit: 12 }
+        },
+        M_F2_2028: {
+          name: '2028',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2150,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2028',
+          motorAddr: { db: 'DBW10', bit: 13 }
+        },
+        M_F2_2029: {
+          name: '2029',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2055,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2029',
+          motorAddr: { db: 'DBW10', bit: 14 }
+        },
+        M_F2_2030: {
+          name: '2030',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1997,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2030',
+          motorAddr: { db: 'DBW10', bit: 15 }
+        },
+        M_F2_2031: {
+          name: '2031',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1943,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2031',
+          motorAddr: { db: 'DBW12', bit: 0 }
+        },
+        M_F2_2032: {
+          name: '2032',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1887,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2032',
+          motorAddr: { db: 'DBW12', bit: 1 }
+        },
+        M_F2_2033: {
+          name: '2033',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1790,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2033',
+          motorAddr: { db: 'DBW12', bit: 2 }
+        },
+        M_F2_2034: {
+          name: '2034',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1733,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2034',
+          motorAddr: { db: 'DBW12', bit: 3 }
+        },
+        M_F2_2035: {
+          name: '2035',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1678,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2035',
+          motorAddr: { db: 'DBW12', bit: 4 }
+        },
+        M_F2_2036: {
+          name: '2036',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1623,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2036',
+          motorAddr: { db: 'DBW12', bit: 5 }
+        },
+        M_F2_2037: {
+          name: '2037',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1538,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2037',
+          motorAddr: { db: 'DBW12', bit: 6 }
+        },
+        M_F2_2038: {
+          name: '2038',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1490,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2038',
+          motorAddr: { db: 'DBW12', bit: 7 }
+        },
+        // M_F2_2039: {
+        //   name: '2039',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 1080,
+        //   y: 1390,
+        //   trayId: '',
+        //   destination: 0,
+        //   trayIdAddr: 'DBW70',
+        //   destinationAddr: 'DBW112'
+        // },
+        // M_F2_2041: {
+        //   name: '2041',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 1080,
+        //   y: 1390,
+        //   motorStatus: false,
+        //   motorName: '2041',
+        //   motorAddr: { db: 'DBW12', bit: 8 }
+        // },
+        M_F2_2042: {
+          name: '2042',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 1942,
+          y: 1876,
+          motorStatus: false,
+          trayId: '',
+          destination: 0,
+          motorName: '2042',
+          motorAddr: { db: 'DBW12', bit: 9 },
+          trayIdAddr: 'DBW72',
+          destinationAddr: 'DBW114'
+        }
+        // M_F2_2043: {
+        //   name: '2043',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 1080,
+        //   y: 1390,
+        //   motorStatus: false,
+        //   motorName: '2043',
+        //   motorAddr: { db: 'DBW12', bit: 10 }
+        // }
+      },
       carts: [
         {
           id: 1,
@@ -1957,6 +3108,18 @@ export default {
     },
     runningOrder() {
       return this.ordersList.find((o) => o.orderStatus === 1) || null;
+    },
+    popoverStyle() {
+      return {
+        top: `${this.popoverPosition.top}px`,
+        left: `${this.popoverPosition.left}px`
+      };
+    },
+    deviceList() {
+      return Object.keys(this.deviceNodes).map((key) => ({
+        id: key,
+        ...this.deviceNodes[key]
+      }));
     }
   },
   mounted() {
@@ -2000,41 +3163,6 @@ export default {
       this.floor1AreaEstop.bit4 = getBit(word6, 12);
       this.floor1AreaEstop.bit5 = getBit(word6, 13);
 
-      // 一楼电机运行信号--1 DBW8
-      let word8 = this.convertToWord(values.DBW8 ?? 0);
-      this.floor1MotorRunning1.bit0 = getBit(word8, 8);
-      this.floor1MotorRunning1.bit1 = getBit(word8, 9);
-      this.floor1MotorRunning1.bit2 = getBit(word8, 10);
-      this.floor1MotorRunning1.bit3 = getBit(word8, 11);
-      this.floor1MotorRunning1.bit4 = getBit(word8, 12);
-      this.floor1MotorRunning1.bit5 = getBit(word8, 13);
-      this.floor1MotorRunning1.bit6 = getBit(word8, 14);
-      this.floor1MotorRunning1.bit7 = getBit(word8, 15);
-      this.floor1MotorRunning1.bit8 = getBit(word8, 0);
-      this.floor1MotorRunning1.bit9 = getBit(word8, 1);
-      this.floor1MotorRunning1.bit10 = getBit(word8, 2);
-      this.floor1MotorRunning1.bit11 = getBit(word8, 3);
-      this.floor1MotorRunning1.bit12 = getBit(word8, 4);
-      this.floor1MotorRunning1.bit13 = getBit(word8, 5);
-      this.floor1MotorRunning1.bit14 = getBit(word8, 6);
-      this.floor1MotorRunning1.bit15 = getBit(word8, 7);
-
-      // 一楼电机运行信号--2 DBW10
-      let word10 = this.convertToWord(values.DBW10 ?? 0);
-      this.floor1MotorRunning2.bit0 = getBit(word10, 8);
-
-      // 一楼传感器信号 DBW12
-      let word12 = this.convertToWord(values.DBW12 ?? 0);
-      this.floor1SensorSignal.bit0 = getBit(word12, 8);
-      this.floor1SensorSignal.bit1 = getBit(word12, 9);
-      this.floor1SensorSignal.bit2 = getBit(word12, 10);
-      this.floor1SensorSignal.bit3 = getBit(word12, 11);
-      this.floor1SensorSignal.bit4 = getBit(word12, 12);
-      this.floor1SensorSignal.bit5 = getBit(word12, 13);
-      this.floor1SensorSignal.bit6 = getBit(word12, 14);
-      this.floor1SensorSignal.bit7 = getBit(word12, 15);
-      this.floor1SensorSignal.bit8 = getBit(word12, 0);
-
       // 一楼小车位置
       this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
       this.floor1CartBeforeSteril2Pos = Number(values.DBW16 ?? 0);
@@ -2066,32 +3194,6 @@ export default {
       this.floor1SterilOutTrayRequest.bit13 = getBit(word24, 5);
       this.floor1SterilOutTrayRequest.bit14 = getBit(word24, 6);
       this.floor1SterilOutTrayRequest.bit15 = getBit(word24, 7);
-
-      // 一楼电机占位虚拟ID
-      this.floor1MotorVirtualId1001 = Number(values.DBW26 ?? 0);
-      this.floor1MotorVirtualId1004 = Number(values.DBW28 ?? 0);
-      this.floor1MotorVirtualId1006A = Number(values.DBW30 ?? 0);
-      this.floor1MotorVirtualId1006B = Number(values.DBW32 ?? 0);
-      this.floor1MotorVirtualId1008 = Number(values.DBW34 ?? 0);
-      this.floor1MotorVirtualId1010 = Number(values.DBW36 ?? 0);
-      this.floor1MotorVirtualId1012 = Number(values.DBW38 ?? 0);
-      this.floor1MotorVirtualId1014 = Number(values.DBW40 ?? 0);
-      this.floor1MotorVirtualId1016 = Number(values.DBW42 ?? 0);
-      this.floor1MotorVirtualIdspare1 = Number(values.DBW44 ?? 0);
-      this.floor1MotorVirtualIdspare2 = Number(values.DBW46 ?? 0);
-
-      // 一楼电机货物目的地
-      this.floor1MotorDestination1001 = Number(values.DBW48 ?? 0);
-      this.floor1MotorDestination1004 = Number(values.DBW50 ?? 0);
-      this.floor1MotorDestination1006A = Number(values.DBW52 ?? 0);
-      this.floor1MotorDestination1006B = Number(values.DBW54 ?? 0);
-      this.floor1MotorDestination1008 = Number(values.DBW56 ?? 0);
-      this.floor1MotorDestination1010 = Number(values.DBW58 ?? 0);
-      this.floor1MotorDestination1012 = Number(values.DBW60 ?? 0);
-      this.floor1MotorDestination1014 = Number(values.DBW62 ?? 0);
-      this.floor1MotorDestination1016 = Number(values.DBW64 ?? 0);
-      this.floor1MotorDestinationspare1 = Number(values.DBW66 ?? 0);
-      this.floor1MotorDestinationspare2 = Number(values.DBW68 ?? 0);
 
       // 一楼灭菌柜内未完成实际数量
       this.floor1Sterilization19Incomplete = Number(values.DBW70 ?? 0);
@@ -2144,6 +3246,7 @@ export default {
       this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
       this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
+      this.syncDeviceNodesFromPlc(values, 0);
     });
     ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
@@ -2168,121 +3271,6 @@ export default {
       this.floor2AreaEstop.bit4 = getBit(word6, 12);
       this.floor2AreaEstop.bit5 = getBit(word6, 13);
 
-      let word8 = this.convertToWord(values.DBW8 ?? 0);
-      this.floor2MotorRunning1.bit0 = getBit(word8, 8);
-      this.floor2MotorRunning1.bit1 = getBit(word8, 9);
-      this.floor2MotorRunning1.bit2 = getBit(word8, 10);
-      this.floor2MotorRunning1.bit3 = getBit(word8, 11);
-      this.floor2MotorRunning1.bit4 = getBit(word8, 12);
-      this.floor2MotorRunning1.bit5 = getBit(word8, 13);
-      this.floor2MotorRunning1.bit6 = getBit(word8, 14);
-      this.floor2MotorRunning1.bit7 = getBit(word8, 15);
-      this.floor2MotorRunning1.bit8 = getBit(word8, 0);
-      this.floor2MotorRunning1.bit9 = getBit(word8, 1);
-      this.floor2MotorRunning1.bit10 = getBit(word8, 2);
-      this.floor2MotorRunning1.bit11 = getBit(word8, 3);
-      this.floor2MotorRunning1.bit12 = getBit(word8, 4);
-      this.floor2MotorRunning1.bit13 = getBit(word8, 5);
-      this.floor2MotorRunning1.bit14 = getBit(word8, 6);
-      this.floor2MotorRunning1.bit15 = getBit(word8, 7);
-
-      let word10 = this.convertToWord(values.DBW10 ?? 0);
-      this.floor2MotorRunning2.bit0 = getBit(word10, 8);
-      this.floor2MotorRunning2.bit1 = getBit(word10, 9);
-      this.floor2MotorRunning2.bit2 = getBit(word10, 10);
-      this.floor2MotorRunning2.bit3 = getBit(word10, 11);
-      this.floor2MotorRunning2.bit4 = getBit(word10, 12);
-      this.floor2MotorRunning2.bit5 = getBit(word10, 13);
-      this.floor2MotorRunning2.bit6 = getBit(word10, 14);
-      this.floor2MotorRunning2.bit7 = getBit(word10, 15);
-      this.floor2MotorRunning2.bit8 = getBit(word10, 0);
-      this.floor2MotorRunning2.bit9 = getBit(word10, 1);
-      this.floor2MotorRunning2.bit10 = getBit(word10, 2);
-      this.floor2MotorRunning2.bit11 = getBit(word10, 3);
-      this.floor2MotorRunning2.bit12 = getBit(word10, 4);
-      this.floor2MotorRunning2.bit13 = getBit(word10, 5);
-      this.floor2MotorRunning2.bit14 = getBit(word10, 6);
-      this.floor2MotorRunning2.bit15 = getBit(word10, 7);
-
-      let word12 = this.convertToWord(values.DBW12 ?? 0);
-      this.floor2MotorRunning3.bit0 = getBit(word12, 8);
-      this.floor2MotorRunning3.bit1 = getBit(word12, 9);
-      this.floor2MotorRunning3.bit2 = getBit(word12, 10);
-      this.floor2MotorRunning3.bit3 = getBit(word12, 11);
-      this.floor2MotorRunning3.bit4 = getBit(word12, 12);
-      this.floor2MotorRunning3.bit5 = getBit(word12, 13);
-      this.floor2MotorRunning3.bit6 = getBit(word12, 14);
-      this.floor2MotorRunning3.bit7 = getBit(word12, 15);
-      this.floor2MotorRunning3.bit8 = getBit(word12, 0);
-      this.floor2MotorRunning3.bit9 = getBit(word12, 1);
-      this.floor2MotorRunning3.bit10 = getBit(word12, 2);
-
-      let word14 = this.convertToWord(values.DBW14 ?? 0);
-      this.floor2SensorSignal1.bit0 = getBit(word14, 8);
-      this.floor2SensorSignal1.bit1 = getBit(word14, 9);
-      this.floor2SensorSignal1.bit2 = getBit(word14, 10);
-      this.floor2SensorSignal1.bit3 = getBit(word14, 11);
-      this.floor2SensorSignal1.bit4 = getBit(word14, 12);
-      this.floor2SensorSignal1.bit5 = getBit(word14, 13);
-      this.floor2SensorSignal1.bit6 = getBit(word14, 14);
-      this.floor2SensorSignal1.bit7 = getBit(word14, 15);
-      this.floor2SensorSignal1.bit8 = getBit(word14, 0);
-      this.floor2SensorSignal1.bit9 = getBit(word14, 1);
-      this.floor2SensorSignal1.bit10 = getBit(word14, 2);
-      this.floor2SensorSignal1.bit11 = getBit(word14, 3);
-      this.floor2SensorSignal1.bit12 = getBit(word14, 4);
-      this.floor2SensorSignal1.bit13 = getBit(word14, 5);
-      this.floor2SensorSignal1.bit14 = getBit(word14, 6);
-      this.floor2SensorSignal1.bit15 = getBit(word14, 7);
-
-      let word16 = this.convertToWord(values.DBW16 ?? 0);
-      this.floor2SensorSignal2.bit0 = getBit(word16, 8);
-      this.floor2SensorSignal2.bit1 = getBit(word16, 9);
-      this.floor2SensorSignal2.bit2 = getBit(word16, 10);
-      this.floor2SensorSignal2.bit3 = getBit(word16, 11);
-      this.floor2SensorSignal2.bit4 = getBit(word16, 12);
-      this.floor2SensorSignal2.bit5 = getBit(word16, 13);
-      this.floor2SensorSignal2.bit6 = getBit(word16, 14);
-      this.floor2SensorSignal2.bit7 = getBit(word16, 15);
-      this.floor2SensorSignal2.bit8 = getBit(word16, 0);
-      this.floor2SensorSignal2.bit9 = getBit(word16, 1);
-      this.floor2SensorSignal2.bit10 = getBit(word16, 2);
-      this.floor2SensorSignal2.bit11 = getBit(word16, 3);
-      this.floor2SensorSignal2.bit12 = getBit(word16, 4);
-      this.floor2SensorSignal2.bit13 = getBit(word16, 5);
-      this.floor2SensorSignal2.bit14 = getBit(word16, 6);
-      this.floor2SensorSignal2.bit15 = getBit(word16, 7);
-
-      let word18 = this.convertToWord(values.DBW18 ?? 0);
-      this.floor2SensorSignal3.bit0 = getBit(word18, 8);
-      this.floor2SensorSignal3.bit1 = getBit(word18, 9);
-      this.floor2SensorSignal3.bit2 = getBit(word18, 10);
-      this.floor2SensorSignal3.bit3 = getBit(word18, 11);
-      this.floor2SensorSignal3.bit4 = getBit(word18, 12);
-      this.floor2SensorSignal3.bit5 = getBit(word18, 13);
-      this.floor2SensorSignal3.bit6 = getBit(word18, 14);
-      this.floor2SensorSignal3.bit7 = getBit(word18, 15);
-      this.floor2SensorSignal3.bit8 = getBit(word18, 0);
-      this.floor2SensorSignal3.bit9 = getBit(word18, 1);
-      this.floor2SensorSignal3.bit10 = getBit(word18, 2);
-      this.floor2SensorSignal3.bit11 = getBit(word18, 3);
-      this.floor2SensorSignal3.bit12 = getBit(word18, 4);
-      this.floor2SensorSignal3.bit13 = getBit(word18, 5);
-      this.floor2SensorSignal3.bit14 = getBit(word18, 6);
-      this.floor2SensorSignal3.bit15 = getBit(word18, 7);
-
-      let word20 = this.convertToWord(values.DBW20 ?? 0);
-      this.floor2SensorSignal4.bit0 = getBit(word20, 8);
-      this.floor2SensorSignal4.bit1 = getBit(word20, 9);
-      this.floor2SensorSignal4.bit2 = getBit(word20, 10);
-      this.floor2SensorSignal4.bit3 = getBit(word20, 11);
-      this.floor2SensorSignal4.bit4 = getBit(word20, 12);
-      this.floor2SensorSignal4.bit5 = getBit(word20, 13);
-      this.floor2SensorSignal4.bit6 = getBit(word20, 14);
-      this.floor2SensorSignal4.bit7 = getBit(word20, 15);
-      this.floor2SensorSignal4.bit8 = getBit(word20, 0);
-      this.floor2SensorSignal4.bit9 = getBit(word20, 1);
-
       // 二楼小车位置
       this.floor2CartAnalysisInPos = Number(values.DBW22 ?? 0);
       this.floor2CartAnalysisOutPos = Number(values.DBW24 ?? 0);
@@ -2306,52 +3294,6 @@ export default {
       this.floor2AnalysisOutTrayRequest.bit11 = getBit(word30, 3);
       this.floor2AnalysisOutTrayRequest.bit12 = getBit(word30, 4);
       this.floor2AnalysisOutTrayRequest.bit13 = getBit(word30, 5);
-
-      // 二楼电机占位虚拟ID
-      this.floor2MotorVirtualId1018A = Number(values.DBW32 ?? 0);
-      this.floor2MotorVirtualId1018B = Number(values.DBW34 ?? 0);
-      this.floor2MotorVirtualId1019 = Number(values.DBW36 ?? 0);
-      this.floor2MotorVirtualId2002 = Number(values.DBW38 ?? 0);
-      this.floor2MotorVirtualId2003 = Number(values.DBW40 ?? 0);
-      this.floor2MotorVirtualId2004 = Number(values.DBW42 ?? 0);
-      this.floor2MotorVirtualId2006 = Number(values.DBW44 ?? 0);
-      this.floor2MotorVirtualId2007 = Number(values.DBW46 ?? 0);
-      this.floor2MotorVirtualId2009 = Number(values.DBW48 ?? 0);
-      this.floor2MotorVirtualId2010 = Number(values.DBW50 ?? 0);
-      this.floor2MotorVirtualId2012 = Number(values.DBW52 ?? 0);
-      this.floor2MotorVirtualId2013 = Number(values.DBW54 ?? 0);
-      this.floor2MotorVirtualId2014 = Number(values.DBW56 ?? 0);
-      this.floor2MotorVirtualId2016 = Number(values.DBW58 ?? 0);
-      this.floor2MotorVirtualId2017 = Number(values.DBW60 ?? 0);
-      this.floor2MotorVirtualId2018 = Number(values.DBW62 ?? 0);
-      this.floor2MotorVirtualId2019 = Number(values.DBW64 ?? 0);
-      this.floor2MotorVirtualId2020 = Number(values.DBW66 ?? 0);
-      this.floor2MotorVirtualId2023 = Number(values.DBW68 ?? 0);
-      this.floor2MotorVirtualId2039 = Number(values.DBW70 ?? 0);
-      this.floor2MotorVirtualId2042 = Number(values.DBW72 ?? 0);
-
-      // 二楼电机货物目的地
-      this.floor2MotorDestination1018A = Number(values.DBW74 ?? 0);
-      this.floor2MotorDestination1018B = Number(values.DBW76 ?? 0);
-      this.floor2MotorDestination1019 = Number(values.DBW78 ?? 0);
-      this.floor2MotorDestination2002 = Number(values.DBW80 ?? 0);
-      this.floor2MotorDestination2003 = Number(values.DBW82 ?? 0);
-      this.floor2MotorDestination2004 = Number(values.DBW84 ?? 0);
-      this.floor2MotorDestination2006 = Number(values.DBW86 ?? 0);
-      this.floor2MotorDestination2007 = Number(values.DBW88 ?? 0);
-      this.floor2MotorDestination2009 = Number(values.DBW90 ?? 0);
-      this.floor2MotorDestination2010 = Number(values.DBW92 ?? 0);
-      this.floor2MotorDestination2012 = Number(values.DBW94 ?? 0);
-      this.floor2MotorDestination2013 = Number(values.DBW96 ?? 0);
-      this.floor2MotorDestination2014 = Number(values.DBW98 ?? 0);
-      this.floor2MotorDestination2016 = Number(values.DBW100 ?? 0);
-      this.floor2MotorDestination2017 = Number(values.DBW102 ?? 0);
-      this.floor2MotorDestination2018 = Number(values.DBW104 ?? 0);
-      this.floor2MotorDestination2019 = Number(values.DBW106 ?? 0);
-      this.floor2MotorDestination2020 = Number(values.DBW108 ?? 0);
-      this.floor2MotorDestination2023 = Number(values.DBW110 ?? 0);
-      this.floor2MotorDestination2039 = Number(values.DBW112 ?? 0);
-      this.floor2MotorDestination2042 = Number(values.DBW114 ?? 0);
 
       // 二楼解析房内实际数量
       this.floor2AnalysisRoom1Qty = Number(values.DBW116 ?? 0);
@@ -2425,6 +3367,7 @@ export default {
       this.floor2FaultInfo2041 = Number(values.DBW244 ?? 0);
       this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
+      this.syncDeviceNodesFromPlc(values, 1);
     });
     // 给PLC数据加载时间
     setTimeout(() => {
@@ -3703,6 +4646,118 @@ export default {
         second: '2-digit'
       });
     },
+    syncDeviceNodesFromPlc(values, plcChannel) {
+      const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
+      const parsedWords = {};
+      const getParsedWord = (db) => {
+        if (parsedWords[db] === undefined) {
+          parsedWords[db] = this.convertToWord(values[db]);
+        }
+        return parsedWords[db];
+      };
+      const readBit = (addr) => {
+        if (!addr) return false;
+        const { db, bit } = addr;
+        const actualBit = bit < 8 ? bit + 8 : bit - 8;
+        return getBit(getParsedWord(db), actualBit) === '1';
+      };
+
+      Object.values(this.deviceNodes).forEach((node) => {
+        if (node.plcChannel !== plcChannel) return;
+
+        if (node.motorAddr) {
+          node.motorStatus = readBit(node.motorAddr);
+        } else if (node.motorAddrs && node.motorAddrs.length) {
+          node.motorStatus = node.motorAddrs.some((addr) => readBit(addr));
+        }
+
+        if (node.sensorAddr) {
+          node.sensorStatus = readBit(node.sensorAddr);
+        }
+
+        if (node.trayIdAddr) {
+          const v = Number(values[node.trayIdAddr] ?? 0);
+          node.trayId = v !== 0 ? String(v) : '';
+        }
+
+        if (node.destinationAddr) {
+          node.destination = Number(values[node.destinationAddr] ?? 0);
+        }
+      });
+    },
+    hasOwnField(target, key) {
+      return !!target && Object.prototype.hasOwnProperty.call(target, key);
+    },
+    hasMotorStatus(target) {
+      return this.hasOwnField(target, 'motorStatus');
+    },
+    hasSensorStatus(target) {
+      return this.hasOwnField(target, 'sensorStatus');
+    },
+    hasTrayId(target) {
+      return this.hasOwnField(target, 'trayId');
+    },
+    hasDestination(target) {
+      return this.hasOwnField(target, 'destination');
+    },
+    hasDisplayableStatus(target) {
+      return (
+        this.hasMotorStatus(target) ||
+        this.hasSensorStatus(target) ||
+        this.hasTrayId(target)
+      );
+    },
+    getDisplayStatus(node) {
+      if (!node) return false;
+      if (this.hasMotorStatus(node) || this.hasSensorStatus(node)) {
+        return !!(node.motorStatus || node.sensorStatus);
+      }
+      if (this.hasTrayId(node)) {
+        return !!node.trayId;
+      }
+      return false;
+    },
+    handleNodeClick(node, event) {
+      this.popoverData = node;
+      this.currentSelectedNodeId = node.id;
+
+      const targetRect = event.currentTarget.getBoundingClientRect();
+      const container =
+        event.currentTarget.closest('.image-wrapper') ||
+        this.$refs.floorImageContainer;
+      if (!container) return;
+      const containerRect = container.getBoundingClientRect();
+
+      const popoverWidth = 320;
+      const popoverHeight = 200;
+      let left = targetRect.left - containerRect.left + targetRect.width / 2;
+      let top = targetRect.top - containerRect.top - 12;
+
+      if (left - popoverWidth / 2 < 0) {
+        left = popoverWidth / 2 + 10;
+      }
+      if (left + popoverWidth / 2 > containerRect.width) {
+        left = containerRect.width - popoverWidth / 2 - 10;
+      }
+      if (top - popoverHeight < 0) {
+        top = targetRect.top - containerRect.top + targetRect.height + 12;
+        this.popoverDirection = 'down';
+      } else {
+        this.popoverDirection = 'up';
+      }
+
+      this.popoverPosition = { left, top };
+      this.popoverVisible = true;
+    },
+    closePopover() {
+      this.popoverVisible = false;
+      this.currentSelectedNodeId = null;
+    },
+    handleGlobalClick() {
+      if (this.popoverVisible) {
+        this.closePopover();
+      }
+    },
     initializeMarkers() {
       this.$nextTick(() => {
         this.updateMarkerPositions();
@@ -3727,7 +4782,7 @@ export default {
         if (!imageWrapper) return;
 
         const markers = imageWrapper.querySelectorAll(
-          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker'
+          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker, .device-signal-node'
         );
         const carts = imageWrapper.querySelectorAll('.cart-container');
         const wrapperRect = imageWrapper.getBoundingClientRect();
@@ -5484,6 +6539,280 @@ export default {
                 transform: translateY(-50%);
               }
               /* --- 电机点位样式结束 --- */
+
+              /* --- 设备信号点 device-signal-node --- */
+              .device-signal-node {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                transform: translate(-50%, -50%);
+                cursor: pointer;
+                z-index: 100;
+                transition: transform 0.2s ease, filter 0.2s ease;
+                box-sizing: border-box;
+                will-change: transform;
+
+                &:hover {
+                  transform: translate(-50%, -50%) scale(1.12);
+                  z-index: 101;
+                  filter: brightness(1.06);
+                }
+
+                &.is-selected {
+                  .signal-base {
+                    border-color: #b8c4d6;
+                    box-shadow: 0 0 0 1px rgba(214, 229, 255, 0.45),
+                      0 0 10px rgba(64, 158, 255, 0.45),
+                      0 2px 6px rgba(0, 0, 0, 0.55);
+                    animation: pulse-glow-device 1.5s ease-in-out infinite;
+                  }
+                }
+
+                .signal-base {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: linear-gradient(
+                    145deg,
+                    #616e80 0%,
+                    #3f4a59 45%,
+                    #2c3542 100%
+                  );
+                  border: 1px solid #6f7f95;
+                  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                    inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+                    0 2px 4px rgba(0, 0, 0, 0.65);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  box-sizing: border-box;
+                }
+
+                .signal-core {
+                  width: 5px;
+                  height: 5px;
+                  background: radial-gradient(
+                    circle at 30% 30%,
+                    #7f8b97,
+                    #3a4552
+                  );
+                  transition: all 0.25s ease;
+                }
+
+                /* 光电：圆形 */
+                &.is-sensor {
+                  .signal-base,
+                  .signal-core {
+                    border-radius: 50%;
+                  }
+                  &.status-active .signal-core {
+                    background: radial-gradient(
+                      circle at 35% 35%,
+                      #ffb0b0,
+                      #ef4444 70%
+                    );
+                    box-shadow: 0 0 4px rgba(239, 68, 68, 0.85),
+                      0 0 8px rgba(239, 68, 68, 0.45), inset 0 0 1px #ffffff;
+                  }
+                  &.status-idle .signal-core {
+                    background: radial-gradient(
+                      circle at 35% 35%,
+                      #7a3f3f,
+                      #2f1e1e
+                    );
+                    box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.1);
+                  }
+                }
+
+                /* 电机：方形 */
+                &.is-motor {
+                  .signal-base,
+                  .signal-core {
+                    border-radius: 1px;
+                  }
+                  &.status-active .signal-core {
+                    background: radial-gradient(
+                      circle at 35% 35%,
+                      #b5ffd0,
+                      #22c55e 70%
+                    );
+                    box-shadow: 0 0 4px rgba(56, 220, 107, 0.85),
+                      0 0 8px rgba(34, 197, 94, 0.45), inset 0 0 1px #ffffff;
+                  }
+                  &.status-idle .signal-core {
+                    background: radial-gradient(
+                      circle at 35% 35%,
+                      #5a6570,
+                      #2c3542
+                    );
+                    box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.1);
+                  }
+                }
+              }
+
+              @keyframes pulse-glow-device {
+                0%,
+                100% {
+                  box-shadow: 0 0 0 1px rgba(214, 229, 255, 0.45),
+                    0 0 10px rgba(64, 158, 255, 0.45),
+                    0 2px 6px rgba(0, 0, 0, 0.55);
+                }
+                50% {
+                  box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.65),
+                    0 0 14px rgba(64, 158, 255, 0.65),
+                    0 2px 8px rgba(0, 0, 0, 0.6);
+                }
+              }
+
+              /* --- singleton-popover --- */
+              .singleton-popover {
+                position: absolute;
+                transform: translate(-50%, -100%);
+                width: 300px;
+                background: #ffffff;
+                border-radius: 10px;
+                border: 1px solid #e4e7ed;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+                padding: 0;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                color: #333;
+                pointer-events: auto;
+
+                .popover-header {
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 10px 12px;
+                  border-bottom: 1px solid #f0f2f5;
+
+                  .device-title {
+                    font-size: 14px;
+                    font-weight: 700;
+                    color: #2c3e50;
+                  }
+
+                  .close-btn {
+                    cursor: pointer;
+                    color: #999;
+                    font-size: 16px;
+                    &:hover {
+                      color: #f56c6c;
+                    }
+                  }
+                }
+
+                .status-lines {
+                  padding: 10px 12px 0 12px;
+
+                  .status-line {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    border-radius: 6px;
+                    border: 1px solid #ebeef5;
+                    background: #f8fafc;
+                    padding: 6px 10px;
+                    line-height: 1.2;
+
+                    & + .status-line {
+                      margin-top: 6px;
+                    }
+
+                    .line-label {
+                      font-size: 12px;
+                      color: #606266;
+                      white-space: nowrap;
+                      flex-shrink: 0;
+                    }
+
+                    .line-value {
+                      min-width: 44px;
+                      text-align: center;
+                      font-size: 12px;
+                      font-weight: 700;
+                      padding: 2px 8px;
+                      border-radius: 10px;
+                      background: #f0f2f5;
+                      color: #909399;
+                      white-space: nowrap;
+                      flex-shrink: 0;
+                    }
+                  }
+
+                  & > .status-line.is-running,
+                  & > .status-line.is-active {
+                    border-color: #d5f0df;
+                    background: #f3fbf6;
+                    .line-value {
+                      color: #1f9d49;
+                      background: #e6f7ec;
+                    }
+                  }
+
+                  & > .status-line.is-stopped,
+                  & > .status-line.is-empty {
+                    border-color: #f7d2d2;
+                    background: #fff4f4;
+                    .line-value {
+                      color: #d93030;
+                      background: #fde8e8;
+                    }
+                  }
+                }
+
+                .data-capsules {
+                  padding: 10px 12px 12px 12px;
+                  display: flex;
+                  flex-direction: column;
+
+                  .capsule-item + .capsule-item {
+                    margin-top: 6px;
+                  }
+
+                  .capsule-item {
+                    display: flex;
+                    align-items: center;
+                    background: #f7f9fc;
+                    border: 1px solid #edf1f7;
+                    border-radius: 6px;
+                    padding: 5px 8px;
+                    font-size: 11px;
+
+                    .capsule-label {
+                      color: #909399;
+                      margin-right: auto;
+                    }
+
+                    .capsule-value {
+                      font-weight: 600;
+                      color: #303133;
+
+                      &.highlight {
+                        color: #409eff;
+                        font-family: monospace;
+                      }
+                    }
+                  }
+                }
+              }
+
+              .popover-down {
+                transform: translate(-50%, 0);
+              }
+
+              .fade-scale-enter-active,
+              .fade-scale-leave-active {
+                transition: all 0.2s ease;
+              }
+              .fade-scale-enter,
+              .fade-scale-leave-to {
+                opacity: 0;
+                transform: translate(-50%, -90%) scale(0.9);
+              }
 
               /* 流水线流动箭头容器定位（置于光电/电机之下，避免遮挡点位） */
               .marker-with-flow {
