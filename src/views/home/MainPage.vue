@@ -1920,8 +1920,6 @@ export default {
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
       isDataReady: false,
-      // 渲染就绪标志位：先让UI完成首次渲染，再处理PLC数据，避免高频响应式更新阻塞图片绘制导致GPU 100%
-      isRenderReady: false,
       // ========== 一楼 PLC 读取点位（一楼-读取点位.csv）==========
       floor1ConveyorHeartbeat: 0, // DBW0 输送线看门狗心跳（高电平1秒持续，低电平1秒持续，一直循环）
       floor1ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
@@ -3668,14 +3666,10 @@ export default {
       };
     },
     deviceList() {
-      // 返回原始节点引用，避免每次展开新对象导致 v-for 与状态脱节
-      return Object.keys(this.deviceNodes).map((key) => {
-        const node = this.deviceNodes[key];
-        if (node.id !== key) {
-          this.$set(node, 'id', key);
-        }
-        return node;
-      });
+      return Object.keys(this.deviceNodes).map((key) => ({
+        id: key,
+        ...this.deviceNodes[key]
+      }));
     }
   },
   mounted() {
@@ -3705,8 +3699,6 @@ export default {
     }, 30000);
     this.refreshOrders();
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
-      // 渲染未完成时跳过PLC数据处理，避免高频响应式更新阻塞首次绘制
-      if (!this.isRenderReady) return;
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 一楼基础状态
@@ -3832,8 +3824,6 @@ export default {
       this.syncDeviceNodesFromPlc(values, 0);
     });
     ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
-      // 渲染未完成时跳过PLC数据处理，避免高频响应式更新阻塞首次绘制
-      if (!this.isRenderReady) return;
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 二楼基础状态
@@ -3956,20 +3946,11 @@ export default {
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
       this.syncDeviceNodesFromPlc(values, 1);
     });
-    // 先让浏览器完成首次绘制（双rAF确保至少一帧paint），再放开PLC数据处理
-    this.$nextTick(() => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.isRenderReady = true;
-          this.addLog('渲染完成，开始接收PLC数据');
-          // 给PLC数据加载时间，再做上升沿检测
-          setTimeout(() => {
-            this.addLog('isDataReady数据加载完成');
-            this.isDataReady = true;
-          }, 3000);
-        });
-      });
-    });
+    // 给PLC数据加载时间
+    setTimeout(() => {
+      this.addLog('isDataReady数据加载完成');
+      this.isDataReady = true;
+    }, 3000);
   },
   watch: {
     'cartPositionValues.cart1'(newVal) {
@@ -5534,40 +5515,27 @@ export default {
         const actualBit = bit < 8 ? bit + 8 : bit - 8;
         return getBit(getParsedWord(db), actualBit) === '1';
       };
-      const assignIfChanged = (node, key, nextVal) => {
-        if (node[key] !== nextVal) {
-          node[key] = nextVal;
-        }
-      };
 
       Object.values(this.deviceNodes).forEach((node) => {
         if (node.plcChannel !== plcChannel) return;
 
         if (node.motorAddr) {
-          assignIfChanged(node, 'motorStatus', readBit(node.motorAddr));
+          node.motorStatus = readBit(node.motorAddr);
         } else if (node.motorAddrs && node.motorAddrs.length) {
-          assignIfChanged(
-            node,
-            'motorStatus',
-            node.motorAddrs.some((addr) => readBit(addr))
-          );
+          node.motorStatus = node.motorAddrs.some((addr) => readBit(addr));
         }
 
         if (node.sensorAddr) {
-          assignIfChanged(node, 'sensorStatus', readBit(node.sensorAddr));
+          node.sensorStatus = readBit(node.sensorAddr);
         }
 
         if (node.trayIdAddr) {
           const v = Number(values[node.trayIdAddr] ?? 0);
-          assignIfChanged(node, 'trayId', v !== 0 ? String(v) : '');
+          node.trayId = v !== 0 ? String(v) : '';
         }
 
         if (node.destinationAddr) {
-          assignIfChanged(
-            node,
-            'destination',
-            Number(values[node.destinationAddr] ?? 0)
-          );
+          node.destination = Number(values[node.destinationAddr] ?? 0);
         }
       });
     },
@@ -7461,6 +7429,7 @@ export default {
                 z-index: 100;
                 transition: transform 0.2s ease, filter 0.2s ease;
                 box-sizing: border-box;
+                will-change: transform;
 
                 &:hover {
                   transform: translate(-50%, -50%) scale(1.12);
