@@ -723,7 +723,13 @@
                           >订单ID：{{ tray.orderId || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >物料编码：{{ tray.productCode || '--' }}</span
+                          >发往：{{
+                            tray.analysisDestination
+                              ? '解析房' + tray.analysisDestination
+                              : tray.sendTo
+                              ? '灭菌柜' + tray.sendTo
+                              : '--'
+                          }}</span
                         >
                       </div>
                       <div class="tray-info-row">
@@ -731,7 +737,11 @@
                           >产品名称：{{ tray.productName || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >规格：{{ tray.unit || '--' }}</span
+                          >解析周期：{{
+                            tray.analysisTime != null
+                              ? tray.analysisTime + 'h'
+                              : '--'
+                          }}</span
                         >
                       </div>
                       <div class="tray-info-row">
@@ -4151,13 +4161,20 @@ export default {
         }, 2000);
 
         // 6. 生成托盘信息并加入上货区队列
+        // 创建时字段：trayCode/virtualId/trayTime/sendTo(灭菌柜目的地)/state/sequenceNumber/订单相关/analysisTime(解析周期)
+        // 流转中动态追加（$set）：
+        //   sterilizationRoom / inSterilizationRoomTime — 进入未灭菌或灭菌柜
+        //   sterilizationCompleteTime — 未灭菌→已灭菌
+        //   analysisDestination / outSterilizationRoomTime — 已灭菌→输送线（此时才有解析房目的地）
+        //   analysisRoom / inAnalysisRoomTime — 输送线→解析房
+        //   outAnalysisRoomTime — 解析房出库后从队列移除
         const now = new Date();
         const timeStr = moment(now).format('YYYY-MM-DD HH:mm:ss');
         const trayInfo = {
           trayCode: String(virtualId),
           virtualId: virtualId,
           trayTime: timeStr,
-          sendTo: String(destination),
+          sendTo: String(destination), // 灭菌柜目的地（计划）
           state: 'loaded',
           sequenceNumber: String(this.queues[0].trayInfo.length + 1),
           orderId: runningOrder.orderId || '',
@@ -4167,6 +4184,7 @@ export default {
           unit: runningOrder.unit || '',
           batchNo: runningOrder.batchNo || '',
           processName: runningOrder.processName || '',
+          analysisTime: runningOrder.analysisTime ?? null, // 解析周期（小时）
           remark: `订单${runningOrder.orderId}自动上货`
         };
 
@@ -4442,6 +4460,7 @@ export default {
 
         const tray = targetQueue.trayInfo[0];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：解析房出库离开时间，随后从队列移除
         this.$set(tray, 'outAnalysisRoomTime', currentTime);
         this.addLog(
           `解析房${roomNo}出货请求(DBW30.0)：托盘 ${
@@ -4476,6 +4495,7 @@ export default {
 
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：实际进入的解析房 + 进入时间（匹配 analysisDestination）
         this.$set(tray, 'analysisRoom', destStr);
         this.$set(tray, 'inAnalysisRoomTime', currentTime);
         targetQueue.trayInfo.push(tray);
@@ -4525,6 +4545,7 @@ export default {
 
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：实际进入的灭菌柜 + 进入时间（匹配 sendTo）
         this.$set(tray, 'sterilizationRoom', destStr);
         this.$set(tray, 'inSterilizationRoomTime', currentTime);
         targetQueue.trayInfo.push(tray);
@@ -4576,6 +4597,7 @@ export default {
 
         const tray = sourceQueue.trayInfo[0];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：未灭菌→已灭菌完成时间
         this.$set(tray, 'sterilizationCompleteTime', currentTime);
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.shift();
@@ -4622,6 +4644,7 @@ export default {
 
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：实际进入的灭菌柜 + 进入时间（31-33，匹配 sendTo）
         this.$set(tray, 'sterilizationRoom', destStr);
         this.$set(tray, 'inSterilizationRoomTime', currentTime);
         targetQueue.trayInfo.push(tray);
@@ -4686,6 +4709,7 @@ export default {
             this.cancelSterToAnalysis();
             return;
           }
+          // 流转追加：解析房目的地（计划，出灭菌柜时才分配）
           this.$set(tray, 'analysisDestination', String(dest));
         }
 
@@ -4702,6 +4726,7 @@ export default {
         this.writeSterilOutTrayToPlc(cabinetNo, virtualId, dest);
 
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：离开灭菌柜进入输送线时间
         this.$set(tray, 'outSterilizationRoomTime', currentTime);
         conveyorQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
@@ -5114,15 +5139,18 @@ export default {
             id: tray.trayCode || '',
             name: tray.trayCode ? `托盘 ${tray.trayCode}` : '未知托盘',
             time: tray.trayTime || '',
-            sendTo: tray.sendTo || '', // 添加sendTo属性
-            state: tray.state || '', // 添加state属性
-            sequenceNumber: tray.sequenceNumber || '', // 添加sequenceNumber属性
-            orderId: tray.orderId || '', // 添加订单ID
-            productCode: tray.productCode || '', // 添加物料编码
-            productName: tray.productName || '', // 添加产品名称
-            unit: tray.unit || '', // 添加规格
-            batchNo: tray.batchNo || '', // 添加批次
-            remark: tray.remark || '' // 添加备注
+            // 发往动态：进灭菌前=sendTo(灭菌柜)；出灭菌后=analysisDestination(解析房)
+            sendTo: tray.sendTo || '',
+            analysisDestination: tray.analysisDestination || '',
+            state: tray.state || '',
+            sequenceNumber: tray.sequenceNumber || '',
+            orderId: tray.orderId || '',
+            productCode: tray.productCode || '',
+            productName: tray.productName || '',
+            unit: tray.unit || '',
+            batchNo: tray.batchNo || '',
+            analysisTime: tray.analysisTime ?? null,
+            remark: tray.remark || ''
           }))
           .filter((tray) => tray.id); // 过滤掉没有 id 的托盘
       } catch (error) {
@@ -5427,11 +5455,12 @@ export default {
         const destination = selectedOrder.destination
           ? String(selectedOrder.destination)
           : '';
+        // 字段同自动上货：创建时仅基础字段；流转字段见 handleUploadTrayRequest 注释
         const newTray = {
           trayCode: String(virtualId),
           virtualId: virtualId,
           trayTime: currentTime,
-          sendTo: destination,
+          sendTo: destination, // 灭菌柜目的地（计划）
           state: 'loaded',
           sequenceNumber: String(
             (this.selectedQueue.trayInfo || []).length + 1
@@ -5443,6 +5472,7 @@ export default {
           unit: selectedOrder.unit || '',
           batchNo: selectedOrder.batchNo || '',
           processName: selectedOrder.processName || '',
+          analysisTime: selectedOrder.analysisTime ?? null, // 解析周期（小时）
           remark: `订单${selectedOrder.orderId}手动添加`
         };
 
