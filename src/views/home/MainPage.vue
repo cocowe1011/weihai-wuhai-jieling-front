@@ -2992,7 +2992,7 @@ export default {
         {
           id: 2,
           name: '小车2',
-          x: 535,
+          x: 780,
           y: 1090,
           width: 90,
           image: require('@/assets/changzhou-img/cart2.png')
@@ -3000,7 +3000,7 @@ export default {
         {
           id: 3,
           name: '小车3',
-          x: 535,
+          x: 98,
           y: 465,
           width: 95,
           image: require('@/assets/changzhou-img/cart3.png')
@@ -3020,6 +3020,30 @@ export default {
           y: 1800,
           width: 80,
           image: require('@/assets/changzhou-img/cart5.png')
+        },
+        {
+          id: 6,
+          name: '小车6',
+          x: 100,
+          y: 1090,
+          width: 90,
+          image: require('@/assets/changzhou-img/cart2.png')
+        },
+        {
+          id: 7,
+          name: '小车7',
+          x: 2520,
+          y: 295,
+          width: 90,
+          image: require('@/assets/changzhou-img/cart1.png')
+        },
+        {
+          id: 8,
+          name: '小车8',
+          x: 2520,
+          y: 1785,
+          width: 100,
+          image: require('@/assets/changzhou-img/cart1.png')
         }
       ],
       // 小车位置数值-读取PLC（一楼 cart1~3：DBW14/16/18，二楼 cart4~5：DBW22/24）
@@ -3028,15 +3052,21 @@ export default {
         cart2: 0,
         cart3: 0,
         cart4: 0,
-        cart5: 0
+        cart5: 0,
+        cart6: 0,
+        cart7: 0,
+        cart8: 0
       },
       // 小车 x 轴行走范围（地图坐标，可按实际轨道调整）
       cartXRanges: {
         cart1: { min: 112, max: 900 },
-        cart2: { min: 535, max: 1300 },
-        cart3: { min: 535, max: 1295 },
+        cart2: { min: 780, max: 1300 },
+        cart3: { min: 98, max: 1295 },
         cart4: { min: 1493, max: 2317 },
-        cart5: { min: 1493, max: 2317 }
+        cart5: { min: 1493, max: 2317 },
+        cart6: { min: 100, max: 605 },
+        cart7: { min: 2520, max: 2830 },
+        cart8: { min: 2520, max: 2830 }
       },
       // 小车 PLC 数值范围配置
       cartPlcRanges: {
@@ -3044,7 +3074,10 @@ export default {
         cart2: { min: 0, max: 3000 },
         cart3: { min: 0, max: 3000 },
         cart4: { min: 0, max: 3000 },
-        cart5: { min: 0, max: 3000 }
+        cart5: { min: 0, max: 3000 },
+        cart6: { min: 0, max: 3000 },
+        cart7: { min: 0, max: 3000 },
+        cart8: { min: 0, max: 3000 }
       },
       // ========== 订单管理相关 ==========
       ordersList: [],
