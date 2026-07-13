@@ -504,6 +504,7 @@ function conPLC(index) {
       inst.readItems.forEach(function (item) {
         inst.conn.addItems(item);
       });
+      // 400ms：降低渲染进程 Vue 重渲染频率，避免与窗口缩放/订单弹窗叠加导致卡死
       setInterval(function () {
         inst.conn.readAllItems(function (anythingBad, values) {
           if (anythingBad) {
@@ -517,7 +518,7 @@ function conPLC(index) {
             inst.writeStrArr.toString()
           );
         });
-      }, 200);
+      }, 400);
       setInterval(function () {
         // nodes7 代码
         inst.conn.writeItems(
