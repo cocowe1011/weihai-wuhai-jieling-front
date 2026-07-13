@@ -3666,11 +3666,16 @@ export default {
       };
     },
     deviceList() {
-      return Object.keys(this.deviceNodes).map((key) => ({
-        id: key,
-        ...this.deviceNodes[key]
-      }));
+      // 稳定引用：避免每次 PLC 同步都 spread 出新对象，导致整表重渲染/GC 压力
+      return this._cachedDeviceList || [];
     }
+  },
+  created() {
+    this._cachedDeviceList = Object.keys(this.deviceNodes).map((key) => {
+      const node = this.deviceNodes[key];
+      if (!node.id) node.id = key;
+      return node;
+    });
   },
   mounted() {
     this.initializeMarkers();
@@ -5520,22 +5525,27 @@ export default {
         if (node.plcChannel !== plcChannel) return;
 
         if (node.motorAddr) {
-          node.motorStatus = readBit(node.motorAddr);
+          const next = readBit(node.motorAddr);
+          if (node.motorStatus !== next) node.motorStatus = next;
         } else if (node.motorAddrs && node.motorAddrs.length) {
-          node.motorStatus = node.motorAddrs.some((addr) => readBit(addr));
+          const next = node.motorAddrs.some((addr) => readBit(addr));
+          if (node.motorStatus !== next) node.motorStatus = next;
         }
 
         if (node.sensorAddr) {
-          node.sensorStatus = readBit(node.sensorAddr);
+          const next = readBit(node.sensorAddr);
+          if (node.sensorStatus !== next) node.sensorStatus = next;
         }
 
         if (node.trayIdAddr) {
           const v = Number(values[node.trayIdAddr] ?? 0);
-          node.trayId = v !== 0 ? String(v) : '';
+          const next = v !== 0 ? String(v) : '';
+          if (node.trayId !== next) node.trayId = next;
         }
 
         if (node.destinationAddr) {
-          node.destination = Number(values[node.destinationAddr] ?? 0);
+          const next = Number(values[node.destinationAddr] ?? 0);
+          if (node.destination !== next) node.destination = next;
         }
       });
     },
@@ -5618,10 +5628,39 @@ export default {
         // 监听容器尺寸变化（窗口缩放、侧边栏收缩/展开均会触发）
         const container = this.$el.querySelector('.floor-image-container');
         if (container && typeof ResizeObserver !== 'undefined') {
-          this._resizeObserver = new ResizeObserver(() => {
+          this._lastContainerSize = {
+            width: container.clientWidth,
+            height: container.clientHeight
+          };
+          this._resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+            const { width, height } = entry.contentRect;
+            const last = this._lastContainerSize;
+            // 尺寸变化不足 1px 时跳过，避免弹窗/订单操作引起的布局抖动反复重算
+            if (
+              last &&
+              Math.abs(last.width - width) < 1 &&
+              Math.abs(last.height - height) < 1
+            ) {
+              return;
+            }
+            this._lastContainerSize = { width, height };
             if (this._resizeRaf) cancelAnimationFrame(this._resizeRaf);
             this._resizeRaf = requestAnimationFrame(() => {
               this._resizeRaf = null;
+              const now = Date.now();
+              // 连续缩放时最多约 10 次/秒重算，结束时补一次
+              if (this._lastResizeRun && now - this._lastResizeRun < 100) {
+                clearTimeout(this._resizeTrailTimer);
+                this._resizeTrailTimer = setTimeout(() => {
+                  this._resizeTrailTimer = null;
+                  this._lastResizeRun = Date.now();
+                  this.updateMarkerPositions();
+                }, 100);
+                return;
+              }
+              this._lastResizeRun = now;
               this.updateMarkerPositions();
             });
           });
@@ -5634,6 +5673,7 @@ export default {
       images.forEach((image) => {
         const imageWrapper = image.parentElement;
         if (!imageWrapper) return;
+        if (!image.naturalWidth || !image.naturalHeight) return;
 
         const markers = imageWrapper.querySelectorAll(
           '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker, .device-signal-node'
@@ -5655,8 +5695,10 @@ export default {
           const x = parseFloat(marker.dataset.x);
           const y = parseFloat(marker.dataset.y);
           if (!isNaN(x) && !isNaN(y)) {
-            marker.style.left = `${imageOffsetX + x * scaleX}px`;
-            marker.style.top = `${imageOffsetY + y * scaleY}px`;
+            const left = `${imageOffsetX + x * scaleX}px`;
+            const top = `${imageOffsetY + y * scaleY}px`;
+            if (marker.style.left !== left) marker.style.left = left;
+            if (marker.style.top !== top) marker.style.top = top;
           }
         });
 
@@ -5666,10 +5708,13 @@ export default {
           const y = parseFloat(cart.dataset.y);
           const width = parseFloat(cart.dataset.width);
           if (!isNaN(x) && !isNaN(y)) {
-            cart.style.left = `${imageOffsetX + x * scaleX}px`;
-            cart.style.top = `${imageOffsetY + y * scaleY}px`;
+            const left = `${imageOffsetX + x * scaleX}px`;
+            const top = `${imageOffsetY + y * scaleY}px`;
+            if (cart.style.left !== left) cart.style.left = left;
+            if (cart.style.top !== top) cart.style.top = top;
             if (!isNaN(width)) {
-              cart.style.width = `${width * scaleX}px`;
+              const nextWidth = `${width * scaleX}px`;
+              if (cart.style.width !== nextWidth) cart.style.width = nextWidth;
             }
           }
         });
@@ -6160,7 +6205,9 @@ export default {
       if (value > plcRange.max) value = plcRange.max;
       // 右侧为原点：PLC min → x max（右），PLC max → x min（左），从右往左滑动
       const ratio = (value - plcRange.min) / (plcRange.max - plcRange.min);
-      cart.x = Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
+      const nextX = Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
+      if (cart.x === nextX) return;
+      cart.x = nextX;
       this.$nextTick(() => {
         this.updateCartPositionOnly(cartId);
       });
@@ -6456,6 +6503,10 @@ export default {
     if (this._resizeRaf) {
       cancelAnimationFrame(this._resizeRaf);
       this._resizeRaf = null;
+    }
+    if (this._resizeTrailTimer) {
+      clearTimeout(this._resizeTrailTimer);
+      this._resizeTrailTimer = null;
     }
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
