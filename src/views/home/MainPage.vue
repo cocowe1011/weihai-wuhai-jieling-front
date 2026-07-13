@@ -264,7 +264,7 @@
                     { alarm: log.type === 'alarm', unread: log.unread }
                   ]"
                 >
-                  <div class="log-time">{{ formatTime(log.timestamp) }}</div>
+                  <div class="log-time">{{ log.timeStr }}</div>
                   <div class="log-item-content">{{ log.message }}</div>
                 </div>
               </template>
@@ -3703,7 +3703,16 @@ export default {
       }
     }, 30000);
     this.refreshOrders();
+    // PLC 数据处理守卫：防止上一轮 watcher flush 未完成时就处理新数据，导致微任务无限堆积
+    this._plcLatest_0 = null;
+    this._plcLatest_1 = null;
+    this._plcProcessing = false;
     ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
+      this._plcLatest_0 = { values, values2 };
+      if (this._plcProcessing) return;
+      this._flushPlcData();
+    });
+    this._processPlc0 = (values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 一楼基础状态
@@ -3827,8 +3836,35 @@ export default {
       this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
       this.syncDeviceNodesFromPlc(values, 0);
-    });
+    };
     ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
+      this._plcLatest_1 = { values, values2 };
+      if (this._plcProcessing) return;
+      this._flushPlcData();
+    });
+    this._flushPlcData = () => {
+      if (this._plcProcessing) return;
+      this._plcProcessing = true;
+      if (this._plcLatest_0) {
+        const d = this._plcLatest_0;
+        this._plcLatest_0 = null;
+        this._processPlc0(d.values, d.values2);
+      }
+      if (this._plcLatest_1) {
+        const d = this._plcLatest_1;
+        this._plcLatest_1 = null;
+        this._processPlc1(d.values, d.values2);
+      }
+      // setTimeout(0) 是宏任务，在所有微任务（Vue watcher flush）完成后才执行
+      setTimeout(() => {
+        this._plcProcessing = false;
+        // 如果 flush 期间有新数据到达，立即处理
+        if (this._plcLatest_0 || this._plcLatest_1) {
+          this._flushPlcData();
+        }
+      }, 0);
+    };
+    this._processPlc1 = (values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
       // 二楼基础状态
@@ -3950,7 +3986,7 @@ export default {
       this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
       this.syncDeviceNodesFromPlc(values, 1);
-    });
+    };
     // 给PLC数据加载时间
     setTimeout(() => {
       this.addLog('isDataReady数据加载完成');
@@ -6149,11 +6185,17 @@ export default {
     },
     // 添加新的日志方法
     addLog(message, type = 'running') {
+      const now = new Date();
       const log = {
         id: this.logId++,
         type,
         message,
-        timestamp: new Date().getTime(),
+        timestamp: now.getTime(),
+        timeStr: now.toLocaleTimeString('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
         unread: type === 'alarm'
       };
 
@@ -6208,9 +6250,8 @@ export default {
       const nextX = Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
       if (cart.x === nextX) return;
       cart.x = nextX;
-      this.$nextTick(() => {
-        this.updateCartPositionOnly(cartId);
-      });
+      // 直接更新 DOM 位置，无需 $nextTick（函数直接读取 Vue data 并操作 style，不依赖渲染周期）
+      this.updateCartPositionOnly(cartId);
     },
     updateCartPositionOnly(cartId) {
       const images = document.querySelectorAll('.floor-image');
