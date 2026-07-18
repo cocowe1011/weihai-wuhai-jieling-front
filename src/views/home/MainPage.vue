@@ -4524,6 +4524,18 @@ export default {
               this.addLog(
                 `订单 ${this.executeOrderForm.orderId} 开始执行，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
               );
+              // 上货信号：DBW70=1；DBW72 按目的地灭菌柜是否出货中写 1/0（均脉冲 2s）
+              this.writePlcPulse('W_DBW70', 1);
+              const dest = Number(this.executeOrderForm.destination);
+              const isOutbound =
+                this.sterToAnalysisExecuting &&
+                Number(this.sterToAnalysisFrom) === dest;
+              this.writePlcPulse('W_DBW72', isOutbound ? 0 : 1);
+              this.addLog(
+                `上货信号：DBW70=1，DBW72=${isOutbound ? 0 : 1}（目的地${dest}${
+                  isOutbound ? '出货中' : '未出货'
+                }）`
+              );
               this.executeOrderDialogVisible = false;
               this.refreshOrders();
             } else {
@@ -4675,8 +4687,9 @@ export default {
 
         // 2. 检查订单是否已完成数量
         if (runningOrder.loadedQuantity >= runningOrder.orderQuantity) {
+          this.writePlcPulse('W_DBW70', 0);
           this.addLog(
-            `上货请求失败：订单 ${runningOrder.orderId} 已上货数量(${runningOrder.loadedQuantity})已达到订单数量(${runningOrder.orderQuantity})`,
+            `上货请求失败：订单 ${runningOrder.orderId} 已上货数量(${runningOrder.loadedQuantity})已达到订单数量(${runningOrder.orderQuantity})，已发送DBW70=0`,
             'alarm'
           );
           this.$message.warning('该订单已上货完成，无需继续上货');
@@ -4779,6 +4792,13 @@ export default {
         this.addLog(
           `上货请求处理完成：虚拟ID=${virtualId}，订单=${runningOrder.orderId}，目的地=${destination}，已上货${newLoadedQty}/${runningOrder.orderQuantity}`
         );
+        // 上货数量达上限：脉冲写 DBW70=0
+        if (newLoadedQty >= runningOrder.orderQuantity) {
+          this.writePlcPulse('W_DBW70', 0);
+          this.addLog(
+            `订单 ${runningOrder.orderId} 上货数量已满，已发送DBW70=0`
+          );
+        }
       } catch (error) {
         console.error('处理上货请求时出错:', error);
         this.addLog('处理上货请求时发生异常: ' + error.message, 'alarm');
