@@ -1330,6 +1330,32 @@
               </div>
             </div>
           </div>
+          <!-- 1015 中转队列数量模拟 -->
+          <div class="test-section">
+            <span class="test-label">1015数量测试:</span>
+            <div class="steril-quantity-test-grid">
+              <div class="steril-quantity-item">
+                <span class="steril-quantity-label">1015</span>
+                <span class="steril-quantity-value">{{
+                  floor1Queue1015Qty
+                }}</span>
+                <div class="steril-quantity-buttons">
+                  <button
+                    class="quantity-btn plus"
+                    @click="updateQueue1015Quantity(1)"
+                  >
+                    +
+                  </button>
+                  <button
+                    class="quantity-btn minus"
+                    @click="updateQueue1015Quantity(-1)"
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="test-section">
             <span class="test-label">小车位置测试:</span>
             <div class="cart-position-test-container">
@@ -1864,7 +1890,8 @@ export default {
         { id: 45, queueName: '已灭菌27', trayInfo: [] },
         { id: 46, queueName: '已灭菌28', trayInfo: [] },
         { id: 47, queueName: '已灭菌29', trayInfo: [] },
-        { id: 48, queueName: '已灭菌30', trayInfo: [] }
+        { id: 48, queueName: '已灭菌30', trayInfo: [] },
+        { id: 49, queueName: '1015', trayInfo: [] }
       ],
       // 添加队列位置标识数据
       queueMarkers: [
@@ -1915,7 +1942,8 @@ export default {
         { id: 45, name: '(已)\n灭菌27', queueId: 45, x: 405, y: 660 },
         { id: 46, name: '(已)\n灭菌28', queueId: 46, x: 298, y: 660 },
         { id: 47, name: '(已)\n灭菌29', queueId: 47, x: 195, y: 660 },
-        { id: 48, name: '(已)\n灭菌30', queueId: 48, x: 95, y: 660 }
+        { id: 48, name: '(已)\n灭菌30', queueId: 48, x: 95, y: 660 },
+        { id: 49, name: '1015', queueId: 49, x: 700, y: 650 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
@@ -1992,6 +2020,7 @@ export default {
       floor1Sterilization31Complete: 0, // DBW118 灭菌柜31内实际数量--完成
       floor1Sterilization32Complete: 0, // DBW120 灭菌柜32内实际数量--完成
       floor1Sterilization33Complete: 0, // DBW122 灭菌柜33内实际数量--完成
+      floor1Queue1015Qty: 0, // DBW68 1015内实际数量
       // 灭菌完成状态（DBW124~138 BIT6/BIT14）
       sterilizationCompleteWord124: {
         bit6: '0', // 19
@@ -3798,6 +3827,9 @@ export default {
       this.floor1Sterilization32Complete = Number(values.DBW120 ?? 0);
       this.floor1Sterilization33Complete = Number(values.DBW122 ?? 0);
 
+      // 一楼 1015 内实际数量
+      this.floor1Queue1015Qty = Number(values.DBW68 ?? 0);
+
       // 一楼灭菌完成状态 DBW124~138 BIT6/BIT14
       let word124 = this.convertToWord(values.DBW124 ?? 0);
       this.sterilizationCompleteWord124.bit6 = getBit(word124, 14);
@@ -4200,6 +4232,10 @@ export default {
     },
     floor1Sterilization33Complete(newVal, oldVal) {
       this.handleSterilizationCompleteQuantityChange(33, newVal, oldVal);
+    },
+    // 监听 1015 内实际数量 DBW68（31-33 出货中转）
+    floor1Queue1015Qty(newVal, oldVal) {
+      this.handleQueue1015QuantityChange(newVal, oldVal);
     },
     // 监听解析房内实际数量 DBW116-DBW148（仅入房；出房由 DBW30 请求触发）
     floor2AnalysisRoom1Qty(newVal, oldVal) {
@@ -4826,6 +4862,12 @@ export default {
       const key = `floor2AnalysisRoom${roomNo}Qty`;
       this[key] = Math.max(0, parseInt(this[key] || 0) + change);
     },
+    updateQueue1015Quantity(change) {
+      this.floor1Queue1015Qty = Math.max(
+        0,
+        parseInt(this.floor1Queue1015Qty || 0) + change
+      );
+    },
     writePlcPulse(tag, value) {
       ipcRenderer.send('writeSingleValueToPLC_0', tag, value);
       setTimeout(() => {
@@ -4867,6 +4909,10 @@ export default {
         return cabinetNo + 17;
       }
       return cabinetNo - 18;
+    },
+    // 1015 中转队列索引（id 49）
+    getQueue1015Index() {
+      return this.queues.findIndex((q) => q.id === 49);
     },
     getAnalysisQueueIndex(roomNo) {
       return roomNo + 16;
@@ -5267,12 +5313,74 @@ export default {
         );
       }
     },
+    handleQueue1015QuantityChange(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (!(newVal > oldVal)) return;
+
+      const increaseCount = newVal - oldVal;
+      if (!this.sterToAnalysisExecuting) {
+        this.addLog(
+          `1015数量增加${increaseCount}，但当前未处于灭菌出货执行状态，忽略托盘移动`,
+          'alarm'
+        );
+        return;
+      }
+
+      const cabinetNo = Number(this.sterToAnalysisFrom);
+      if (cabinetNo < 31 || cabinetNo > 33) {
+        this.addLog(
+          `1015数量增加${increaseCount}，当前出货灭菌柜为${
+            cabinetNo || '--'
+          }（非31-33），忽略托盘移动`,
+          'alarm'
+        );
+        return;
+      }
+
+      const sourceQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      const queue1015 = this.queues[this.getQueue1015Index()];
+      if (!sourceQueue || !queue1015) {
+        this.addLog(
+          `1015数量增加：找不到灭菌柜${cabinetNo}或1015队列`,
+          'alarm'
+        );
+        return;
+      }
+
+      const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+      let movedCount = 0;
+      for (let i = 0; i < increaseCount; i++) {
+        if (sourceQueue.trayInfo.length === 0) break;
+        const tray = sourceQueue.trayInfo.shift();
+        this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        queue1015.trayInfo.push(tray);
+        movedCount++;
+      }
+
+      if (movedCount > 0) {
+        this.addLog(
+          `灭菌柜${cabinetNo}出货中转：移动${movedCount}个托盘到1015队列，时间：${currentTime}`
+        );
+      }
+      if (movedCount < increaseCount) {
+        this.addLog(
+          `1015数量增加${increaseCount}，灭菌柜${cabinetNo}队列托盘不足，仅移动${movedCount}个`,
+          'alarm'
+        );
+      }
+    },
     handleSterilOutTrayRequest(cabinetNo) {
       if (!this.sterToAnalysisExecuting) return;
       if (cabinetNo !== Number(this.sterToAnalysisFrom)) return;
       if (this.isHandlingSterilOutRequest) return;
 
-      const sourceQueue = this.queues[this.getSterilQueueIndex(cabinetNo)];
+      const isCabinet3133 = cabinetNo >= 31 && cabinetNo <= 33;
+      const sterilSourceQueue =
+        this.queues[this.getSterilQueueIndex(cabinetNo)];
+      // 31-33 经 1015 中转出货；19-30 仍从已灭菌队列出货
+      const sourceQueue = isCabinet3133
+        ? this.queues[this.getQueue1015Index()]
+        : sterilSourceQueue;
       const conveyorQueue = this.queues[16];
       if (!sourceQueue || !conveyorQueue) {
         this.addLog(`灭菌柜${cabinetNo}出货请求，找不到对应队列`, 'alarm');
@@ -5291,8 +5399,20 @@ export default {
           );
         }
         if (trayIndex === -1) {
-          this.addLog(`灭菌柜${cabinetNo}出货请求：队列空，无法出库`, 'alarm');
-          this.cancelSterToAnalysis();
+          this.addLog(
+            isCabinet3133
+              ? `灭菌柜${cabinetNo}出货请求：1015队列空，无法出库`
+              : `灭菌柜${cabinetNo}出货请求：队列空，无法出库`,
+            'alarm'
+          );
+          if (!isCabinet3133) {
+            this.cancelSterToAnalysis();
+          } else if (
+            sterilSourceQueue &&
+            sterilSourceQueue.trayInfo.length === 0
+          ) {
+            this.cancelSterToAnalysis();
+          }
           return;
         }
 
@@ -5328,14 +5448,18 @@ export default {
         this.writeSterilOutTrayToPlc(cabinetNo, virtualId, dest);
 
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        // 流转追加：离开灭菌柜进入输送线时间
-        this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        // 流转追加：离开灭菌柜进入输送线时间（31-33 在进入1015时已写过则保留）
+        if (!tray.outSterilizationRoomTime) {
+          this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        }
         conveyorQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
         this.sterToAnalysisSentCount++;
         this.sterToAnalysisTrayCode = tray.trayCode || tray.id || '';
         this.addLog(
-          `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 离开灭菌柜进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
+          isCabinet3133
+            ? `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 从1015进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
+            : `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 离开灭菌柜进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
         );
 
         // 指定解析房：该房有效占用满15则停止；未指定时满了由下次请求自动切下一房
@@ -5350,7 +5474,16 @@ export default {
           return;
         }
 
-        if (sourceQueue.trayInfo.length === 0) {
+        if (isCabinet3133) {
+          // 灭菌源队列与 1015 均为空时才停止（1015 暂时为空可能还有柜内托盘未到）
+          const sterilEmpty =
+            !sterilSourceQueue || sterilSourceQueue.trayInfo.length === 0;
+          const queue1015Empty = sourceQueue.trayInfo.length === 0;
+          if (sterilEmpty && queue1015Empty) {
+            this.cancelSterToAnalysis();
+            this.addLog(`灭菌柜${cabinetNo}与1015队列均已空，已自动停止执行`);
+          }
+        } else if (sourceQueue.trayInfo.length === 0) {
           this.cancelSterToAnalysis();
           this.addLog(`灭菌柜${cabinetNo}队列已空，已自动停止执行`);
         }
@@ -6199,13 +6332,14 @@ export default {
         unread: type === 'alarm'
       };
 
-      if (type === 'running') {
-        this.runningLogs.unshift(log);
-        // 保持日志数量在合理范围内
-        if (this.runningLogs.length > 100) {
-          this.runningLogs.pop();
-        }
-      } else {
+      // 只要是日志就往运行日志中添加
+      this.runningLogs.unshift(log);
+      // 保持日志数量在合理范围内
+      if (this.runningLogs.length > 100) {
+        this.runningLogs.pop();
+      }
+
+      if (type === 'alarm') {
         this.alarmLogs.unshift(log);
         if (this.alarmLogs.length > 100) {
           this.alarmLogs.pop();
