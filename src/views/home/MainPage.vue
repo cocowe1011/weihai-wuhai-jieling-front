@@ -6611,9 +6611,12 @@ export default {
       this.sterToAnalysisResolvedTo = '';
       this.sterToAnalysisTrayCode = '';
       if (wasExecuting) {
+        // 与执行时写入的变量一一对应复位
         this.writePlcPulse('W_DBW12', 0);
+        this.writePlcPulse('W_DBW20', 0);
+        this.writePlcPulse('W_DBW22', 0);
         this.addLog(
-          '灭菌柜到解析房选择已取消，已发送DBW12=0，切换为不执行状态'
+          '灭菌柜到解析房选择已取消，已发送DBW12=0、DBW20=0、DBW22=0，切换为不执行状态'
         );
       } else {
         this.addLog('灭菌柜到解析房选择已取消，切换为不执行状态');
