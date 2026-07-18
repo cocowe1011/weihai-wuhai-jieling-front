@@ -5088,6 +5088,13 @@ export default {
 
       // 无可出货的解析完成托盘（队列空、无完成托盘、或队首未完成）→ 停止
       if (!this.canShipAnalysisQueueHead(roomNo)) {
+        // 解析出货完成且柜内仍有剩余托盘：DB1001.DBW74 写1两秒
+        if (this.getAnalysisRoomCount(roomNo) > 0) {
+          this.writePlcPulse('W_DBW74', 1);
+          this.addLog(
+            `解析房${roomNo}出货完成，柜内仍有剩余托盘，写入DB1001.DBW74=1（2秒）`
+          );
+        }
         this.cancelAnalysisOut();
         this.addLog(
           `解析房${roomNo}出货执行完成，已无解析完成托盘，已自动停止执行`
