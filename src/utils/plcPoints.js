@@ -125,8 +125,7 @@ var variables1 = {
   W_DBW66: 'DB1001,INT66', // 小车右移
   W_DBW68: 'DB1001,INT68', // WCS修改目标数量
   W_DBW70: 'DB1001,INT70', // 上货订单开启
-  W_DBW72: 'DB1001,INT72', // WCS执行灭菌进货命令
-  W_DBW74: 'DB1001,INT74' // 解析出货后柜内剩余托盘
+  W_DBW72: 'DB1001,INT72' // WCS执行灭菌进货命令
 };
 
 // 二楼 PLC 变量定义（二楼-读取点位.csv / DB1000、二楼-写入点位.csv / DB1001）
@@ -293,7 +292,8 @@ var variables2 = {
   W_DBW34: 'DB1001,INT34', // 转盘反转
   W_DBW36: 'DB1001,INT36', // 小车左移
   W_DBW38: 'DB1001,INT38', // 小车右移
-  W_DBW40: 'DB1001,INT40' // WCS修改目标数量
+  W_DBW40: 'DB1001,INT40', // WCS修改目标数量
+  W_DBW42: 'DB1001,INT42' // 解析出货后柜内剩余托盘
 };
 
 // 一楼 PLC 读取点位列表（与 一楼-读取点位.csv 一致）
