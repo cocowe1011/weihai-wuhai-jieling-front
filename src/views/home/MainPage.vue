@@ -1172,12 +1172,12 @@
               </div>
             </div>
           </div>
-          <!-- 灭菌目的地请求信号模拟（19-33） -->
+          <!-- 灭菌目的地请求信号模拟（19-30） -->
           <div class="test-section">
-            <span class="test-label">灭菌目的地请求信号测试(19-33):</span>
+            <span class="test-label">灭菌目的地请求信号测试(19-30):</span>
             <div class="steril-complete-status-test-grid">
               <button
-                v-for="cabinetNo in 15"
+                v-for="cabinetNo in 12"
                 :key="'steril-out-req-' + (cabinetNo + 18)"
                 class="steril-complete-status-btn"
                 :class="{
@@ -1354,6 +1354,15 @@
                   </button>
                 </div>
               </div>
+            </div>
+            <div class="steril-complete-status-test-grid">
+              <button
+                class="steril-complete-status-btn"
+                :class="{ active: floor1SterilOutTrayRequest.bit15 === '1' }"
+                @click="manualTriggerQueue1015OutRequest"
+              >
+                M1015出货请求 ({{ floor1SterilOutTrayRequest.bit15 }})
+              </button>
             </div>
           </div>
           <div class="test-section">
@@ -4058,7 +4067,7 @@ export default {
         this.handleUploadTrayRequest();
       }
     },
-    // 监听灭菌出货请求 DB1000.DBW24 bit0~14 上升沿
+    // 监听灭菌出货请求 DB1000.DBW24：bit0~11 对应 19-30 灭菌柜出货；bit15 对应 M1015（31-33 经 1015 出货）上升沿
     'floor1SterilOutTrayRequest.bit0'(newVal, oldVal) {
       if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
@@ -4131,22 +4140,11 @@ export default {
         this.handleSterilOutTrayRequest(30);
       }
     },
-    'floor1SterilOutTrayRequest.bit12'(newVal, oldVal) {
+    // 31-33 出货经 1015 中转：M1015（bit15）请求时从 1015 出队写PLC
+    'floor1SterilOutTrayRequest.bit15'(newVal, oldVal) {
       if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
-        this.handleSterilOutTrayRequest(31);
-      }
-    },
-    'floor1SterilOutTrayRequest.bit13'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleSterilOutTrayRequest(32);
-      }
-    },
-    'floor1SterilOutTrayRequest.bit14'(newVal, oldVal) {
-      if (!this.isDataReady) return;
-      if (newVal === '1' && oldVal === '0') {
-        this.handleSterilOutTrayRequest(33);
+        this.handleQueue1015OutRequest();
       }
     },
     // 监听灭菌柜内未完成实际数量 DBW70-DBW92（19-30：上货区→未灭菌）
@@ -4852,6 +4850,13 @@ export default {
         this.floor1SterilOutTrayRequest[bit] = '0';
       }, 1000);
     },
+    // 手动触发 M1015（DBW24.bit15）出货请求信号（测试用，1015 → 输送线）
+    manualTriggerQueue1015OutRequest() {
+      this.floor1SterilOutTrayRequest.bit15 = '1';
+      setTimeout(() => {
+        this.floor1SterilOutTrayRequest.bit15 = '0';
+      }, 1000);
+    },
     // 手动触发解析出货目的地请求信号（测试用，房号 1-14 → bit0-13）
     manualTriggerAnalysisOutRequest(roomNo) {
       const bit = 'bit' + (roomNo - 1);
@@ -5374,19 +5379,29 @@ export default {
         return;
       }
 
+      // 本次执行选择的解析房（executeSterToAnalysis 时已解析并存入 sterToAnalysisResolvedTo）
+      const analysisDest =
+        this.sterToAnalysisResolvedTo || this.sterToAnalysisTo || '';
+
       const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
       let movedCount = 0;
       for (let i = 0; i < increaseCount; i++) {
         if (sourceQueue.trayInfo.length === 0) break;
         const tray = sourceQueue.trayInfo.shift();
         this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        // 将选择的解析房设置到托盘信息中（后续 1015 出队时据此写PLC）
+        if (analysisDest) {
+          this.$set(tray, 'analysisDestination', String(analysisDest));
+        }
         queue1015.trayInfo.push(tray);
         movedCount++;
       }
 
       if (movedCount > 0) {
         this.addLog(
-          `灭菌柜${cabinetNo}出货中转：移动${movedCount}个托盘到1015队列，时间：${currentTime}`
+          `灭菌柜${cabinetNo}出货中转：移动${movedCount}个托盘到1015队列（解析房=${
+            analysisDest || '未指定'
+          }），时间：${currentTime}`
         );
       }
       if (movedCount < increaseCount) {
@@ -5394,6 +5409,12 @@ export default {
           `1015数量增加${increaseCount}，灭菌柜${cabinetNo}队列托盘不足，仅移动${movedCount}个`,
           'alarm'
         );
+      }
+
+      // 选择的 31-33 队列托盘已全部移入 1015（队列清空），停止执行
+      if (sourceQueue.trayInfo.length === 0) {
+        this.cancelSterToAnalysis();
+        this.addLog(`灭菌柜${cabinetNo}队列已全部移入1015，已自动停止执行`);
       }
     },
     handleSterilOutTrayRequest(cabinetNo) {
@@ -5514,6 +5535,71 @@ export default {
           this.cancelSterToAnalysis();
           this.addLog(`灭菌柜${cabinetNo}队列已空，已自动停止执行`);
         }
+      } finally {
+        this.isHandlingSterilOutRequest = false;
+      }
+    },
+    // DBW24.bit15（M1015）上升沿：1015 请求目的地和虚拟ID，从1015出队，
+    // 根据托盘上设置的解析房和虚拟ID写PLC（W_DBW24=虚拟ID，W_DBW26=目的地），再移入输送线队列
+    handleQueue1015OutRequest() {
+      if (this.isHandlingSterilOutRequest) return;
+
+      const queue1015 = this.queues[this.getQueue1015Index()];
+      const conveyorQueue = this.queues[16];
+      if (!queue1015 || !conveyorQueue) {
+        this.addLog(
+          '1015出货请求(DBW24.bit15)：找不到1015或输送线队列',
+          'alarm'
+        );
+        return;
+      }
+
+      this.isHandlingSterilOutRequest = true;
+      try {
+        if (queue1015.trayInfo.length === 0) {
+          this.addLog(
+            '1015出货请求(DBW24.bit15)：1015队列空，无法出库',
+            'alarm'
+          );
+          return;
+        }
+
+        const tray = queue1015.trayInfo[0];
+        const dest = Number(tray.analysisDestination || 0);
+        const virtualId = Number(tray.virtualId || 0);
+        if (!dest) {
+          this.addLog(
+            `1015出货请求：托盘 ${
+              tray.trayCode || tray.id
+            } 缺少解析房目的地，无法写入PLC`,
+            'alarm'
+          );
+          return;
+        }
+        if (!virtualId) {
+          this.addLog(
+            `1015出货请求：托盘 ${
+              tray.trayCode || tray.id
+            } 缺少虚拟ID，无法写入PLC`,
+            'alarm'
+          );
+          return;
+        }
+
+        // 31-33 出货口写虚拟ID和目的地：W_DBW24=虚拟ID，W_DBW26=目的地
+        this.writePlcPulse('W_DBW24', virtualId);
+        this.writePlcPulse('W_DBW26', dest);
+
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        if (!tray.outSterilizationRoomTime) {
+          this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        }
+        conveyorQueue.trayInfo.push(tray);
+        queue1015.trayInfo.shift();
+        this.sterToAnalysisTrayCode = tray.trayCode || tray.id || '';
+        this.addLog(
+          `1015出货请求(DBW24.bit15)：托盘 ${this.sterToAnalysisTrayCode} 从1015进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
+        );
       } finally {
         this.isHandlingSterilOutRequest = false;
       }
