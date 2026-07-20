@@ -4906,6 +4906,13 @@ export default {
       }
       return `W_DBW6_BIT${bitIndex}`;
     },
+    // 解析出货后柜内剩余托盘信号：解析1~14 对应 DB1001.DBW42~DBW68（一柜一信号）
+    getAnalysisRemainingPlcTag(roomNo) {
+      if (roomNo < 1 || roomNo > 14) {
+        return null;
+      }
+      return `W_DBW${42 + (roomNo - 1) * 2}`;
+    },
     // 解析出货执行中持续写 DB1001.DBW6 对应位=1
     startAnalysisOutPlcSignal(roomNo) {
       const tag = this.getAnalysisOutPlcTag(roomNo);
@@ -5093,12 +5100,15 @@ export default {
 
       // 无可出货的解析完成托盘（队列空、无完成托盘、或队首未完成）→ 停止
       if (!this.canShipAnalysisQueueHead(roomNo)) {
-        // 解析出货完成且柜内仍有剩余托盘：二楼 DB1001.DBW42 写1两秒
+        // 解析出货完成且柜内仍有剩余托盘：按解析房写对应信号（一柜一信号，写 1，脉冲两秒）
         if (this.getAnalysisRoomCount(roomNo) > 0) {
-          this.writePlcPulse('W_DBW42', 1, 1);
-          this.addLog(
-            `解析房${roomNo}出货完成，柜内仍有剩余托盘，写入二楼DB1001.DBW42=1（2秒）`
-          );
+          const remainTag = this.getAnalysisRemainingPlcTag(roomNo);
+          if (remainTag) {
+            this.writePlcPulse(remainTag, 1, 1);
+            this.addLog(
+              `解析房${roomNo}出货完成，柜内仍有剩余托盘，写入二楼${remainTag}=1（2秒）`
+            );
+          }
         }
         this.cancelAnalysisOut();
         this.addLog(
