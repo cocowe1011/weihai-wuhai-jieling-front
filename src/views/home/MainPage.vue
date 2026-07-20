@@ -1736,27 +1736,65 @@
           label-width="110px"
           size="small"
         >
-          <el-form-item label="虚拟ID" prop="virtualId">
+          <el-form-item label="数量" prop="quantity">
+            <el-input-number
+              v-model="newTrayForm.quantity"
+              :min="1"
+              :max="50"
+              :step="1"
+              style="width: 100%"
+            />
+          </el-form-item>
+          <el-form-item label="订单编号" prop="orderId">
             <el-input
-              v-model="newTrayForm.virtualId"
-              placeholder="请输入虚拟ID（10000-29999）"
+              v-model="newTrayForm.orderId"
+              placeholder="系统自动生成，可修改"
               clearable
             />
           </el-form-item>
-          <el-form-item label="订单编号">
-            <el-input :value="runningOrder?.orderId || '--'" disabled />
+          <el-form-item label="批号" prop="batchNo">
+            <el-input
+              v-model="newTrayForm.batchNo"
+              placeholder="系统自动生成，可修改"
+              clearable
+            />
           </el-form-item>
-          <el-form-item label="订单名称">
-            <el-input :value="runningOrder?.orderName || '--'" disabled />
+          <el-form-item label="产品名称" prop="productName">
+            <el-input
+              v-model="newTrayForm.productName"
+              placeholder="产品名称"
+              clearable
+            />
           </el-form-item>
-          <el-form-item label="产品名称">
-            <el-input :value="runningOrder?.productName || '--'" disabled />
+          <el-form-item label="解析时间" prop="analysisTime">
+            <el-input-number
+              v-model="newTrayForm.analysisTime"
+              :min="0.1"
+              :max="720"
+              :precision="1"
+              :step="0.1"
+              placeholder="请输入解析时间"
+              style="width: calc(100% - 42px)"
+            />
+            <span style="margin-left: 8px; color: #909399">小时</span>
           </el-form-item>
-          <el-form-item label="批号">
-            <el-input :value="runningOrder?.batchNo || '--'" disabled />
-          </el-form-item>
-          <el-form-item label="目的地">
-            <el-input :value="runningOrder?.destination || '--'" disabled />
+          <el-form-item
+            v-if="needAnalysisDestination"
+            label="解析房目的地"
+            prop="analysisDestination"
+          >
+            <el-select
+              v-model="newTrayForm.analysisDestination"
+              placeholder="请选择解析房目的地"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="i in 19"
+                :key="i"
+                :label="'解析房' + i"
+                :value="String(i)"
+              />
+            </el-select>
           </el-form-item>
         </el-form>
       </div>
@@ -1805,21 +1843,53 @@ export default {
       addTrayDialogVisible: false,
       isSubmitting: false,
       newTrayForm: {
-        virtualId: ''
+        quantity: 1,
+        orderId: '',
+        batchNo: '',
+        productName: '洁伶',
+        analysisTime: null,
+        analysisDestination: ''
       },
       trayFormRules: {
-        virtualId: [
-          { required: true, message: '请输入虚拟ID', trigger: 'blur' },
+        quantity: [
+          { required: true, message: '请输入数量', trigger: 'blur' },
           {
             validator: (rule, value, callback) => {
-              const id = Number(value);
-              if (!Number.isInteger(id) || id < 10000 || id > 29999) {
-                callback(new Error('虚拟ID需为10000-29999的整数'));
+              const n = Number(value);
+              if (!Number.isInteger(n) || n < 1 || n > 50) {
+                callback(new Error('数量需为1-50的整数'));
               } else {
                 callback();
               }
             },
             trigger: 'blur'
+          }
+        ],
+        orderId: [
+          { required: true, message: '请输入订单编号', trigger: 'blur' }
+        ],
+        batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
+        productName: [
+          { required: true, message: '请输入产品名称', trigger: 'blur' }
+        ],
+        analysisTime: [
+          { required: true, message: '请输入解析时间', trigger: 'blur' }
+        ],
+        analysisDestination: [
+          {
+            validator: (rule, value, callback) => {
+              // 仅 1015/输送线队列需要解析房目的地
+              if (!this.needAnalysisDestination) {
+                callback();
+                return;
+              }
+              if (!value) {
+                callback(new Error('请选择解析房目的地'));
+              } else {
+                callback();
+              }
+            },
+            trigger: 'change'
           }
         ]
       },
@@ -3647,6 +3717,12 @@ export default {
     },
     selectedQueue() {
       return this.queues[this.selectedQueueIndex];
+    },
+    // 1015队列(id 49) 与 输送线队列(id 17) 添加托盘时需要填写解析房目的地
+    needAnalysisDestination() {
+      const q = this.selectedQueue;
+      if (!q) return false;
+      return q.id === 17 || q.id === 49;
     },
     runningOrder() {
       return this.ordersList.find((o) => o.orderStatus === 1) || null;
@@ -6271,12 +6347,20 @@ export default {
       }
     },
     showAddTrayDialog() {
-      if (!this.runningOrder) {
-        this.$message.warning('当前没有执行中的订单，无法添加托盘');
+      if (!this.selectedQueue) {
+        this.$message.warning('请先选择队列');
         return;
       }
+      // 订单编号、批号自动生成；产品名称固定为“洁伶”；数量默认1
+      const stamp = this.generateOrderTimeStamp();
+      const rand = String(Math.floor(Math.random() * 900) + 100);
       this.newTrayForm = {
-        virtualId: ''
+        quantity: 1,
+        orderId: `DD${stamp}${rand}`,
+        batchNo: `PH${stamp}${rand}`,
+        productName: '洁伶',
+        analysisTime: null,
+        analysisDestination: ''
       };
       this.addTrayDialogVisible = true;
       this.$nextTick(() => {
@@ -6286,95 +6370,80 @@ export default {
     async submitAddTray() {
       if (!this.selectedQueue) return;
 
-      const selectedOrder = this.runningOrder;
-      if (!selectedOrder) {
-        this.$message.warning('当前没有执行中的订单，无法添加托盘');
-        this.addTrayDialogVisible = false;
-        return;
-      }
-
       try {
         await this.$refs.newTrayForm.validate();
 
-        const virtualId = Number(this.newTrayForm.virtualId);
-        const exists = this.queues.some((queue) =>
-          (queue.trayInfo || []).some(
-            (tray) => Number(tray.virtualId || tray.trayCode) === virtualId
-          )
-        );
-        if (exists) {
-          this.$message.warning(`虚拟ID ${virtualId} 已存在于队列中`);
-          return;
-        }
-
         this.isSubmitting = true;
-        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        const destination = selectedOrder.destination
-          ? String(selectedOrder.destination)
+
+        const quantity = Number(this.newTrayForm.quantity) || 1;
+        // 解析队列（id 18-36）：默认进入解析时间为当前时间
+        const isAnalysisQueue =
+          this.selectedQueue.id >= 18 && this.selectedQueue.id <= 36;
+        // 仅 1015/输送线队列需要解析房目的地
+        const analysisDestination = this.needAnalysisDestination
+          ? String(this.newTrayForm.analysisDestination)
           : '';
-        // 字段同自动上货：创建时仅基础字段；流转字段见 handleUploadTrayRequest 注释
-        const newTray = {
-          trayCode: String(virtualId),
-          virtualId: virtualId,
-          trayTime: currentTime,
-          sendTo: destination, // 灭菌柜目的地（计划）
-          state: 'loaded',
-          sequenceNumber: String(
-            (this.selectedQueue.trayInfo || []).length + 1
-          ),
-          orderId: selectedOrder.orderId || '',
-          orderDbId: selectedOrder.id,
-          productCode: selectedOrder.productCode || '',
-          productName: selectedOrder.productName || '',
-          unit: selectedOrder.unit || '',
-          batchNo: selectedOrder.batchNo || '',
-          processName: selectedOrder.processName || '',
-          analysisTime:
-            selectedOrder.analysisTime != null
-              ? Number(Number(selectedOrder.analysisTime).toFixed(1))
-              : null, // 解析周期（小时，一位小数）
-          remark: `订单${selectedOrder.orderId}手动添加`
-        };
+        const analysisTimeVal =
+          this.newTrayForm.analysisTime != null
+            ? Number(Number(this.newTrayForm.analysisTime).toFixed(1))
+            : null; // 解析周期（小时，一位小数）
 
         if (!Array.isArray(this.selectedQueue.trayInfo)) {
           this.selectedQueue.trayInfo = [];
         }
 
-        this.selectedQueue.trayInfo.push(newTray);
-
-        this.updateQueueTrays(
-          this.selectedQueue.id,
-          this.selectedQueue.trayInfo
-        );
-
-        this.showTrays(this.selectedQueueIndex);
-
-        const newLoadedQty = (selectedOrder.loadedQuantity || 0) + 1;
-        try {
-          const res = await HttpUtil.post('/order_info/update', {
-            id: selectedOrder.id,
-            loadedQuantity: newLoadedQty
-          });
-          if (res.code === '200') {
-            this.refreshOrders();
-          } else {
-            this.addLog(
-              `订单 ${selectedOrder.orderId} 已上货数量更新失败`,
-              'alarm'
-            );
+        const addedCodes = [];
+        for (let i = 0; i < quantity; i++) {
+          // 虚拟ID根据队列当前最大虚拟ID自动递增生成
+          const virtualId = this.generateVirtualId();
+          if (!virtualId) {
+            this.addLog('添加托盘失败：虚拟ID已用尽(10000-29999)', 'alarm');
+            this.$message.error('虚拟ID已用尽，请联系管理员');
+            break;
           }
-        } catch (err) {
-          this.addLog(
-            `订单 ${selectedOrder.orderId} 已上货数量更新异常: ${err}`,
-            'alarm'
-          );
+          const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+          const newTray = {
+            trayCode: String(virtualId),
+            virtualId: virtualId,
+            trayTime: currentTime,
+            state: 'loaded',
+            sequenceNumber: String(
+              (this.selectedQueue.trayInfo || []).length + 1
+            ),
+            orderId: this.newTrayForm.orderId || '',
+            productName: this.newTrayForm.productName || '',
+            batchNo: this.newTrayForm.batchNo || '',
+            analysisTime: analysisTimeVal,
+            remark: `${this.selectedQueue.queueName}手动添加`
+          };
+          // 输送线/1015队列：填写解析房目的地
+          if (analysisDestination) {
+            newTray.analysisDestination = analysisDestination;
+          }
+          // 解析队列：默认进入解析时间为当前时间
+          if (isAnalysisQueue) {
+            newTray.inAnalysisRoomTime = currentTime;
+          }
+          this.selectedQueue.trayInfo.push(newTray);
+          addedCodes.push(newTray.trayCode);
         }
 
+        if (addedCodes.length === 0) {
+          return;
+        }
+
+        // 直接 push 已修改 trayInfo，queues 深度监听会自动持久化，无需再手动调用更新
+        this.showTrays(this.selectedQueueIndex);
+
         this.addLog(
-          `新托盘 ${newTray.trayCode} 已添加到 ${this.selectedQueue.queueName}，订单：${newTray.orderId}，批号：${newTray.batchNo}`
+          `已向 ${this.selectedQueue.queueName} 添加 ${
+            addedCodes.length
+          } 个托盘（虚拟ID：${addedCodes.join('、')}），订单：${
+            this.newTrayForm.orderId
+          }，批号：${this.newTrayForm.batchNo}`
         );
 
-        this.$message.success('托盘添加成功');
+        this.$message.success(`成功添加 ${addedCodes.length} 个托盘`);
         this.addTrayDialogVisible = false;
       } catch (error) {
         if (error !== false) {
