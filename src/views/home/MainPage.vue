@@ -1473,16 +1473,6 @@
         label-width="130px"
         size="small"
       >
-        <el-form-item label="订单编号">
-          <el-input v-model="executeOrderForm.orderId" readonly size="small" />
-        </el-form-item>
-        <el-form-item label="订单名称">
-          <el-input
-            v-model="executeOrderForm.orderName"
-            readonly
-            size="small"
-          />
-        </el-form-item>
         <el-form-item label="灭菌柜目的地" prop="destination">
           <el-select
             v-model="executeOrderForm.destination"
