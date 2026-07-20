@@ -165,6 +165,16 @@
                   <div class="info-row">
                     <span class="info-label">时间</span>
                     <span class="info-value">{{ order.createTime }}</span>
+                    <span class="info-label">目的地</span>
+                    <span class="info-value">{{
+                      order.destination || '--'
+                    }}</span>
+                    <span class="info-label">解析周期</span>
+                    <span class="info-value">{{
+                      order.analysisTime != null
+                        ? order.analysisTime + ' 小时'
+                        : '--'
+                    }}</span>
                   </div>
                 </div>
               </div>
@@ -1192,12 +1202,12 @@
               </button>
             </div>
           </div>
-          <!-- 解析目的地请求信号模拟（1-14） -->
+          <!-- 解析目的地请求信号模拟（仅 1，只有 bit0 有监听） -->
           <div class="test-section">
-            <span class="test-label">解析目的地请求信号测试(1-14):</span>
+            <span class="test-label">解析目的地请求信号测试(1):</span>
             <div class="steril-complete-status-test-grid">
               <button
-                v-for="roomNo in 14"
+                v-for="roomNo in 1"
                 :key="'analysis-out-req-' + roomNo"
                 class="steril-complete-status-btn"
                 :class="{
