@@ -1418,35 +1418,21 @@
         <el-form-item label="订单编号" prop="orderId">
           <el-input
             v-model="newOrderForm.orderId"
-            placeholder="请输入订单编号"
+            placeholder="系统自动生成，可修改"
             maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="订单名称" prop="orderName">
-          <el-input
-            v-model="newOrderForm.orderName"
-            placeholder="请输入订单名称"
-            maxlength="200"
           />
         </el-form-item>
         <el-form-item label="批号" prop="batchNo">
           <el-input
             v-model="newOrderForm.batchNo"
-            placeholder="请输入批号"
+            placeholder="系统自动生成，可修改"
             maxlength="100"
           />
         </el-form-item>
         <el-form-item label="产品名称" prop="productName">
           <el-input
             v-model="newOrderForm.productName"
-            placeholder="请输入产品名称"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="工艺名称" prop="processName">
-          <el-input
-            v-model="newOrderForm.processName"
-            placeholder="请输入工艺名称"
+            placeholder="产品名称"
             maxlength="200"
           />
         </el-form-item>
@@ -1691,35 +1677,21 @@
         <el-form-item label="订单编号" prop="orderId">
           <el-input
             v-model="editOrderForm.orderId"
-            placeholder="请输入订单编号"
+            placeholder="系统自动生成，可修改"
             maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="订单名称" prop="orderName">
-          <el-input
-            v-model="editOrderForm.orderName"
-            placeholder="请输入订单名称"
-            maxlength="200"
           />
         </el-form-item>
         <el-form-item label="批号" prop="batchNo">
           <el-input
             v-model="editOrderForm.batchNo"
-            placeholder="请输入批号"
+            placeholder="系统自动生成，可修改"
             maxlength="100"
           />
         </el-form-item>
         <el-form-item label="产品名称" prop="productName">
           <el-input
             v-model="editOrderForm.productName"
-            placeholder="请输入产品名称"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="工艺名称" prop="processName">
-          <el-input
-            v-model="editOrderForm.processName"
-            placeholder="请输入工艺名称"
+            placeholder="产品名称"
             maxlength="200"
           />
         </el-form-item>
@@ -3571,20 +3543,11 @@ export default {
       addOrderDialogVisible: false,
       newOrderForm: {
         orderId: '',
-        orderName: '',
         batchNo: '',
         productName: '',
-        processName: '',
         orderQuantity: null
       },
       orderFormRules: {
-        orderId: [
-          { required: true, message: '请输入订单编号', trigger: 'blur' }
-        ],
-        orderName: [
-          { required: true, message: '请输入订单名称', trigger: 'blur' }
-        ],
-        batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
         productName: [
           { required: true, message: '请输入产品名称', trigger: 'blur' }
         ],
@@ -3603,20 +3566,11 @@ export default {
       editOrderForm: {
         id: null,
         orderId: '',
-        orderName: '',
         batchNo: '',
         productName: '',
-        processName: '',
         orderQuantity: null
       },
       editOrderRules: {
-        orderId: [
-          { required: true, message: '请输入订单编号', trigger: 'blur' }
-        ],
-        orderName: [
-          { required: true, message: '请输入订单名称', trigger: 'blur' }
-        ],
-        batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
         productName: [
           { required: true, message: '请输入产品名称', trigger: 'blur' }
         ],
@@ -4355,10 +4309,8 @@ export default {
       this.editOrderForm = {
         id: order.id,
         orderId: order.orderId,
-        orderName: order.orderName,
         batchNo: order.batchNo,
-        productName: order.productName,
-        processName: order.processName || '',
+        productName: order.productName || '洁伶',
         orderQuantity: order.orderQuantity
       };
       this.editOrderDialogVisible = true;
@@ -4371,10 +4323,8 @@ export default {
         const param = {
           id: this.editOrderForm.id,
           orderId: this.editOrderForm.orderId,
-          orderName: this.editOrderForm.orderName,
           batchNo: this.editOrderForm.batchNo,
           productName: this.editOrderForm.productName,
-          processName: this.editOrderForm.processName || '',
           orderQuantity: this.editOrderForm.orderQuantity
         };
         await HttpUtil.post('/order_info/update', param)
@@ -4408,15 +4358,25 @@ export default {
       this.editOrderDialogVisible = false;
       this.$refs.editOrderForm && this.$refs.editOrderForm.resetFields();
     },
+    // 生成订单编号/批号使用的时间戳（yyyyMMddHHmmss）
+    generateOrderTimeStamp() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return (
+        `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}` +
+        `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+      );
+    },
     // 显示新建订单弹窗
     showAddOrderDialog() {
       this.addOrderDialogVisible = true;
+      // 订单编号、批号自动生成；产品名称固定为“洁伶”
+      const stamp = this.generateOrderTimeStamp();
+      const rand = String(Math.floor(Math.random() * 900) + 100);
       this.newOrderForm = {
-        orderId: '',
-        orderName: '',
-        batchNo: '',
-        productName: '',
-        processName: '',
+        orderId: `DD${stamp}${rand}`,
+        batchNo: `PH${stamp}${rand}`,
+        productName: '洁伶',
         orderQuantity: null
       };
     },
@@ -4434,10 +4394,8 @@ export default {
         }
         const orderData = {
           orderId: this.newOrderForm.orderId,
-          orderName: this.newOrderForm.orderName,
           batchNo: this.newOrderForm.batchNo,
           productName: this.newOrderForm.productName,
-          processName: this.newOrderForm.processName || '',
           orderQuantity: this.newOrderForm.orderQuantity,
           orderStatus: 0,
           invalidFlag: 0,
