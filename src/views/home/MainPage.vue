@@ -1847,7 +1847,7 @@ export default {
         orderId: '',
         batchNo: '',
         productName: '洁伶',
-        analysisTime: null,
+        analysisTime: 30,
         analysisDestination: ''
       },
       trayFormRules: {
@@ -3662,7 +3662,7 @@ export default {
         orderId: '',
         orderName: '',
         destination: '',
-        analysisTime: null
+        analysisTime: 30
       },
       executeOrderRules: {
         destination: [
@@ -4524,7 +4524,7 @@ export default {
         orderId: order.orderId,
         orderName: order.orderName,
         destination: '',
-        analysisTime: null
+        analysisTime: 30
       };
       this.executeOrderDialogVisible = true;
     },
@@ -6477,7 +6477,7 @@ export default {
         orderId: `DD${stamp}${rand}`,
         batchNo: `PH${stamp}${rand}`,
         productName: '洁伶',
-        analysisTime: null,
+        analysisTime: 30,
         analysisDestination: ''
       };
       this.addTrayDialogVisible = true;
