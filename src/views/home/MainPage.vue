@@ -5159,7 +5159,7 @@ export default {
       const queue = this.queues[queueIndex];
       return queue && Array.isArray(queue.trayInfo) ? queue.trayInfo.length : 0;
     },
-    // 解析房有效占用：房内 + 输送线已发往该房 + 灭菌柜/已灭菌队列已指定该房
+    // 解析房有效占用：房内 + 输送线已发往该房 + 灭菌柜/已灭菌队列已指定该房 + 1015中转已指定该房
     getAnalysisRoomEffectiveLoad(roomNo) {
       const destStr = String(roomNo);
       let count = this.getAnalysisRoomCount(roomNo);
@@ -5186,6 +5186,13 @@ export default {
             (tray) => String(tray.analysisDestination) === destStr
           ).length;
         }
+      }
+      // 1015 中转队列（id 49）：31-33 出货已指定解析房目的地
+      const queue1015 = this.queues[this.getQueue1015Index()];
+      if (queue1015 && Array.isArray(queue1015.trayInfo)) {
+        count += queue1015.trayInfo.filter(
+          (tray) => String(tray.analysisDestination) === destStr
+        ).length;
       }
       return count;
     },
@@ -5547,19 +5554,35 @@ export default {
         return;
       }
 
-      // 本次执行选择的解析房（executeSterToAnalysis 时已解析并存入 sterToAnalysisResolvedTo）
-      const analysisDest =
-        this.sterToAnalysisResolvedTo || this.sterToAnalysisTo || '';
-
       const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
       let movedCount = 0;
+      let assignedCount = 0;
+      let capacityFull = false;
       for (let i = 0; i < increaseCount; i++) {
         if (sourceQueue.trayInfo.length === 0) break;
         const tray = sourceQueue.trayInfo.shift();
         this.$set(tray, 'outSterilizationRoomTime', currentTime);
-        // 将选择的解析房设置到托盘信息中（后续 1015 出队时据此写PLC）
-        if (analysisDest) {
-          this.$set(tray, 'analysisDestination', String(analysisDest));
+        // 按容量分配解析房；满则仍入1015（实物已到），但不写入超容目的地
+        if (!capacityFull) {
+          const dest = this.resolveAnalysisDestination();
+          if (dest === null) {
+            capacityFull = true;
+            if (this.sterToAnalysisTo) {
+              this.addLog(
+                `解析房${this.sterToAnalysisTo}容量已满（15），托盘入1015后无法再分配目的地，已取消执行`,
+                'alarm'
+              );
+            } else {
+              this.addLog(
+                '解析房均已满，托盘入1015后无法再分配目的地，已取消执行',
+                'alarm'
+              );
+            }
+            this.cancelSterToAnalysis();
+          } else {
+            this.$set(tray, 'analysisDestination', String(dest));
+            assignedCount++;
+          }
         }
         queue1015.trayInfo.push(tray);
         movedCount++;
@@ -5567,9 +5590,7 @@ export default {
 
       if (movedCount > 0) {
         this.addLog(
-          `灭菌柜${cabinetNo}出货中转：移动${movedCount}个托盘到1015队列（解析房=${
-            analysisDest || '未指定'
-          }），时间：${currentTime}`
+          `灭菌柜${cabinetNo}出货中转：移动${movedCount}个托盘到1015队列（已分配解析房${assignedCount}个），时间：${currentTime}`
         );
       }
       if (movedCount < increaseCount) {
@@ -5579,8 +5600,22 @@ export default {
         );
       }
 
+      // 指定解析房：入1015后有效占用满15则停止，阻止柜内剩余托盘继续出
+      if (
+        !capacityFull &&
+        this.sterToAnalysisExecuting &&
+        this.sterToAnalysisTo &&
+        this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >= 15
+      ) {
+        this.cancelSterToAnalysis();
+        this.addLog(
+          `灭菌柜到解析房执行完成，解析房${this.sterToAnalysisTo}容量已满（15），已自动停止执行`
+        );
+        return;
+      }
+
       // 选择的 31-33 队列托盘已全部移入 1015（队列清空），停止执行
-      if (sourceQueue.trayInfo.length === 0) {
+      if (this.sterToAnalysisExecuting && sourceQueue.trayInfo.length === 0) {
         this.cancelSterToAnalysis();
         this.addLog(`灭菌柜${cabinetNo}队列已全部移入1015，已自动停止执行`);
       }
