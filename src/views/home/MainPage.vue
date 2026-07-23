@@ -1083,6 +1083,11 @@
                               : '--'
                           }}</span
                         >
+                        <span class="tray-detail"
+                          >灭菌柜：{{
+                            tray.sterilizationRoom || tray.sendTo || '--'
+                          }}</span
+                        >
                       </div>
                       <div class="tray-info-row">
                         <span class="tray-detail"
@@ -4557,17 +4562,18 @@ export default {
               this.addLog(
                 `订单 ${this.executeOrderForm.orderId} 开始执行，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
               );
-              // 上货信号：DBW70=1；DBW72 按目的地灭菌柜是否出货中写 1/0（均脉冲 2s）
+              // 上货信号：DBW70=1；DBW18=灭菌房编号；DBW72 按目的地灭菌柜是否出货中写 1/0（均脉冲 2s）
               this.writePlcPulse('W_DBW70', 1);
               const dest = Number(this.executeOrderForm.destination);
+              this.writePlcPulse('W_DBW18', dest);
               const isOutbound =
                 this.sterToAnalysisExecuting &&
                 Number(this.sterToAnalysisFrom) === dest;
               this.writePlcPulse('W_DBW72', isOutbound ? 0 : 1);
               this.addLog(
-                `上货信号：DBW70=1，DBW72=${isOutbound ? 0 : 1}（目的地${dest}${
-                  isOutbound ? '出货中' : '未出货'
-                }）`
+                `上货信号：DBW70=1，DBW18=${dest}，DBW72=${
+                  isOutbound ? 0 : 1
+                }（目的地${dest}${isOutbound ? '出货中' : '未出货'}）`
               );
               this.executeOrderDialogVisible = false;
               this.refreshOrders();
@@ -6191,6 +6197,7 @@ export default {
             time: tray.trayTime || '',
             // 发往动态：进灭菌前=sendTo(灭菌柜)；出灭菌后=analysisDestination(解析房)
             sendTo: tray.sendTo || '',
+            sterilizationRoom: tray.sterilizationRoom || '',
             analysisDestination: tray.analysisDestination || '',
             state: tray.state || '',
             sequenceNumber: tray.sequenceNumber || '',
