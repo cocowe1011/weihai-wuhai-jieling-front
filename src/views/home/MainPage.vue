@@ -1075,17 +1075,14 @@
                           >订单ID：{{ tray.orderId || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >发往：{{
+                          >灭菌柜：{{
+                            tray.sterilizationRoom || tray.sendTo || '--'
+                          }}，发往：{{
                             tray.analysisDestination
                               ? '解析房' + tray.analysisDestination
                               : tray.sendTo
                               ? '灭菌柜' + tray.sendTo
                               : '--'
-                          }}</span
-                        >
-                        <span class="tray-detail"
-                          >灭菌柜：{{
-                            tray.sterilizationRoom || tray.sendTo || '--'
                           }}</span
                         >
                       </div>
