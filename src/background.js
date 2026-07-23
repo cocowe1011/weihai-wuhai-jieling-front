@@ -61,12 +61,19 @@ function createPLCInstance(config) {
       return 0;
     }),
     writeAddArr: config.writeItems.slice(),
-    times: 1,
-    nowValue: 0
+    // 串行 IO 调度状态：同一连接同一时刻只做一次读或一次写
+    ioBusy: false, // 本连接读或写是否在途（串行锁）
+    ioPhase: 'read', // 当前相位：'read' | 'write'
+    schedulerStarted: false, // 防止重复启动定时器
+    heartWriteCount: 1, // 写周期计数：每 2 次写翻转一次心跳
+    heartValue: 0 // 心跳值，折叠进写相位下发
   };
 }
 
 var plcInstances = plcConfigs.map(createPLCInstance);
+
+// 每拍间隔：读写相位交替 → 读约 400ms/次、写约 400ms/次
+const PLC_IO_CYCLE_MS = 200;
 
 // 读取缩放配置文件（D://weihai-wuhai-jieling-front/config/zoom.json，升级不覆盖）
 function readZoomConfig() {
@@ -504,52 +511,81 @@ function conPLC(index) {
       inst.readItems.forEach(function (item) {
         inst.conn.addItems(item);
       });
-      // 400ms：降低渲染进程 Vue 重渲染频率，避免与窗口缩放/订单弹窗叠加导致卡死
-      setInterval(function () {
-        inst.conn.readAllItems(function (anythingBad, values) {
-          if (anythingBad) {
-            console.log(
-              'SOMETHING WENT WRONG READING VALUES (PLC' + index + ')!!!!'
-            );
-          }
-          mainWindow.webContents.send(
-            'receivedMsg_' + index,
-            values,
-            inst.writeStrArr.toString()
-          );
-        });
-      }, 400);
-      setInterval(function () {
-        // nodes7 代码
-        inst.conn.writeItems(
-          inst.writeAddArr,
-          inst.writeStrArr,
-          function (anythingBad) {
-            if (anythingBad) {
-              console.log(
-                'SOMETHING WENT WRONG WRITING VALUES (PLC' + index + ')!!!!'
-              );
-            }
-          }
-        );
-      }, 200);
-      // 发送心跳
-      sendHeartToPLC(index);
+      // 单连接串行读写，避免 read/write 并发导致整批 BAD 255
+      startPlcIoScheduler(index);
     }
   );
 }
 
-// 发送心跳（参数化）
-function sendHeartToPLC(index) {
+// 启动串行 IO 调度器（参数化：index 对应 plcConfigs 中的序号）
+function startPlcIoScheduler(index) {
   var inst = plcInstances[index];
+  if (inst.schedulerStarted) return;
+  inst.schedulerStarted = true;
   setInterval(function () {
-    if (inst.times > 5) {
-      inst.times = 1;
-      inst.nowValue = 1 - inst.nowValue;
+    tickPlcIo(index);
+  }, PLC_IO_CYCLE_MS);
+}
+
+// 写前更新心跳缓冲，随本拍 writeItems 一并下发
+function refreshHeartBuffer(index) {
+  var inst = plcInstances[index];
+  if (inst.heartWriteCount > 2) {
+    inst.heartWriteCount = 1;
+    inst.heartValue = 1 - inst.heartValue;
+  }
+  inst.heartWriteCount++;
+  writeValuesToPLC(index, 'W_DBW0', inst.heartValue);
+}
+
+// 单拍调度：同一时刻只允许一次读或一次写
+function tickPlcIo(index) {
+  var inst = plcInstances[index];
+  if (inst.ioBusy) return;
+
+  if (inst.ioPhase === 'read') {
+    inst.ioBusy = true;
+    inst.conn.readAllItems(function (anythingBad, values) {
+      try {
+        if (anythingBad) {
+          console.log(
+            'SOMETHING WENT WRONG READING VALUES (PLC' + index + ')!!!!'
+          );
+        }
+        mainWindow.webContents.send(
+          'receivedMsg_' + index,
+          values,
+          inst.writeStrArr.toString()
+        );
+      } finally {
+        inst.ioBusy = false;
+        inst.ioPhase = 'write';
+      }
+    });
+    return;
+  }
+
+  if (inst.writeAddArr.length === 0) {
+    inst.ioPhase = 'read';
+    return;
+  }
+
+  refreshHeartBuffer(index);
+  inst.ioBusy = true;
+  var addrs = inst.writeAddArr.slice();
+  var vals = inst.writeStrArr.slice();
+  inst.conn.writeItems(addrs, vals, function (anythingBad) {
+    try {
+      if (anythingBad) {
+        console.log(
+          'SOMETHING WENT WRONG WRITING VALUES (PLC' + index + ')!!!!'
+        );
+      }
+    } finally {
+      inst.ioBusy = false;
+      inst.ioPhase = 'read';
     }
-    inst.times++;
-    writeValuesToPLC(index, 'W_DBW0', inst.nowValue);
-  }, 200); // 每200毫秒执行一次交替
+  });
 }
 
 // —— 以下为参数化的 PLC 写入函数（index 对应 plcConfigs 中的序号）——
