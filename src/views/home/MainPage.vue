@@ -3757,6 +3757,7 @@ export default {
           handler(newVal, oldVal) {
             if (!this._queueInitDone) return;
             this.updateQueueInfo(queue.id);
+            this.handleCompareQueueLengthChange(queue);
           },
           deep: true
         });
@@ -4933,6 +4934,115 @@ export default {
         ipcRenderer.send('cancelWriteToPLC_' + plcIndex, tag);
       }, 2000);
     },
+    // 灭菌柜数量对比异常：DB1001.DBW74 BIT0-14 → 柜19-33（一楼）
+    getSterilCompareMismatchTag(cabinetNo) {
+      const bitIndex = cabinetNo - 19;
+      if (bitIndex < 0 || bitIndex > 14) {
+        return null;
+      }
+      return `W_DBW74_BIT${bitIndex}`;
+    },
+    // 解析数量对比异常：DB1001.DBW76 BIT0-13 → 解析1-14（二楼）
+    getAnalysisCompareMismatchTag(roomNo) {
+      const bitIndex = roomNo - 1;
+      if (bitIndex < 0 || bitIndex > 13) {
+        return null;
+      }
+      return `W_DBW76_BIT${bitIndex}`;
+    },
+    // 已灭菌队列长度（19-30 已灭菌；31-33 灭菌队列）
+    getSterilWcsQueueCount(cabinetNo) {
+      const queueIndex = this.getSterilQueueIndex(cabinetNo);
+      const queue = this.queues[queueIndex];
+      return queue && Array.isArray(queue.trayInfo) ? queue.trayInfo.length : 0;
+    },
+    /**
+     * 灭菌已灭菌队列 vs PLC完成数量一致性
+     * source=queue：一致发0，不一致发1；source=plc：仅一致发0
+     */
+    checkSterilQtyConsistency(cabinetNo, source) {
+      if (!this.isDataReady) return;
+      if (cabinetNo < 19 || cabinetNo > 33) return;
+      const tag = this.getSterilCompareMismatchTag(cabinetNo);
+      if (!tag) return;
+      const wcsCount = this.getSterilWcsQueueCount(cabinetNo);
+      const plcCount = Number(
+        this.getSterilizationCompleteQuantity(cabinetNo) || 0
+      );
+      const matched = wcsCount === plcCount;
+      if (source === 'queue') {
+        this.writePlcPulse(tag, matched ? false : true, 0);
+        this.addLog(
+          `灭菌柜${cabinetNo}队列变化：WCS=${wcsCount} PLC完成=${plcCount}，对比异常BIT=${
+            matched ? 0 : 1
+          }（2秒）`
+        );
+      } else if (source === 'plc') {
+        if (matched) {
+          this.writePlcPulse(tag, false, 0);
+          this.addLog(
+            `灭菌柜${cabinetNo}PLC完成数量变化：WCS=${wcsCount} PLC完成=${plcCount}，一致发0（2秒）`
+          );
+        }
+      }
+    },
+    /**
+     * 解析房队列 vs PLC数量一致性
+     * source=queue：一致发0，不一致发1；source=plc：仅一致发0
+     */
+    checkAnalysisQtyConsistency(roomNo, source) {
+      if (!this.isDataReady) return;
+      if (roomNo < 1 || roomNo > 14) return;
+      const tag = this.getAnalysisCompareMismatchTag(roomNo);
+      if (!tag) return;
+      const wcsCount = this.getAnalysisRoomCount(roomNo);
+      const plcCount = Number(this.getAnalysisRoomQuantity(roomNo) || 0);
+      const matched = wcsCount === plcCount;
+      if (source === 'queue') {
+        this.writePlcPulse(tag, matched ? false : true, 1);
+        this.addLog(
+          `解析房${roomNo}队列变化：WCS=${wcsCount} PLC=${plcCount}，对比异常BIT=${
+            matched ? 0 : 1
+          }（2秒）`
+        );
+      } else if (source === 'plc') {
+        if (matched) {
+          this.writePlcPulse(tag, false, 1);
+          this.addLog(
+            `解析房${roomNo}PLC数量变化：WCS=${wcsCount} PLC=${plcCount}，一致发0（2秒）`
+          );
+        }
+      }
+    },
+    // 队列长度变化时触发对比（已灭菌19-30 / 灭菌31-33 / 解析1-14）
+    handleCompareQueueLengthChange(queue) {
+      if (!this.isDataReady || !queue) return;
+      const id = queue.id;
+      const len =
+        queue.trayInfo && Array.isArray(queue.trayInfo)
+          ? queue.trayInfo.length
+          : 0;
+      if (!this._prevCompareQueueLengths) {
+        this._prevCompareQueueLengths = {};
+      }
+      const prev = this._prevCompareQueueLengths[id];
+      this._prevCompareQueueLengths[id] = len;
+      if (prev === undefined || prev === len) return;
+      // 已灭菌19-30：id 37-48
+      if (id >= 37 && id <= 48) {
+        this.checkSterilQtyConsistency(id - 18, 'queue');
+        return;
+      }
+      // 灭菌31-33：id 14-16
+      if (id >= 14 && id <= 16) {
+        this.checkSterilQtyConsistency(id + 17, 'queue');
+        return;
+      }
+      // 解析1-14：id 18-31
+      if (id >= 18 && id <= 31) {
+        this.checkAnalysisQtyConsistency(id - 17, 'queue');
+      }
+    },
     getAnalysisOutPlcTag(roomNo) {
       const bitIndex = roomNo - 1;
       if (bitIndex < 0 || bitIndex > 15) {
@@ -5120,12 +5230,20 @@ export default {
       if (newVal > oldVal) {
         this.handleSterilizationCompleteIncrease(cabinetNo, newVal, oldVal);
       }
+      // PLC完成数量变化：与已灭菌队列一致则发0；不一致不发
+      if (newVal !== oldVal) {
+        this.checkSterilQtyConsistency(cabinetNo, 'plc');
+      }
     },
     handleAnalysisRoomQuantityChange(roomNo, newVal, oldVal) {
       if (!this.isDataReady) return;
       // 仅处理数量增加（入房）；出房改由 DB1000.DBW30 出货请求触发
       if (newVal > oldVal) {
         this.handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal);
+      }
+      // PLC数量变化：与解析队列一致则发0；不一致不发（仅1-14）
+      if (newVal !== oldVal && roomNo >= 1 && roomNo <= 14) {
+        this.checkAnalysisQtyConsistency(roomNo, 'plc');
       }
     },
     checkAnalysisOutComplete(roomNo) {
@@ -6615,6 +6733,21 @@ export default {
           this.addLog('队列信息加载失败');
         })
         .finally(() => {
+          // 快照对比相关队列长度，避免初始化后首次误发对比信号
+          this._prevCompareQueueLengths = {};
+          this.queues.forEach((queue) => {
+            const id = queue.id;
+            if (
+              (id >= 14 && id <= 16) ||
+              (id >= 18 && id <= 31) ||
+              (id >= 37 && id <= 48)
+            ) {
+              this._prevCompareQueueLengths[id] =
+                queue.trayInfo && Array.isArray(queue.trayInfo)
+                  ? queue.trayInfo.length
+                  : 0;
+            }
+          });
           this._queueInitDone = true;
         });
     },
