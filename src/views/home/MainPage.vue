@@ -5301,6 +5301,11 @@ export default {
           } 离开解析房，时间：${currentTime}`
         );
         targetQueue.trayInfo.shift();
+        // WCS下发解析出货目的地：DB1001.DBW78=1，脉冲2秒后取消（PLC自己清0）
+        this.writePlcPulse('W_DBW78', 1, 1);
+        this.addLog(
+          `解析房${roomNo}出货请求：WCS下发解析出货目的地 DB1001.DBW78=1（2秒）`
+        );
         // 解析队列出货导致长度变化，比对 WCS 与 PLC 数量（不一致发异常信号）
         this.checkAnalysisQtyConsistency(roomNo, 'queue');
         this.checkAnalysisOutComplete(roomNo);
