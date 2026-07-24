@@ -3759,7 +3759,6 @@ export default {
           handler(newVal, oldVal) {
             if (!this._queueInitDone) return;
             this.updateQueueInfo(queue.id);
-            this.handleCompareQueueLengthChange(queue);
           },
           deep: true
         });
@@ -4617,8 +4616,12 @@ export default {
           .then((res) => {
             if (res.code === '200') {
               this.handleOrderStatusChange(order, 2);
+              // 完成订单：清零上货启用(DBW70)、进货灭菌命令(DBW72)、灭菌编号(DBW18)
+              this.writePlcPulse('W_DBW70', 0);
+              this.writePlcPulse('W_DBW72', 0);
+              this.writePlcPulse('W_DBW18', 0);
               this.addLog(
-                `订单 ${order.orderId} 已完成，产品：${order.productName}`
+                `订单 ${order.orderId} 已完成，产品：${order.productName}，已清零DBW70/DBW72/DBW18`
               );
             } else {
               this.$message.error('完成订单失败，请重试');
@@ -4651,6 +4654,13 @@ export default {
           .then((res) => {
             if (res.code === '200') {
               this.handleOrderStatusChange(order, 0);
+              // 取消订单：清零上货启用(DBW70)、进货灭菌命令(DBW72)、灭菌编号(DBW18)
+              this.writePlcPulse('W_DBW70', 0);
+              this.writePlcPulse('W_DBW72', 0);
+              this.writePlcPulse('W_DBW18', 0);
+              this.addLog(
+                `订单 ${order.orderId} 已取消执行，已清零DBW70/DBW72/DBW18`
+              );
               this.$message.success('订单状态已更新为未开始');
             } else {
               this.$message.error('取消订单失败，请重试');
@@ -5017,35 +5027,6 @@ export default {
         }
       }
     },
-    // 队列长度变化时触发对比（已灭菌19-30 / 灭菌31-33 / 解析1-14）
-    handleCompareQueueLengthChange(queue) {
-      if (!this.isDataReady || !queue) return;
-      const id = queue.id;
-      const len =
-        queue.trayInfo && Array.isArray(queue.trayInfo)
-          ? queue.trayInfo.length
-          : 0;
-      if (!this._prevCompareQueueLengths) {
-        this._prevCompareQueueLengths = {};
-      }
-      const prev = this._prevCompareQueueLengths[id];
-      this._prevCompareQueueLengths[id] = len;
-      if (prev === undefined || prev === len) return;
-      // 已灭菌19-30：id 37-48
-      if (id >= 37 && id <= 48) {
-        this.checkSterilQtyConsistency(id - 18, 'queue');
-        return;
-      }
-      // 灭菌31-33：id 14-16
-      if (id >= 14 && id <= 16) {
-        this.checkSterilQtyConsistency(id + 17, 'queue');
-        return;
-      }
-      // 解析1-14：id 18-31
-      if (id >= 18 && id <= 31) {
-        this.checkAnalysisQtyConsistency(id - 17, 'queue');
-      }
-    },
     getAnalysisOutPlcTag(roomNo) {
       const bitIndex = roomNo - 1;
       if (bitIndex < 0 || bitIndex > 15) {
@@ -5320,6 +5301,8 @@ export default {
           } 离开解析房，时间：${currentTime}`
         );
         targetQueue.trayInfo.shift();
+        // 解析队列出货导致长度变化，比对 WCS 与 PLC 数量（不一致发异常信号）
+        this.checkAnalysisQtyConsistency(roomNo, 'queue');
         this.checkAnalysisOutComplete(roomNo);
       } finally {
         this.isHandlingAnalysisOutRequest = false;
@@ -5368,6 +5351,11 @@ export default {
         this.addLog(
           `解析房${roomNo}数量增加${increaseCount}，输送线目的地为${roomNo}的托盘不足，仅移动${movedCount}个托盘`
         );
+      }
+
+      // 解析队列长度变化（入房），比对 WCS 与 PLC 数量（不一致发异常信号）
+      if (movedCount > 0) {
+        this.checkAnalysisQtyConsistency(roomNo, 'queue');
       }
     },
     // 19-30：DBW70-92 增加 → 上货区 → 未灭菌队列
@@ -5472,6 +5460,11 @@ export default {
           `灭菌柜${cabinetNo}完成数量增加${increaseCount}，未灭菌队列托盘不足，仅移动${movedCount}个托盘`
         );
       }
+
+      // 已灭菌队列长度变化（入队），比对 WCS 与 PLC 完成数量（不一致发异常信号）
+      if (movedCount > 0) {
+        this.checkSterilQtyConsistency(cabinetNo, 'queue');
+      }
     },
     // 31-33：完成数量增加 → 上货区 → 灭菌柜队列
     handleSterilizationCabinetQuantityIncrease(cabinetNo, newVal, oldVal) {
@@ -5515,6 +5508,11 @@ export default {
         this.addLog(
           `灭菌柜${cabinetNo}数量增加${increaseCount}，上货区目的地为${cabinetNo}的托盘不足，仅移动${movedCount}个托盘`
         );
+      }
+
+      // 灭菌柜(31-33)队列长度变化（入队），比对 WCS 与 PLC 完成数量（不一致发异常信号）
+      if (movedCount > 0) {
+        this.checkSterilQtyConsistency(cabinetNo, 'queue');
       }
     },
     handleQueue1015QuantityChange(newVal, oldVal) {
@@ -5595,6 +5593,11 @@ export default {
           `1015数量增加${increaseCount}，灭菌柜${cabinetNo}队列托盘不足，仅移动${movedCount}个`,
           'alarm'
         );
+      }
+
+      // 灭菌柜(31-33)队列出货中转导致长度变化，比对 WCS 与 PLC 完成数量（不一致发异常信号）
+      if (movedCount > 0) {
+        this.checkSterilQtyConsistency(cabinetNo, 'queue');
       }
 
       // 指定解析房：入1015后有效占用满15则停止，阻止柜内剩余托盘继续出
@@ -5702,6 +5705,10 @@ export default {
         }
         conveyorQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
+        // 已灭菌队列(19-30)出货导致长度变化，比对 WCS 与 PLC 完成数量（不一致发异常信号）
+        if (!isCabinet3133) {
+          this.checkSterilQtyConsistency(cabinetNo, 'queue');
+        }
         this.sterToAnalysisSentCount++;
         this.sterToAnalysisTrayCode = tray.trayCode || tray.id || '';
         this.addLog(
@@ -6772,21 +6779,6 @@ export default {
           this.addLog('队列信息加载失败');
         })
         .finally(() => {
-          // 快照对比相关队列长度，避免初始化后首次误发对比信号
-          this._prevCompareQueueLengths = {};
-          this.queues.forEach((queue) => {
-            const id = queue.id;
-            if (
-              (id >= 14 && id <= 16) ||
-              (id >= 18 && id <= 31) ||
-              (id >= 37 && id <= 48)
-            ) {
-              this._prevCompareQueueLengths[id] =
-                queue.trayInfo && Array.isArray(queue.trayInfo)
-                  ? queue.trayInfo.length
-                  : 0;
-            }
-          });
           this._queueInitDone = true;
         });
     },
