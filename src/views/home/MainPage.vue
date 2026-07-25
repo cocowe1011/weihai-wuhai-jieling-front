@@ -836,6 +836,31 @@
                     </div>
                   </div>
                 </div>
+                <!-- 屏蔽7号解析房浮动面板 -->
+                <div
+                  class="preheating-room-marker"
+                  data-x="1650"
+                  data-y="420"
+                  style="width: 160px"
+                >
+                  <div class="preheating-room-content">
+                    <div class="preheating-room-header">解析房控制</div>
+                    <div class="preheating-room-body">
+                      <el-button
+                        :type="blockAnalysisRoom7 ? 'danger' : 'default'"
+                        size="mini"
+                        style="width: 100%"
+                        @click="handleBlockRoom7Toggle"
+                      >
+                        {{
+                          blockAnalysisRoom7
+                            ? '已屏蔽7号解析房'
+                            : '屏蔽7号解析房'
+                        }}
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
                 <!-- 解析房出货执行 -->
                 <div
                   class="preheating-room-marker"
@@ -3705,7 +3730,8 @@ export default {
       analysisOutTrayCode: '', // 当前处理托盘展示
       isHandlingAnalysisOutRequest: false,
       // 解析完成状态时钟（驱动剩余时间/完成标志刷新）
-      analysisClockTick: 0
+      analysisClockTick: 0,
+      blockAnalysisRoom7: false // 屏蔽7号解析房开关
     };
   },
   computed: {
@@ -5176,17 +5202,23 @@ export default {
     },
     pickAvailableAnalysisRoom() {
       for (let i = 1; i <= 19; i++) {
-        if (this.getAnalysisRoomEffectiveLoad(i) < 15) {
+        if (
+          (this.blockAnalysisRoom7 && i === 7) ||
+          this.getAnalysisRoomEffectiveLoad(i) < 15
+        ) {
           return i;
         }
       }
       return null;
     },
     resolveAnalysisDestination() {
-      // 指定解析房：按容量15判断，满则无法再分配
+      // 指定解析房：按容量15判断，满则无法再分配（屏蔽7号时跳过容量检查）
       if (this.sterToAnalysisTo) {
         const room = Number(this.sterToAnalysisTo);
-        if (this.getAnalysisRoomEffectiveLoad(room) >= 15) {
+        if (
+          !(this.blockAnalysisRoom7 && room === 7) &&
+          this.getAnalysisRoomEffectiveLoad(room) >= 15
+        ) {
           return null;
         }
         this.sterToAnalysisResolvedTo = String(room);
@@ -5338,6 +5370,10 @@ export default {
         // 流转追加：实际进入的解析房 + 进入时间（匹配 analysisDestination）
         this.$set(tray, 'analysisRoom', destStr);
         this.$set(tray, 'inAnalysisRoomTime', currentTime);
+        // 屏蔽7号解析房时，入房托盘解析周期强制为0（立即完成）
+        if (this.blockAnalysisRoom7 && roomNo === 7) {
+          this.$set(tray, 'analysisTime', 0);
+        }
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
         movedCount++;
@@ -5605,11 +5641,12 @@ export default {
         this.checkSterilQtyConsistency(cabinetNo, 'queue');
       }
 
-      // 指定解析房：入1015后有效占用满15则停止，阻止柜内剩余托盘继续出
+      // 指定解析房：入1015后有效占用满15则停止，阻止柜内剩余托盘继续出（屏蔽7号时跳过）
       if (
         !capacityFull &&
         this.sterToAnalysisExecuting &&
         this.sterToAnalysisTo &&
+        !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
         this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >= 15
       ) {
         this.cancelSterToAnalysis();
@@ -5722,9 +5759,10 @@ export default {
             : `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 离开灭菌柜进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
         );
 
-        // 指定解析房：该房有效占用满15则停止；未指定时满了由下次请求自动切下一房
+        // 指定解析房：该房有效占用满15则停止；未指定时满了由下次请求自动切下一房（屏蔽7号时跳过）
         if (
           this.sterToAnalysisTo &&
+          !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
           this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >= 15
         ) {
           this.cancelSterToAnalysis();
@@ -6859,7 +6897,10 @@ export default {
         }
       }
 
-      if (this.getAnalysisRoomEffectiveLoad(analysisRoomNo) >= 15) {
+      if (
+        !(this.blockAnalysisRoom7 && analysisRoomNo === 7) &&
+        this.getAnalysisRoomEffectiveLoad(analysisRoomNo) >= 15
+      ) {
         this.$message.warning(`解析房${analysisRoomNo}已满，无法执行`);
         return;
       }
@@ -6912,6 +6953,52 @@ export default {
         );
       } else {
         this.addLog('灭菌柜到解析房选择已取消，切换为不执行状态');
+      }
+    },
+    // ========== 屏蔽7号解析房 ==========
+    handleBlockRoom7Toggle() {
+      if (!this.blockAnalysisRoom7) {
+        // 当前未屏蔽 → 执行屏蔽
+        this.$confirm(
+          '屏蔽7号解析房会使解析房内货物全部解析完成，后续进入解析房的货物解析周期为0。',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+          .then(() => {
+            this.blockAnalysisRoom7 = true;
+            // 将7号解析房内所有托盘的 analysisTime 设为 0（立即完成）
+            const queueIndex = this.getAnalysisQueueIndex(7);
+            const queue = this.queues[queueIndex];
+            if (queue && Array.isArray(queue.trayInfo)) {
+              queue.trayInfo.forEach((tray) => {
+                this.$set(tray, 'analysisTime', 0);
+              });
+            }
+            this.addLog(
+              '已屏蔽7号解析房：房内托盘全部标记为解析完成，后续入房托盘解析周期为0'
+            );
+          })
+          .catch(() => {});
+      } else {
+        // 当前已屏蔽 → 取消屏蔽
+        this.$confirm(
+          '确认取消屏蔽7号解析房？取消后将恢复正常解析流程。',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+          .then(() => {
+            this.blockAnalysisRoom7 = false;
+            this.addLog('已取消屏蔽7号解析房，恢复正常解析流程');
+          })
+          .catch(() => {});
       }
     },
     // ========== 解析房出货执行 ==========
