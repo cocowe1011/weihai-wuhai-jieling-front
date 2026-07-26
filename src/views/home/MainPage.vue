@@ -5202,10 +5202,9 @@ export default {
     },
     pickAvailableAnalysisRoom() {
       for (let i = 1; i <= 19; i++) {
-        if (
-          (this.blockAnalysisRoom7 && i === 7) ||
-          this.getAnalysisRoomEffectiveLoad(i) < 15
-        ) {
+        // 屏蔽7号时，自动分配跳过7号解析房
+        if (this.blockAnalysisRoom7 && i === 7) continue;
+        if (this.getAnalysisRoomEffectiveLoad(i) < 15) {
           return i;
         }
       }
