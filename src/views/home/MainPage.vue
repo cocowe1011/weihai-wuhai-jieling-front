@@ -3707,7 +3707,7 @@ export default {
       pageSize: 10,
       totalHistoryOrders: 0,
       // ========== 上货请求信号处理 ==========
-      currentVirtualId: 10000, // 当前虚拟ID（范围10000-29999）
+      currentVirtualId: 10000, // 当前虚拟ID（范围10000-32700）
       lastUploadRequestBit: '0', // 上次上货请求信号值（用于上升沿检测）
       isHandlingUploadRequest: false, // 是否正在处理上货请求（防重复）
       // ========== 预热房到灭菌柜执行 ==========
@@ -4768,10 +4768,10 @@ export default {
           return;
         }
 
-        // 3. 生成虚拟ID（范围10000-29999，递增）
+        // 3. 生成虚拟ID（范围10000-32700，递增）
         const virtualId = this.generateVirtualId();
         if (!virtualId) {
-          this.addLog('上货请求失败：虚拟ID已用尽(10000-29999)', 'alarm');
+          this.addLog('上货请求失败：虚拟ID已用尽(10000-32700)', 'alarm');
           this.$message.error('虚拟ID已用尽，请联系管理员');
           return;
         }
@@ -4879,14 +4879,14 @@ export default {
         this.isHandlingUploadRequest = false;
       }
     },
-    // 生成虚拟ID（范围10000-29999，基于本批次已写入的虚拟ID递增）
+    // 生成虚拟ID（范围10000-32700，基于本批次已写入的虚拟ID递增）
     generateVirtualId() {
       // 从上货区队列中找出当前批次最大的虚拟ID
       let maxVirtualId = 0;
       this.queues.forEach((queue) => {
         (queue.trayInfo || []).forEach((tray) => {
           const vid = Number(tray.virtualId || 0);
-          if (vid >= 10000 && vid <= 29999 && vid > maxVirtualId) {
+          if (vid >= 10000 && vid <= 32700 && vid > maxVirtualId) {
             maxVirtualId = vid;
           }
         });
@@ -4901,7 +4901,7 @@ export default {
       }
 
       // 检查是否超出范围
-      if (nextId > 29999) {
+      if (nextId > 32700) {
         return null;
       }
 
@@ -6603,7 +6603,7 @@ export default {
           // 虚拟ID根据队列当前最大虚拟ID自动递增生成
           const virtualId = this.generateVirtualId();
           if (!virtualId) {
-            this.addLog('添加托盘失败：虚拟ID已用尽(10000-29999)', 'alarm');
+            this.addLog('添加托盘失败：虚拟ID已用尽(10000-32700)', 'alarm');
             this.$message.error('虚拟ID已用尽，请联系管理员');
             break;
           }
