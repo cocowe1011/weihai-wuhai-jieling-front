@@ -4758,15 +4758,19 @@ export default {
         this.isHandlingUploadRequest = false;
       }
     },
-    // 生成虚拟ID（范围10000-32700，基于本批次已写入的虚拟ID递增）
+    // 生成虚拟ID（范围10000-32700，基于本批次已写入的虚拟ID递增，到达上限后从10000重新计数）
     generateVirtualId() {
-      // 从上货区队列中找出当前批次最大的虚拟ID
+      // 从上货区队列中找出当前批次最大的虚拟ID及所有已使用的虚拟ID
       let maxVirtualId = 0;
+      const usedIds = new Set();
       this.queues.forEach((queue) => {
         (queue.trayInfo || []).forEach((tray) => {
           const vid = Number(tray.virtualId || 0);
-          if (vid >= 10000 && vid <= 32700 && vid > maxVirtualId) {
-            maxVirtualId = vid;
+          if (vid >= 10000 && vid <= 32700) {
+            usedIds.add(vid);
+            if (vid > maxVirtualId) {
+              maxVirtualId = vid;
+            }
           }
         });
       });
@@ -4779,9 +4783,16 @@ export default {
         nextId = this.currentVirtualId;
       }
 
-      // 检查是否超出范围
+      // 超出范围时从10000重新开始计数，并跳过队列中仍在使用的ID，避免重复分配
       if (nextId > 32700) {
-        return null;
+        nextId = 10000;
+        while (usedIds.has(nextId) && nextId <= 32700) {
+          nextId++;
+        }
+        if (nextId > 32700) {
+          return null;
+        }
+        this.addLog(`虚拟ID已达上限，从${nextId}重新开始计数`);
       }
 
       this.currentVirtualId = nextId;
