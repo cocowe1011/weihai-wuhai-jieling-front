@@ -42,26 +42,16 @@
                   @click="refreshOrders"
                   :class="{ 'is-loading': isRefreshing }"
                 >
-                  <i class="el-icon-refresh"></i>
+                  <el-icon><Refresh /></el-icon>
                 </div>
                 <div
                   class="add-order-btn"
                   @click="showAddOrderDialog"
                   title="新建订单"
                 >
-                  <i class="el-icon-plus"></i>
+                  <el-icon><Plus /></el-icon>
                 </div>
               </div>
-            </div>
-            <div class="order-actions">
-              <el-button
-                type="primary"
-                size="small"
-                @click="showHistoryOrders"
-                icon="el-icon-time"
-              >
-                历史订单
-              </el-button>
             </div>
           </div>
           <div class="scrollable-content">
@@ -85,10 +75,9 @@
                       class="order-status"
                       :class="{ running: order.orderStatus === 1 }"
                     >
-                      <i
-                        v-if="order.orderStatus === 1"
-                        class="el-icon-loading"
-                      ></i>
+                      <el-icon v-if="order.orderStatus === 1" class="is-loading"
+                        ><Loading
+                      /></el-icon>
                       {{ getStatusText(order.orderStatus) }}
                     </span>
                   </div>
@@ -100,7 +89,9 @@
                       @click="showExecuteOrderDialog(order)"
                       :disabled="order.isLoading"
                     >
-                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <el-icon v-if="order.isLoading" class="is-loading"
+                        ><Loading
+                      /></el-icon>
                       <span>执行</span>
                     </button>
                     <button
@@ -109,7 +100,7 @@
                       @click="showEditOrderDialog(order)"
                       :disabled="order.isLoading || order.isDeleting"
                     >
-                      <i class="el-icon-edit"></i>
+                      <el-icon><Edit /></el-icon>
                       <span>修改</span>
                     </button>
                     <button
@@ -119,8 +110,10 @@
                       @click="deleteOrder(order)"
                       :disabled="order.isDeleting"
                     >
-                      <i v-if="order.isDeleting" class="el-icon-loading"></i>
-                      <i v-else class="el-icon-delete"></i>
+                      <el-icon v-if="order.isDeleting" class="is-loading"
+                        ><Loading
+                      /></el-icon>
+                      <el-icon v-else><Delete /></el-icon>
                       <span>删除</span>
                     </button>
                     <button
@@ -130,7 +123,9 @@
                       @click="finishOrder(order)"
                       :disabled="order.isLoading"
                     >
-                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <el-icon v-if="order.isLoading" class="is-loading"
+                        ><Loading
+                      /></el-icon>
                       <span>完成</span>
                     </button>
                     <button
@@ -140,7 +135,9 @@
                       @click="cancelOrder(order)"
                       :disabled="order.isLoading"
                     >
-                      <i v-if="order.isLoading" class="el-icon-loading"></i>
+                      <el-icon v-if="order.isLoading" class="is-loading"
+                        ><Loading
+                      /></el-icon>
                       <span>取消</span>
                     </button>
                   </div>
@@ -180,14 +177,15 @@
               </div>
             </div>
             <div v-else class="empty-state">
-              <i class="el-icon-document"></i>
+              <el-icon><Document /></el-icon>
               <p>暂无订单信息</p>
               <el-button
-                type="text"
+                link
+                type="primary"
                 @click="refreshOrders"
                 class="refresh-link"
               >
-                <i class="el-icon-refresh"></i>
+                <el-icon><Refresh /></el-icon>
                 点击刷新
               </el-button>
             </div>
@@ -200,8 +198,8 @@
             <span>操作</span>
             <el-button
               type="primary"
-              size="mini"
-              icon="el-icon-search"
+              size="small"
+              icon="Search"
               @click="showOrderQueryDialog"
             >
               查询历史订单
@@ -213,14 +211,14 @@
               @click="toggleButtonState('start')"
               :class="{ pressed: buttonStates.start }"
             >
-              <i class="el-icon-switch-button"></i><span>全线启动</span>
+              <el-icon><SwitchButton /></el-icon><span>全线启动</span>
             </button>
             <button
               class="btn-stop"
               @click="toggleButtonState('stop')"
               :class="{ pressed: buttonStates.stop }"
             >
-              <i class="el-icon-error"></i><span>全线停止</span>
+              <el-icon><CircleCloseFilled /></el-icon><span>全线停止</span>
             </button>
             <button
               v-show="false"
@@ -228,13 +226,13 @@
               @click="toggleButtonState('reset')"
               :class="{ pressed: buttonStates.reset }"
             >
-              <i class="el-icon-video-pause"></i><span>全线暂停</span>
+              <el-icon><VideoPause /></el-icon><span>全线暂停</span>
             </button>
             <button @click="toggleButtonState('fault_reset')">
-              <i class="el-icon-refresh"></i><span>故障复位</span>
+              <el-icon><Refresh /></el-icon><span>故障复位</span>
             </button>
             <button @click="toggleButtonState('clear')">
-              <i class="el-icon-delete"></i><span>全线清空</span>
+              <el-icon><Delete /></el-icon><span>全线清空</span>
             </button>
           </div>
         </div>
@@ -279,7 +277,7 @@
                 </div>
               </template>
               <div v-else class="empty-state">
-                <i class="el-icon-chat-line-square"></i>
+                <el-icon><ChatLineSquare /></el-icon>
                 <p>
                   {{
                     activeLogType === 'running'
@@ -358,7 +356,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 20 -->
@@ -368,7 +366,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 21 -->
@@ -378,7 +376,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 22 -->
@@ -388,7 +386,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 23 -->
@@ -398,7 +396,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 24 -->
@@ -408,7 +406,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 25 -->
@@ -418,7 +416,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 26 -->
@@ -428,7 +426,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 27 -->
@@ -438,7 +436,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 28 -->
@@ -448,7 +446,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 29 -->
@@ -458,7 +456,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 30 -->
@@ -468,7 +466,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 31 -->
@@ -478,7 +476,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 32 -->
@@ -488,7 +486,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 33 -->
@@ -498,7 +496,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析完成状态标志（解析队列下方） -->
@@ -509,7 +507,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析2 -->
@@ -519,7 +517,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析3 -->
@@ -529,7 +527,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析4 -->
@@ -539,7 +537,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析5 -->
@@ -549,7 +547,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析6 -->
@@ -559,7 +557,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析7 -->
@@ -569,7 +567,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析8 -->
@@ -579,7 +577,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析9 -->
@@ -589,7 +587,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析10 -->
@@ -599,7 +597,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析11 -->
@@ -609,7 +607,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析12 -->
@@ -619,7 +617,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析13 -->
@@ -629,7 +627,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析14 -->
@@ -639,7 +637,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析15 -->
@@ -649,7 +647,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析16 -->
@@ -659,7 +657,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析17 -->
@@ -669,7 +667,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析18 -->
@@ -679,7 +677,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 解析19 -->
@@ -689,7 +687,7 @@
                     type="success"
                     size="small"
                   >
-                    <i class="el-icon-check"></i>
+                    <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
                 <!-- 小车元素 -->
@@ -714,11 +712,18 @@
                   <div class="preheating-room-content">
                     <div class="preheating-room-header">预热房到灭菌柜选择</div>
                     <div class="preheating-room-body">
-                      <div style="display: flex; align-items: center">
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          width: 100%;
+                          gap: 4px;
+                        "
+                      >
                         <el-select
                           v-model="preheatToSterilizeFrom"
                           placeholder="预热"
-                          size="mini"
+                          size="small"
                         >
                           <el-option
                             v-for="i in 12"
@@ -734,7 +739,7 @@
                         <el-select
                           v-model="preheatToSterilizeTo"
                           placeholder="灭菌"
-                          size="mini"
+                          size="small"
                         >
                           <el-option
                             v-for="i in 15"
@@ -746,7 +751,7 @@
                       </div>
                       <el-button
                         type="primary"
-                        size="mini"
+                        size="small"
                         @click="executePreheatToSterilize"
                         :loading="preheatToSterilizeLoading"
                         style="width: 100%"
@@ -765,11 +770,18 @@
                   <div class="preheating-room-content">
                     <div class="preheating-room-header">灭菌柜到解析房选择</div>
                     <div class="preheating-room-body">
-                      <div style="display: flex; align-items: center">
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          width: 100%;
+                          gap: 4px;
+                        "
+                      >
                         <el-select
                           v-model="sterToAnalysisFrom"
                           placeholder="灭菌"
-                          size="mini"
+                          size="small"
                         >
                           <el-option
                             v-for="i in 15"
@@ -785,7 +797,7 @@
                         <el-select
                           v-model="sterToAnalysisTo"
                           placeholder="解析"
-                          size="mini"
+                          size="small"
                           clearable
                         >
                           <el-option label="自动" value="" />
@@ -799,7 +811,7 @@
                       </div>
                       <el-button
                         type="primary"
-                        size="mini"
+                        size="small"
                         @click="executeSterToAnalysis"
                         :loading="sterToAnalysisLoading"
                         style="width: 100%"
@@ -808,7 +820,7 @@
                       <el-button
                         v-if="sterToAnalysisExecuting"
                         type="danger"
-                        size="mini"
+                        size="small"
                         @click="cancelSterToAnalysis"
                         style="width: 100%; margin-left: 0px"
                         >取消</el-button
@@ -848,7 +860,7 @@
                     <div class="preheating-room-body">
                       <el-button
                         :type="blockAnalysisRoom7 ? 'danger' : 'default'"
-                        size="mini"
+                        size="small"
                         style="width: 100%"
                         @click="handleBlockRoom7Toggle"
                       >
@@ -874,7 +886,7 @@
                       <el-select
                         v-model="analysisOutRoom"
                         placeholder="解析房"
-                        size="mini"
+                        size="small"
                         style="width: 100%"
                       >
                         <el-option
@@ -886,7 +898,7 @@
                       </el-select>
                       <el-button
                         type="primary"
-                        size="mini"
+                        size="small"
                         @click="executeAnalysisOut"
                         :loading="analysisOutLoading"
                         style="width: 100%"
@@ -895,7 +907,7 @@
                       <el-button
                         v-if="analysisOutExecuting"
                         type="danger"
-                        size="mini"
+                        size="small"
                         @click="cancelAnalysisOut"
                         style="width: 100%; margin-left: 0px"
                         >取消</el-button
@@ -950,10 +962,9 @@
                   >
                     <div class="popover-header">
                       <span class="device-title">{{ popoverData.name }}</span>
-                      <i
-                        class="el-icon-close close-btn"
-                        @click="closePopover"
-                      ></i>
+                      <el-icon class="close-btn" @click="closePopover"
+                        ><Close
+                      /></el-icon>
                     </div>
                     <div class="status-lines">
                       <div
@@ -1024,7 +1035,9 @@
         <div class="section-header">
           <template v-if="isQueueExpanded">
             <div class="header-left">
-              <span><i class="el-icon-s-data"></i> 队列信息</span>
+              <span
+                ><el-icon><Histogram /></el-icon> 队列信息</span
+              >
             </div>
             <span
               class="arrow-icon"
@@ -1034,7 +1047,7 @@
             >
           </template>
           <template v-else>
-            <i class="el-icon-s-data" @click="changeQueueExpanded"></i>
+            <el-icon @click="changeQueueExpanded"><Histogram /></el-icon>
           </template>
         </div>
         <div v-if="isQueueExpanded" class="expandable-content-queue">
@@ -1067,7 +1080,7 @@
                     size="small"
                     @click="showAddTrayDialog"
                     :disabled="!selectedQueue"
-                    icon="el-icon-plus"
+                    icon="Plus"
                   >
                     添加托盘
                   </el-button>
@@ -1144,8 +1157,8 @@
                     <div class="tray-actions">
                       <el-button
                         type="primary"
-                        size="mini"
-                        icon="el-icon-arrow-up"
+                        size="small"
+                        icon="ArrowUp"
                         circle
                         :disabled="index === 0"
                         @click.stop="moveTrayUp(index)"
@@ -1153,8 +1166,8 @@
                       ></el-button>
                       <el-button
                         type="primary"
-                        size="mini"
-                        icon="el-icon-arrow-down"
+                        size="small"
+                        icon="ArrowDown"
                         circle
                         :disabled="index === nowTrays.length - 1"
                         @click.stop="moveTrayDown(index)"
@@ -1162,8 +1175,8 @@
                       ></el-button>
                       <el-button
                         type="danger"
-                        size="mini"
-                        icon="el-icon-delete"
+                        size="small"
+                        icon="Delete"
                         circle
                         @click.stop="deleteTray(tray, index)"
                       ></el-button>
@@ -1171,7 +1184,7 @@
                   </div>
                 </template>
                 <div v-else class="empty-state">
-                  <i class="el-icon-box"></i>
+                  <el-icon><Box /></el-icon>
                   <p>暂无托盘信息</p>
                 </div>
               </div>
@@ -1185,13 +1198,13 @@
     <div class="test-panel-container">
       <!-- 测试按钮 -->
       <div class="test-toggle-btn" @click="showTestPanel = !showTestPanel">
-        <i class="el-icon-setting"></i>
+        <el-icon><Setting /></el-icon>
       </div>
       <!-- 测试面板 -->
       <div class="test-panel" :class="{ collapsed: !showTestPanel }">
         <div class="test-panel-header">
           <span>测试面板</span>
-          <i class="el-icon-close" @click.stop="showTestPanel = false"></i>
+          <el-icon @click.stop="showTestPanel = false"><Close /></el-icon>
         </div>
         <div class="test-panel-content">
           <!-- 上货请求信号手动触发 -->
@@ -1439,7 +1452,7 @@
     <!-- 新建订单弹窗 -->
     <el-dialog
       title="新建订单"
-      :visible.sync="addOrderDialogVisible"
+      v-model="addOrderDialogVisible"
       width="600px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -1483,22 +1496,24 @@
           />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="cancelAddOrder">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitAddOrder"
-          :loading="isSubmittingOrder"
-        >
-          确定
-        </el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="cancelAddOrder">取消</el-button>
+          <el-button
+            type="primary"
+            @click="submitAddOrder"
+            :loading="isSubmittingOrder"
+          >
+            确定
+          </el-button>
+        </div>
+      </template>
     </el-dialog>
 
     <!-- 执行订单弹窗 -->
     <el-dialog
       title="设置订单-执行"
-      :visible.sync="executeOrderDialogVisible"
+      v-model="executeOrderDialogVisible"
       width="500px"
       :close-on-click-modal="false"
       append-to-body
@@ -1537,158 +1552,24 @@
           <span style="margin-left: 8px; color: #909399">小时</span>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="executeOrderDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitExecuteOrder"
-          :loading="isExecutingOrder"
-        >
-          确认执行
-        </el-button>
-      </div>
-    </el-dialog>
-
-    <!-- 历史订单弹窗 -->
-    <el-dialog
-      title="历史订单"
-      :visible.sync="historyDialogVisible"
-      width="80%"
-      append-to-body
-      :before-close="handleHistoryDialogClose"
-    >
-      <div>
-        <div
-          style="
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-          "
-        >
-          订单编号：
-          <el-input
-            v-model="historyFilter.orderId"
-            placeholder="订单编号"
-            clearable
-            style="width: 180px"
-          />
-          订单名称：
-          <el-input
-            v-model="historyFilter.orderName"
-            placeholder="订单名称"
-            clearable
-            style="width: 180px"
-          />
-          订单状态：
-          <el-select
-            v-model="historyFilter.orderStatus"
-            placeholder="全部"
-            clearable
-            style="width: 140px"
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="executeOrderDialogVisible = false">取消</el-button>
+          <el-button
+            type="primary"
+            @click="submitExecuteOrder"
+            :loading="isExecutingOrder"
           >
-            <el-option label="未开始" :value="0" />
-            <el-option label="执行中" :value="1" />
-            <el-option label="已完成" :value="2" />
-          </el-select>
-          <el-button type="primary" @click="searchHistoryOrders"
-            >查询</el-button
-          >
-          <el-button @click="resetHistoryFilters">重置</el-button>
+            确认执行
+          </el-button>
         </div>
-        <el-table
-          :data="historyOrders"
-          style="width: 100%"
-          border
-          stripe
-          max-height="400"
-        >
-          <el-table-column prop="orderId" label="订单编号" width="140" />
-          <el-table-column
-            prop="orderName"
-            label="订单名称"
-            min-width="150"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="batchNo"
-            label="批号"
-            width="120"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="productName"
-            label="产品名称"
-            min-width="120"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="processName"
-            label="工艺名称"
-            min-width="120"
-            show-overflow-tooltip
-          />
-          <el-table-column prop="orderQuantity" label="订单数量" width="90" />
-          <el-table-column prop="loadedQuantity" label="已上货" width="80" />
-          <el-table-column prop="destination" label="目的地" width="80" />
-          <el-table-column prop="analysisTime" label="解析时间" width="90">
-            <template slot-scope="scope">
-              {{ formatAnalysisTimeText(scope.row.analysisTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="orderStatus"
-            label="状态"
-            width="90"
-            align="center"
-          >
-            <template slot-scope="scope">
-              <el-tag
-                :type="getStatusTagType(scope.row.orderStatus)"
-                size="small"
-              >
-                {{ getStatusText(scope.row.orderStatus) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="createTime"
-            label="创建时间"
-            width="160"
-            show-overflow-tooltip
-          />
-          <el-table-column prop="createrName" label="创建人" width="90" />
-          <el-table-column prop="executorName" label="执行人" width="90" />
-          <el-table-column prop="finisherName" label="完成人" width="90" />
-          <el-table-column
-            prop="finishTime"
-            label="完成时间"
-            width="160"
-            show-overflow-tooltip
-          />
-        </el-table>
-        <div
-          class="pagination-container"
-          style="margin-top: 20px; text-align: right"
-        >
-          <el-pagination
-            @size-change="handleHistorySizeChange"
-            @current-change="handleHistoryCurrentChange"
-            :current-page="currentPage"
-            :page-sizes="[10, 20, 50, 100]"
-            :page-size="pageSize"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="totalHistoryOrders"
-          />
-        </div>
-      </div>
+      </template>
     </el-dialog>
 
     <!-- 修改订单弹窗 -->
     <el-dialog
       title="修改订单"
-      :visible.sync="editOrderDialogVisible"
+      v-model="editOrderDialogVisible"
       width="600px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -1732,25 +1613,27 @@
           />
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="cancelEditOrder">取消</el-button>
-        <el-button
-          type="primary"
-          @click="submitEditOrder"
-          :loading="isEditingOrder"
-        >
-          确定
-        </el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="cancelEditOrder">取消</el-button>
+          <el-button
+            type="primary"
+            @click="submitEditOrder"
+            :loading="isEditingOrder"
+          >
+            确定
+          </el-button>
+        </div>
+      </template>
     </el-dialog>
 
     <!-- 订单查询对话框 -->
-    <OrderQueryDialog :visible.sync="orderQueryDialogVisible" />
+    <OrderQueryDialog v-model:visible="orderQueryDialogVisible" />
 
     <!-- 添加托盘对话框 -->
     <el-dialog
       title="添加托盘"
-      :visible.sync="addTrayDialogVisible"
+      v-model="addTrayDialogVisible"
       width="560px"
       append-to-body
       :close-on-click-modal="false"
@@ -1825,12 +1708,17 @@
           </el-form-item>
         </el-form>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="addTrayDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitAddTray" :loading="isSubmitting"
-          >确 定</el-button
-        >
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="addTrayDialogVisible = false">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="submitAddTray"
+            :loading="isSubmitting"
+            >确 定</el-button
+          >
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -3699,13 +3587,6 @@ export default {
           { required: true, message: '请输入解析时间', trigger: 'blur' }
         ]
       },
-      // 历史订单弹窗
-      historyDialogVisible: false,
-      historyOrders: [],
-      historyFilter: { orderId: '', orderName: '', orderStatus: '' },
-      currentPage: 1,
-      pageSize: 10,
-      totalHistoryOrders: 0,
       // ========== 上货请求信号处理 ==========
       currentVirtualId: 10000, // 当前虚拟ID（范围10000-29999）
       lastUploadRequestBit: '0', // 上次上货请求信号值（用于上升沿检测）
@@ -3803,11 +3684,13 @@ export default {
     this._plcLatest_0 = null;
     this._plcLatest_1 = null;
     this._plcProcessing = false;
-    ipcRenderer.on('receivedMsg_0', (event, values, values2) => {
+    // 保存监听器引用，以便组件销毁时移除，避免重复注册和内存泄漏
+    this._plcMsgHandler_0 = (event, values, values2) => {
       this._plcLatest_0 = { values, values2 };
       if (this._plcProcessing) return;
       this._flushPlcData();
-    });
+    };
+    ipcRenderer.on('receivedMsg_0', this._plcMsgHandler_0);
     this._processPlc0 = (values, values2) => {
       const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
 
@@ -3936,11 +3819,12 @@ export default {
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
       this.syncDeviceNodesFromPlc(values, 0);
     };
-    ipcRenderer.on('receivedMsg_1', (event, values, values2) => {
+    this._plcMsgHandler_1 = (event, values, values2) => {
       this._plcLatest_1 = { values, values2 };
       if (this._plcProcessing) return;
       this._flushPlcData();
-    });
+    };
+    ipcRenderer.on('receivedMsg_1', this._plcMsgHandler_1);
     this._flushPlcData = () => {
       if (this._plcProcessing) return;
       this._plcProcessing = true;
@@ -4624,7 +4508,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         });
-        this.$set(order, 'isLoading', true);
+        order.isLoading = true;
         let userInfo = { userName: '', userCode: '' };
         try {
           userInfo = remote.getGlobal('sharedObject').userInfo || userInfo;
@@ -4671,7 +4555,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         });
-        this.$set(order, 'isLoading', true);
+        order.isLoading = true;
         const param = {
           id: order.id,
           orderStatus: 0
@@ -4710,7 +4594,7 @@ export default {
           cancelButtonText: '取消',
           type: 'warning'
         });
-        this.$set(order, 'isDeleting', true);
+        order.isDeleting = true;
         const param = {
           id: order.id,
           invalidFlag: 1
@@ -4729,16 +4613,11 @@ export default {
             this.$message.error('删除订单失败，请重试');
           })
           .finally(() => {
-            this.$set(order, 'isDeleting', false);
+            order.isDeleting = false;
           });
       } catch (err) {
         // 用户取消操作
       }
-    },
-    // 显示历史订单弹窗
-    async showHistoryOrders() {
-      this.historyDialogVisible = true;
-      await this.loadHistoryOrders();
     },
     // ========== 上货请求信号处理 ==========
     // 处理上货请求信号（DB1000.DBW22.BIT0 上升沿触发）
@@ -5325,7 +5204,7 @@ export default {
 
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：解析房出库离开时间，随后从队列移除
-        this.$set(tray, 'outAnalysisRoomTime', currentTime);
+        tray.outAnalysisRoomTime = currentTime;
         this.addLog(
           `解析房${roomNo}出货请求(DBW30.0)：托盘 ${
             tray.trayCode || tray.id
@@ -5367,11 +5246,11 @@ export default {
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：实际进入的解析房 + 进入时间（匹配 analysisDestination）
-        this.$set(tray, 'analysisRoom', destStr);
-        this.$set(tray, 'inAnalysisRoomTime', currentTime);
+        tray.analysisRoom = destStr;
+        tray.inAnalysisRoomTime = currentTime;
         // 屏蔽7号解析房时，入房托盘解析周期强制为0（立即完成）
         if (this.blockAnalysisRoom7 && roomNo === 7) {
-          this.$set(tray, 'analysisTime', 0);
+          tray.analysisTime = 0;
         }
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
@@ -5426,8 +5305,8 @@ export default {
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：实际进入的灭菌柜 + 进入时间（匹配 sendTo）
-        this.$set(tray, 'sterilizationRoom', destStr);
-        this.$set(tray, 'inSterilizationRoomTime', currentTime);
+        tray.sterilizationRoom = destStr;
+        tray.inSterilizationRoomTime = currentTime;
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
         movedCount++;
@@ -5478,7 +5357,7 @@ export default {
         const tray = sourceQueue.trayInfo[0];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：未灭菌→已灭菌完成时间
-        this.$set(tray, 'sterilizationCompleteTime', currentTime);
+        tray.sterilizationCompleteTime = currentTime;
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.shift();
         movedCount++;
@@ -5530,8 +5409,8 @@ export default {
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：实际进入的灭菌柜 + 进入时间（31-33，匹配 sendTo）
-        this.$set(tray, 'sterilizationRoom', destStr);
-        this.$set(tray, 'inSterilizationRoomTime', currentTime);
+        tray.sterilizationRoom = destStr;
+        tray.inSterilizationRoomTime = currentTime;
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
         movedCount++;
@@ -5596,7 +5475,7 @@ export default {
       for (let i = 0; i < increaseCount; i++) {
         if (sourceQueue.trayInfo.length === 0) break;
         const tray = sourceQueue.trayInfo.shift();
-        this.$set(tray, 'outSterilizationRoomTime', currentTime);
+        tray.outSterilizationRoomTime = currentTime;
         // 按容量分配解析房；满则仍入1015（实物已到），但不写入超容目的地
         if (!capacityFull) {
           const dest = this.resolveAnalysisDestination();
@@ -5615,7 +5494,7 @@ export default {
             }
             this.cancelSterToAnalysis();
           } else {
-            this.$set(tray, 'analysisDestination', String(dest));
+            tray.analysisDestination = String(dest);
             assignedCount++;
           }
         }
@@ -5724,7 +5603,7 @@ export default {
             return;
           }
           // 流转追加：解析房目的地（计划，出灭菌柜时才分配）
-          this.$set(tray, 'analysisDestination', String(dest));
+          tray.analysisDestination = String(dest);
         }
 
         const dest = Number(tray.analysisDestination);
@@ -5742,7 +5621,7 @@ export default {
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         // 流转追加：离开灭菌柜进入输送线时间（31-33 在进入1015时已写过则保留）
         if (!tray.outSterilizationRoomTime) {
-          this.$set(tray, 'outSterilizationRoomTime', currentTime);
+          tray.outSterilizationRoomTime = currentTime;
         }
         conveyorQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
@@ -5841,7 +5720,7 @@ export default {
 
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
         if (!tray.outSterilizationRoomTime) {
-          this.$set(tray, 'outSterilizationRoomTime', currentTime);
+          tray.outSterilizationRoomTime = currentTime;
         }
         conveyorQueue.trayInfo.push(tray);
         queue1015.trayInfo.shift();
@@ -5852,61 +5731,6 @@ export default {
       } finally {
         this.isHandlingSterilOutRequest = false;
       }
-    },
-    // 关闭历史订单弹窗
-    handleHistoryDialogClose(done) {
-      this.historyOrders = [];
-      this.currentPage = 1;
-      done();
-    },
-    // 加载历史订单
-    async loadHistoryOrders() {
-      const params = {
-        pageNum: this.currentPage,
-        pageSize: this.pageSize,
-        orderId: this.historyFilter.orderId || '',
-        orderName: this.historyFilter.orderName || '',
-        orderStatus:
-          this.historyFilter.orderStatus !== ''
-            ? this.historyFilter.orderStatus
-            : null,
-        executorName: ''
-      };
-      try {
-        const res = await HttpUtil.post(
-          '/order_info/queryHistoryOrderList',
-          params
-        );
-        if (res.code === '200') {
-          this.historyOrders = res.data.list || [];
-          this.totalHistoryOrders = res.data.total || 0;
-        } else {
-          this.$message.error('获取历史订单失败');
-        }
-      } catch (error) {
-        this.$message.error('获取历史订单失败');
-      }
-    },
-    // 搜索历史订单
-    searchHistoryOrders() {
-      this.currentPage = 1;
-      this.loadHistoryOrders();
-    },
-    // 重置筛选条件
-    resetHistoryFilters() {
-      this.historyFilter = { orderId: '', orderName: '', orderStatus: '' };
-      this.currentPage = 1;
-      this.loadHistoryOrders();
-    },
-    // 分页大小变更
-    handleHistorySizeChange(val) {
-      this.pageSize = val;
-      this.loadHistoryOrders();
-    },
-    // 当前页变更
-    handleHistoryCurrentChange(val) {
-      this.currentPage = val;
-      this.loadHistoryOrders();
     },
     toggleButtonState(button) {
       if (button === 'start') {
@@ -6974,7 +6798,7 @@ export default {
             const queue = this.queues[queueIndex];
             if (queue && Array.isArray(queue.trayInfo)) {
               queue.trayInfo.forEach((tray) => {
-                this.$set(tray, 'analysisTime', 0);
+                tray.analysisTime = 0;
               });
             }
             this.addLog(
@@ -7082,7 +6906,7 @@ export default {
       });
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this._resizeRaf) {
       cancelAnimationFrame(this._resizeRaf);
       this._resizeRaf = null;
@@ -7098,6 +6922,15 @@ export default {
     if (this._analysisClockTimer) {
       clearInterval(this._analysisClockTimer);
       this._analysisClockTimer = null;
+    }
+    // 清理PLC数据接收监听器，防止重复注册和内存泄漏
+    if (this._plcMsgHandler_0) {
+      ipcRenderer.removeListener('receivedMsg_0', this._plcMsgHandler_0);
+      this._plcMsgHandler_0 = null;
+    }
+    if (this._plcMsgHandler_1) {
+      ipcRenderer.removeListener('receivedMsg_1', this._plcMsgHandler_1);
+      this._plcMsgHandler_1 = null;
     }
     // 取消队列监听器
     if (this._queueWatchers && this._queueWatchers.length > 0) {
@@ -7525,9 +7358,6 @@ export default {
               }
             }
           }
-        }
-        .order-actions {
-          margin-left: auto;
         }
         .scrollable-content {
           height: 220px;
@@ -8321,7 +8151,7 @@ export default {
               .fade-scale-leave-active {
                 transition: all 0.2s ease;
               }
-              .fade-scale-enter,
+              .fade-scale-enter-from,
               .fade-scale-leave-to {
                 opacity: 0;
                 transform: translate(-50%, -90%) scale(0.9);
@@ -8678,23 +8508,42 @@ export default {
                     padding: 6px 8px;
                     display: flex;
                     flex-direction: column;
-                    align-items: flex-start;
+                    align-items: stretch;
                     gap: 6px;
+                    width: 100%;
+                    box-sizing: border-box;
                   }
                 }
               }
               .preheating-room-marker :deep(.el-select) {
                 width: 100%;
+                flex: 1;
+                min-width: 0;
               }
-              .preheating-room-marker :deep(.el-input__inner) {
+              .preheating-room-marker :deep(.el-select__wrapper) {
+                width: 100%;
                 background-color: rgba(255, 255, 255, 0.15);
-                border-color: rgba(255, 255, 255, 0.2);
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
                 color: #fff;
+                min-height: 24px;
                 height: 24px;
-                line-height: 24px;
                 font-size: 11px;
                 border-radius: 3px;
                 padding: 0 8px;
+              }
+              .preheating-room-marker
+                :deep(.el-select__wrapper.is-hovering:not(.is-focused)) {
+                box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+              }
+              .preheating-room-marker :deep(.el-select__wrapper.is-focused) {
+                box-shadow: 0 0 0 1px rgba(127, 198, 255, 0.7) inset;
+              }
+              .preheating-room-marker :deep(.el-select__placeholder),
+              .preheating-room-marker :deep(.el-select__selected-item) {
+                color: #fff;
+              }
+              .preheating-room-marker :deep(.el-select__caret) {
+                color: rgba(255, 255, 255, 0.85);
               }
 
               /* 解析状态标签样式 */

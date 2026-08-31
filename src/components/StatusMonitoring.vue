@@ -1,19 +1,16 @@
 <template>
   <div :class="['sm-main', plcStatusClass]" v-drag @dblclick="openPlcPanel">
     <div class="inner">
-      <i
-        :class="
-          plcStatusClass === 'offline'
-            ? 'el-icon-circle-close'
-            : 'el-icon-circle-check'
-        "
-        class="status-icon"
-      ></i>
+      <el-icon class="status-icon">
+        <component
+          :is="plcStatusClass === 'offline' ? 'CircleClose' : 'CircleCheck'"
+        />
+      </el-icon>
       <span class="status-text">{{ plcStatusText }}</span>
     </div>
     <el-dialog
       title="PLC变量"
-      :visible.sync="plcPanelVisible"
+      v-model="plcPanelVisible"
       width="760px"
       class="plc-panel"
       append-to-body
@@ -22,11 +19,11 @@
     >
       <el-radio-group
         v-model="activePlcIndex"
-        size="mini"
+        size="small"
         class="plc-panel__tabs"
         @change="handlePlcTabChange"
       >
-        <el-radio-button v-for="(config, i) in plcConfigs" :key="i" :label="i"
+        <el-radio-button v-for="(config, i) in plcConfigs" :key="i" :value="i"
           >{{ config.name }}PLC</el-radio-button
         >
       </el-radio-group>
@@ -123,7 +120,7 @@
           <span class="plc-panel__bit-title">Bit 解析</span>
           <el-select
             v-model="bitParseAddress"
-            size="mini"
+            size="small"
             class="plc-panel__bit-select"
             filterable
             clearable
@@ -169,8 +166,8 @@ export default {
   name: 'StatusMonitor',
   directives: {
     drag: {
-      // 1. 绑定钩子
-      bind: function (el) {
+      // 1. 挂载钩子（Vue 3：bind 改为 mounted）
+      mounted: function (el) {
         const oDiv = el;
 
         // 定义 resize 处理函数（命名它，以便稍后解绑）
@@ -274,8 +271,8 @@ export default {
           document.addEventListener('contextmenu', endDrag);
         };
       },
-      // 2. 解绑钩子 (防止内存泄漏)
-      unbind: function (el) {
+      // 2. 卸载钩子 (防止内存泄漏，Vue 3：unbind 改为 unmounted)
+      unmounted: function (el) {
         if (el._resizeHandler) {
           window.removeEventListener('resize', el._resizeHandler);
           delete el._resizeHandler;
@@ -455,7 +452,7 @@ export default {
       })(i);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     this._isDestroyed = true;
     var self = this;
     // 清理所有 IPC 监听器

@@ -1,10 +1,9 @@
 <template>
   <el-dialog
     title="订单查询"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="98%"
     :close-on-click-modal="false"
-    :modal-append-to-body="false"
     append-to-body
     class="order-query-dialog"
   >
@@ -43,10 +42,10 @@
       </div>
       <div class="query-item query-actions">
         <el-button type="primary" @click="handleSearch" :loading="loading">
-          <i class="el-icon-search"></i>查询
+          <el-icon><Search /></el-icon>查询
         </el-button>
         <el-button @click="handleReset">
-          <i class="el-icon-refresh-left"></i>重置
+          <el-icon><RefreshLeft /></el-icon>重置
         </el-button>
         <el-button
           type="success"
@@ -54,7 +53,7 @@
           :loading="exportLoading"
           :disabled="pagination.total === 0"
         >
-          <i class="el-icon-download"></i>导出Excel
+          <el-icon><Download /></el-icon>导出Excel
         </el-button>
       </div>
     </div>
@@ -115,7 +114,7 @@
           width="80"
         ></el-table-column>
         <el-table-column prop="analysisTime" label="解析时间" width="90">
-          <template slot-scope="scope">
+          <template #default="scope">
             {{
               scope.row.analysisTime != null
                 ? scope.row.analysisTime + 'h'
@@ -129,7 +128,7 @@
           width="90"
           align="center"
         >
-          <template slot-scope="scope">
+          <template #default="scope">
             <el-tag
               :type="getStatusTagType(scope.row.orderStatus)"
               size="small"
@@ -166,12 +165,18 @@
           show-overflow-tooltip
         ></el-table-column>
         <el-table-column label="操作" width="150" fixed="right" align="center">
-          <template slot-scope="scope">
-            <el-button type="text" size="small" @click="openEdit(scope.row)">
+          <template #default="scope">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openEdit(scope.row)"
+            >
               修改
             </el-button>
             <el-button
-              type="text"
+              link
+              type="primary"
               size="small"
               class="order-invalidate-btn"
               :disabled="isInvalidRow(scope.row)"
@@ -199,7 +204,7 @@
 
     <el-dialog
       title="修改订单"
-      :visible.sync="editDialogVisible"
+      v-model="editDialogVisible"
       width="520px"
       append-to-body
       :close-on-click-modal="false"
@@ -247,12 +252,14 @@
           </el-form-item>
         </el-form>
       </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" :loading="editSaving" @click="submitEdit">
-          保 存
-        </el-button>
-      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取 消</el-button>
+          <el-button type="primary" :loading="editSaving" @click="submitEdit">
+            保 存
+          </el-button>
+        </div>
+      </template>
     </el-dialog>
   </el-dialog>
 </template>
@@ -290,6 +297,7 @@ export default {
       default: false
     }
   },
+  emits: ['update:visible'],
   data() {
     return {
       loading: false,
@@ -574,6 +582,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.edit-form-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+</style>
+
+<style lang="less">
+/* append-to-body 的 dialog 必须放在非 scoped 块 */
 .order-query-dialog {
   .query-form {
     padding: 10px 0;
@@ -615,6 +631,10 @@ export default {
     text-align: right;
     padding: 15px 0;
     border-top: 1px solid #ebeef5;
+
+    .el-pagination {
+      display: inline-flex;
+    }
   }
 
   .order-invalidate-btn {
@@ -626,10 +646,5 @@ export default {
       color: #c0c4cc;
     }
   }
-}
-
-.edit-form-body {
-  max-height: 60vh;
-  overflow-y: auto;
 }
 </style>
