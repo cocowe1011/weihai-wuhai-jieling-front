@@ -109,10 +109,22 @@
           width="80"
         ></el-table-column>
         <el-table-column
-          prop="destination"
-          label="目的地"
+          prop="preheatRoom"
+          label="预热房"
           width="80"
         ></el-table-column>
+        <el-table-column
+          prop="destination"
+          label="灭菌柜"
+          width="80"
+        ></el-table-column>
+        <el-table-column prop="preheatTime" label="预热时间" width="90">
+          <template #default="scope">
+            {{
+              scope.row.preheatTime != null ? scope.row.preheatTime + 'h' : '--'
+            }}
+          </template>
+        </el-table-column>
         <el-table-column prop="analysisTime" label="解析时间" width="90">
           <template #default="scope">
             {{
@@ -470,7 +482,9 @@ export default {
         工艺名称: row.processName || '',
         订单数量: row.orderQuantity != null ? row.orderQuantity : '',
         已上货: row.loadedQuantity != null ? row.loadedQuantity : '',
-        目的地: row.destination || '',
+        预热房: row.preheatRoom || '',
+        灭菌柜: row.destination || '',
+        预热时间: row.preheatTime != null ? row.preheatTime + 'h' : '',
         解析时间: row.analysisTime != null ? row.analysisTime + 'h' : '',
         状态: this.getStatusText(row.orderStatus),
         创建时间: row.createTime || '',

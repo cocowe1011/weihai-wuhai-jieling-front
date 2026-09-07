@@ -164,7 +164,7 @@
                     <span class="info-value">{{ order.createTime }}</span>
                     <span class="info-label">目的地</span>
                     <span class="info-value">{{
-                      order.destination || '--'
+                      order.preheatRoom || '--'
                     }}</span>
                     <span class="info-label">解析周期</span>
                     <span class="info-value">{{
@@ -690,6 +690,22 @@
                     <el-icon><Check /></el-icon>
                   </el-tag>
                 </div>
+                <!-- 预热完成状态标志（预热队列下方，房内托盘全部预热完成时显示） -->
+                <div
+                  v-for="marker in preheatQueueMarkers"
+                  :key="'preheat-check-' + marker.id"
+                  class="analysis-status-marker"
+                  :data-x="marker.x"
+                  :data-y="marker.y + 120"
+                >
+                  <el-tag
+                    v-show="isPreheatRoomAllComplete(marker.queueId - 49)"
+                    type="success"
+                    size="small"
+                  >
+                    <el-icon><Check /></el-icon>
+                  </el-tag>
+                </div>
                 <!-- 小车元素 -->
                 <div
                   v-for="cart in carts"
@@ -706,7 +722,7 @@
                 <div
                   class="preheating-room-marker"
                   data-x="1000"
-                  data-y="1550"
+                  data-y="250"
                   style="width: 160px"
                 >
                   <div class="preheating-room-content">
@@ -1113,13 +1129,15 @@
                           >订单ID：{{ tray.orderId || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >灭菌柜：{{
-                            tray.sterilizationRoom || tray.sendTo || '--'
+                          >预热房：{{
+                            tray.preheatRoom || tray.sendTo || '--'
+                          }}，灭菌柜：{{
+                            tray.sterilizationRoom ||
+                            tray.sterilDestination ||
+                            '--'
                           }}，发往：{{
                             tray.analysisDestination
                               ? '解析房' + tray.analysisDestination
-                              : tray.sendTo
-                              ? '灭菌柜' + tray.sendTo
                               : '--'
                           }}</span
                         >
@@ -1129,8 +1147,23 @@
                           >产品名称：{{ tray.productName || '--' }}</span
                         >
                         <span class="tray-detail"
+                          >预热周期：{{
+                            formatAnalysisTimeText(tray.preheatTime)
+                          }}</span
+                        >
+                        <span class="tray-detail"
                           >解析周期：{{
                             formatAnalysisTimeText(tray.analysisTime)
+                          }}</span
+                        >
+                      </div>
+                      <div class="tray-info-row">
+                        <span class="tray-detail"
+                          >预热开始：{{ tray.inPreheatRoomTime || '--' }}</span
+                        >
+                        <span class="tray-detail"
+                          >预热剩余：{{
+                            getTrayPreheatRemainingText(tray)
                           }}</span
                         >
                       </div>
@@ -1139,7 +1172,7 @@
                           >解析开始：{{ tray.inAnalysisRoomTime || '--' }}</span
                         >
                         <span class="tray-detail"
-                          >剩余周期：{{
+                          >解析剩余：{{
                             getTrayAnalysisRemainingText(tray)
                           }}</span
                         >
@@ -1147,9 +1180,6 @@
                       <div class="tray-info-row">
                         <span class="tray-detail"
                           >批次：{{ tray.batchNo || '--' }}</span
-                        >
-                        <span class="tray-detail"
-                          >备注：{{ tray.remark || '--' }}</span
                         >
                       </div>
                       <span class="tray-time">{{ tray.time }}</span>
@@ -1289,6 +1319,36 @@
                     @click="
                       updateSterilizationIncompleteQuantity(cabinetNo + 18, -1)
                     "
+                  >
+                    -
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 预热房数量模拟（预热1-12） -->
+          <div class="test-section">
+            <span class="test-label">预热数量测试(1-12):</span>
+            <div class="steril-quantity-test-grid">
+              <div
+                v-for="preheatNo in 12"
+                :key="'preheat-qty-' + preheatNo"
+                class="steril-quantity-item"
+              >
+                <span class="steril-quantity-label">{{ preheatNo }}</span>
+                <span class="steril-quantity-value">{{
+                  getPreheatQuantity(preheatNo)
+                }}</span>
+                <div class="steril-quantity-buttons">
+                  <button
+                    class="quantity-btn plus"
+                    @click="updatePreheatQuantity(preheatNo, 1)"
+                  >
+                    +
+                  </button>
+                  <button
+                    class="quantity-btn minus"
+                    @click="updatePreheatQuantity(preheatNo, -1)"
                   >
                     -
                   </button>
@@ -1525,6 +1585,32 @@
         label-width="130px"
         size="small"
       >
+        <el-form-item label="预热房" prop="preheatRoom">
+          <el-select
+            v-model="executeOrderForm.preheatRoom"
+            placeholder="请选择预热房"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="i in 12"
+              :key="i"
+              :label="String(i)"
+              :value="String(i)"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="预热时间" prop="preheatTime">
+          <el-input-number
+            v-model="executeOrderForm.preheatTime"
+            :min="0.1"
+            :max="720"
+            :precision="1"
+            :step="0.1"
+            placeholder="请输入预热时间"
+            style="width: calc(100% - 42px)"
+          />
+          <span style="margin-left: 8px; color: #909399">小时</span>
+        </el-form-item>
         <el-form-item label="灭菌柜目的地" prop="destination">
           <el-select
             v-model="executeOrderForm.destination"
@@ -1857,11 +1943,23 @@ export default {
         { id: 46, queueName: '已灭菌28', trayInfo: [] },
         { id: 47, queueName: '已灭菌29', trayInfo: [] },
         { id: 48, queueName: '已灭菌30', trayInfo: [] },
-        { id: 49, queueName: '1015', trayInfo: [] }
+        { id: 49, queueName: '1015', trayInfo: [] },
+        { id: 50, queueName: '预热1', trayInfo: [] },
+        { id: 51, queueName: '预热2', trayInfo: [] },
+        { id: 52, queueName: '预热3', trayInfo: [] },
+        { id: 53, queueName: '预热4', trayInfo: [] },
+        { id: 54, queueName: '预热5', trayInfo: [] },
+        { id: 55, queueName: '预热6', trayInfo: [] },
+        { id: 56, queueName: '预热7', trayInfo: [] },
+        { id: 57, queueName: '预热8', trayInfo: [] },
+        { id: 58, queueName: '预热9', trayInfo: [] },
+        { id: 59, queueName: '预热10', trayInfo: [] },
+        { id: 60, queueName: '预热11', trayInfo: [] },
+        { id: 61, queueName: '预热12', trayInfo: [] }
       ],
       // 添加队列位置标识数据
       queueMarkers: [
-        { id: 1, name: '上货', queueId: 1, x: 1050, y: 1190 },
+        { id: 1, name: '上货', queueId: 1, x: 1090, y: 1890 },
         { id: 2, name: '(未)\n灭菌19', queueId: 2, x: 1295, y: 880 },
         { id: 3, name: '(未)\n灭菌20', queueId: 3, x: 1185, y: 880 },
         { id: 4, name: '(未)\n灭菌21', queueId: 4, x: 1085, y: 880 },
@@ -1909,7 +2007,19 @@ export default {
         { id: 46, name: '(已)\n灭菌28', queueId: 46, x: 298, y: 660 },
         { id: 47, name: '(已)\n灭菌29', queueId: 47, x: 195, y: 660 },
         { id: 48, name: '(已)\n灭菌30', queueId: 48, x: 95, y: 660 },
-        { id: 49, name: '1015', queueId: 49, x: 700, y: 650 }
+        { id: 49, name: '1015', queueId: 49, x: 700, y: 650 },
+        { id: 50, name: '预热1', queueId: 50, x: 640, y: 1550 },
+        { id: 51, name: '预热2', queueId: 51, x: 705, y: 1550 },
+        { id: 52, name: '预热3', queueId: 52, x: 770, y: 1550 },
+        { id: 53, name: '预热4', queueId: 53, x: 835, y: 1550 },
+        { id: 54, name: '预热5', queueId: 54, x: 900, y: 1550 },
+        { id: 55, name: '预热6', queueId: 55, x: 965, y: 1550 },
+        { id: 56, name: '预热7', queueId: 56, x: 1030, y: 1550 },
+        { id: 57, name: '预热8', queueId: 57, x: 1095, y: 1550 },
+        { id: 58, name: '预热9', queueId: 58, x: 1160, y: 1550 },
+        { id: 59, name: '预热10', queueId: 59, x: 1225, y: 1550 },
+        { id: 60, name: '预热11', queueId: 60, x: 1290, y: 1550 },
+        { id: 61, name: '预热12', queueId: 61, x: 1355, y: 1550 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
@@ -1987,6 +2097,19 @@ export default {
       floor1Sterilization32Complete: 0, // DBW120 灭菌柜32内实际数量--完成
       floor1Sterilization33Complete: 0, // DBW122 灭菌柜33内实际数量--完成
       floor1Queue1015Qty: 0, // DBW68 1015内实际数量
+      // ========== 一楼预热房内托盘数量（DBW154-DBW176，预热1-12）==========
+      floor1Preheat1Qty: 0, // DBW154 1号预热内托盘数量
+      floor1Preheat2Qty: 0, // DBW156 2号预热内托盘数量
+      floor1Preheat3Qty: 0, // DBW158 3号预热内托盘数量
+      floor1Preheat4Qty: 0, // DBW160 4号预热内托盘数量
+      floor1Preheat5Qty: 0, // DBW162 5号预热内托盘数量
+      floor1Preheat6Qty: 0, // DBW164 6号预热内托盘数量
+      floor1Preheat7Qty: 0, // DBW166 7号预热内托盘数量
+      floor1Preheat8Qty: 0, // DBW168 8号预热内托盘数量
+      floor1Preheat9Qty: 0, // DBW170 9号预热内托盘数量
+      floor1Preheat10Qty: 0, // DBW172 10号预热内托盘数量
+      floor1Preheat11Qty: 0, // DBW174 11号预热内托盘数量
+      floor1Preheat12Qty: 0, // DBW176 12号预热内托盘数量
       // 灭菌完成状态（DBW124~138 BIT6/BIT14）
       sterilizationCompleteWord124: {
         bit6: '0', // 19
@@ -3577,7 +3700,9 @@ export default {
         orderId: '',
         orderName: '',
         destination: '',
-        analysisTime: 30
+        analysisTime: 30,
+        preheatRoom: '',
+        preheatTime: 1
       },
       executeOrderRules: {
         destination: [
@@ -3585,6 +3710,12 @@ export default {
         ],
         analysisTime: [
           { required: true, message: '请输入解析时间', trigger: 'blur' }
+        ],
+        preheatRoom: [
+          { required: true, message: '请选择预热房', trigger: 'change' }
+        ],
+        preheatTime: [
+          { required: true, message: '请输入预热时间', trigger: 'blur' }
         ]
       },
       // ========== 上货请求信号处理 ==========
@@ -3610,7 +3741,7 @@ export default {
       analysisOutExecuting: false,
       analysisOutTrayCode: '', // 当前处理托盘展示
       isHandlingAnalysisOutRequest: false,
-      // 解析完成状态时钟（驱动剩余时间/完成标志刷新）
+      // 解析/预热完成状态共用心跳时钟（驱动剩余时间/完成标志刷新）
       analysisClockTick: 0,
       blockAnalysisRoom7: false // 屏蔽7号解析房开关
     };
@@ -3632,6 +3763,12 @@ export default {
       const q = this.selectedQueue;
       if (!q) return false;
       return q.id === 17 || q.id === 49;
+    },
+    // 预热房队列标识（预热1-12，id 50-61），用于渲染预热完成绿勾位置
+    preheatQueueMarkers() {
+      return this.queueMarkers.filter(
+        (marker) => marker.queueId >= 50 && marker.queueId <= 61
+      );
     },
     runningOrder() {
       return this.ordersList.find((o) => o.orderStatus === 1) || null;
@@ -3672,10 +3809,14 @@ export default {
         this._queueWatchers.push(unwatch);
       });
     });
-    // 解析完成状态：约 30s 刷新剩余时间与完成标志
+    // 解析/预热完成状态共用一个心跳：约 30s 刷新剩余时间与完成绿勾
     this._analysisClockTimer = setInterval(() => {
       this.analysisClockTick += 1;
-      if (this.selectedQueueIndex >= 17 && this.selectedQueueIndex <= 35) {
+      // 解析队列(index 17-35) 与 预热队列(index 49-60)：刷新明细面板剩余时间
+      if (
+        (this.selectedQueueIndex >= 17 && this.selectedQueueIndex <= 35) ||
+        (this.selectedQueueIndex >= 49 && this.selectedQueueIndex <= 60)
+      ) {
         this.showTrays(this.selectedQueueIndex);
       }
     }, 30000);
@@ -3779,6 +3920,20 @@ export default {
 
       // 一楼 1015 内实际数量
       this.floor1Queue1015Qty = Number(values.DBW68 ?? 0);
+
+      // 一楼预热房内托盘数量 DBW154-DBW176（预热1-12）
+      this.floor1Preheat1Qty = Number(values.DBW154 ?? 0);
+      this.floor1Preheat2Qty = Number(values.DBW156 ?? 0);
+      this.floor1Preheat3Qty = Number(values.DBW158 ?? 0);
+      this.floor1Preheat4Qty = Number(values.DBW160 ?? 0);
+      this.floor1Preheat5Qty = Number(values.DBW162 ?? 0);
+      this.floor1Preheat6Qty = Number(values.DBW164 ?? 0);
+      this.floor1Preheat7Qty = Number(values.DBW166 ?? 0);
+      this.floor1Preheat8Qty = Number(values.DBW168 ?? 0);
+      this.floor1Preheat9Qty = Number(values.DBW170 ?? 0);
+      this.floor1Preheat10Qty = Number(values.DBW172 ?? 0);
+      this.floor1Preheat11Qty = Number(values.DBW174 ?? 0);
+      this.floor1Preheat12Qty = Number(values.DBW176 ?? 0);
 
       // 一楼灭菌完成状态 DBW124~138 BIT6/BIT14
       let word124 = this.convertToWord(values.DBW124 ?? 0);
@@ -4089,42 +4244,42 @@ export default {
         this.handleQueue1015OutRequest();
       }
     },
-    // 监听灭菌柜内未完成实际数量 DBW70-DBW92（19-30：上货区→未灭菌）
-    floor1Sterilization19Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(19, newVal, oldVal);
+    // 监听预热房内托盘数量 DB1000.DBW154-DBW176（预热1-12：上货区→预热房）
+    floor1Preheat1Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(1, newVal, oldVal);
     },
-    floor1Sterilization20Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(20, newVal, oldVal);
+    floor1Preheat2Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(2, newVal, oldVal);
     },
-    floor1Sterilization21Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(21, newVal, oldVal);
+    floor1Preheat3Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(3, newVal, oldVal);
     },
-    floor1Sterilization22Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(22, newVal, oldVal);
+    floor1Preheat4Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(4, newVal, oldVal);
     },
-    floor1Sterilization23Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(23, newVal, oldVal);
+    floor1Preheat5Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(5, newVal, oldVal);
     },
-    floor1Sterilization24Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(24, newVal, oldVal);
+    floor1Preheat6Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(6, newVal, oldVal);
     },
-    floor1Sterilization25Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(25, newVal, oldVal);
+    floor1Preheat7Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(7, newVal, oldVal);
     },
-    floor1Sterilization26Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(26, newVal, oldVal);
+    floor1Preheat8Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(8, newVal, oldVal);
     },
-    floor1Sterilization27Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(27, newVal, oldVal);
+    floor1Preheat9Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(9, newVal, oldVal);
     },
-    floor1Sterilization28Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(28, newVal, oldVal);
+    floor1Preheat10Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(10, newVal, oldVal);
     },
-    floor1Sterilization29Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(29, newVal, oldVal);
+    floor1Preheat11Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(11, newVal, oldVal);
     },
-    floor1Sterilization30Incomplete(newVal, oldVal) {
-      this.handleSterilizationIncompleteQuantityChange(30, newVal, oldVal);
+    floor1Preheat12Qty(newVal, oldVal) {
+      this.handlePreheatRoomQuantityChange(12, newVal, oldVal);
     },
     // 监听灭菌柜内完成实际数量 DBW94-DBW122
     // 19-30：未灭菌→已灭菌；31-33：上货区→灭菌柜
@@ -4435,7 +4590,9 @@ export default {
         orderId: order.orderId,
         orderName: order.orderName,
         destination: '',
-        analysisTime: 30
+        analysisTime: 30,
+        preheatRoom: '',
+        preheatTime: 1
       };
       this.executeOrderDialogVisible = true;
     },
@@ -4458,6 +4615,11 @@ export default {
             this.executeOrderForm.analysisTime != null
               ? Number(Number(this.executeOrderForm.analysisTime).toFixed(1))
               : null,
+          preheatRoom: this.executeOrderForm.preheatRoom,
+          preheatTime:
+            this.executeOrderForm.preheatTime != null
+              ? Number(Number(this.executeOrderForm.preheatTime).toFixed(1))
+              : null,
           executorName: userInfo.userName || '',
           executorCode: userInfo.userCode || ''
         };
@@ -4466,20 +4628,15 @@ export default {
             if (res.code === '200' || res.data >= 1) {
               this.$message.success('订单已开始执行');
               this.addLog(
-                `订单 ${this.executeOrderForm.orderId} 开始执行，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
+                `订单 ${this.executeOrderForm.orderId} 开始执行，预热房：${this.executeOrderForm.preheatRoom}，预热时间：${this.executeOrderForm.preheatTime}小时，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
               );
-              // 上货信号：DBW70=1；DBW18=灭菌房编号；DBW72 按目的地灭菌柜是否出货中写 1/0（均脉冲 2s）
+              // 上货信号：DBW70=1（上货订单开启）；DBW82=1（WCS执行预热进货命令）；DBW84=预热柜编号（均脉冲 2s）
+              const preheatRoom = Number(this.executeOrderForm.preheatRoom);
               this.writePlcPulse('W_DBW70', 1);
-              const dest = Number(this.executeOrderForm.destination);
-              this.writePlcPulse('W_DBW18', dest);
-              const isOutbound =
-                this.sterToAnalysisExecuting &&
-                Number(this.sterToAnalysisFrom) === dest;
-              this.writePlcPulse('W_DBW72', isOutbound ? 0 : 1);
+              this.writePlcPulse('W_DBW82', 1);
+              this.writePlcPulse('W_DBW84', preheatRoom);
               this.addLog(
-                `上货信号：DBW70=1，DBW18=${dest}，DBW72=${
-                  isOutbound ? 0 : 1
-                }（目的地${dest}${isOutbound ? '出货中' : '未出货'}）`
+                `上货信号：DBW70=1，DBW82=1，DBW84=${preheatRoom}（预热房${preheatRoom}）`
               );
               this.executeOrderDialogVisible = false;
               this.refreshOrders();
@@ -4526,12 +4683,12 @@ export default {
           .then((res) => {
             if (res.code === '200') {
               this.handleOrderStatusChange(order, 2);
-              // 完成订单：清零上货启用(DBW70)、进货灭菌命令(DBW72)、灭菌编号(DBW18)
+              // 完成订单：清零上货订单开启(DBW70)、预热进货命令(DBW82)、预热柜编号(DBW84)
               this.writePlcPulse('W_DBW70', 0);
-              this.writePlcPulse('W_DBW72', 0);
-              this.writePlcPulse('W_DBW18', 0);
+              this.writePlcPulse('W_DBW82', 0);
+              this.writePlcPulse('W_DBW84', 0);
               this.addLog(
-                `订单 ${order.orderId} 已完成，产品：${order.productName}，已清零DBW70/DBW72/DBW18`
+                `订单 ${order.orderId} 已完成，产品：${order.productName}，已清零DBW70/DBW82/DBW84`
               );
             } else {
               this.$message.error('完成订单失败，请重试');
@@ -4564,12 +4721,12 @@ export default {
           .then((res) => {
             if (res.code === '200') {
               this.handleOrderStatusChange(order, 0);
-              // 取消订单：清零上货启用(DBW70)、进货灭菌命令(DBW72)、灭菌编号(DBW18)
+              // 取消订单：清零上货订单开启(DBW70)、预热进货命令(DBW82)、预热柜编号(DBW84)
               this.writePlcPulse('W_DBW70', 0);
-              this.writePlcPulse('W_DBW72', 0);
-              this.writePlcPulse('W_DBW18', 0);
+              this.writePlcPulse('W_DBW82', 0);
+              this.writePlcPulse('W_DBW84', 0);
               this.addLog(
-                `订单 ${order.orderId} 已取消执行，已清零DBW70/DBW72/DBW18`
+                `订单 ${order.orderId} 已取消执行，已清零DBW70/DBW82/DBW84`
               );
               this.$message.success('订单状态已更新为未开始');
             } else {
@@ -4655,20 +4812,22 @@ export default {
           return;
         }
 
-        // 4. 获取目的地（从订单执行信息中获取，无目的地则不允许上货）
-        if (!runningOrder.destination) {
-          this.addLog('上货请求失败：订单没有设置目的地，不允许上货', 'alarm');
+        // 4. 获取目的地（改为订单设置的预热房编号，无预热房则不允许上货）
+        if (!runningOrder.preheatRoom) {
+          this.addLog('上货请求失败：订单没有设置预热房，不允许上货', 'alarm');
           this.$message.warning(
-            '当前执行订单没有目的地，请先执行订单设置目的地'
+            '当前执行订单没有预热房，请先执行订单设置预热房'
           );
           return;
         }
-        const destination = Number(runningOrder.destination);
+        const destination = Number(runningOrder.preheatRoom);
 
-        // 5. 向 PLC 写入虚拟ID和目的地（写2S后取消）
+        // 5. 向 PLC 写入虚拟ID和目的地（写2S后取消，目的地为预热房编号）
         ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW10', virtualId);
         ipcRenderer.send('writeSingleValueToPLC_0', 'W_DBW14', destination);
-        this.addLog(`已向上货口写入虚拟ID=${virtualId}，目的地=${destination}`);
+        this.addLog(
+          `已向上货口写入虚拟ID=${virtualId}，目的地(预热房)=${destination}`
+        );
 
         // 2秒后取消写入
         setTimeout(() => {
@@ -4677,7 +4836,7 @@ export default {
         }, 2000);
 
         // 6. 生成托盘信息并加入上货区队列
-        // 创建时字段：trayCode/virtualId/trayTime/sendTo(灭菌柜目的地)/state/sequenceNumber/订单相关/analysisTime(解析周期)
+        // 创建时字段：trayCode/virtualId/trayTime/sendTo(预热房编号)/sterilDestination(灭菌柜目的地)/state/sequenceNumber/订单相关/preheatTime(预热周期)/analysisTime(解析周期)
         // 流转中动态追加（$set）：
         //   sterilizationRoom / inSterilizationRoomTime — 进入未灭菌或灭菌柜
         //   sterilizationCompleteTime — 未灭菌→已灭菌
@@ -4690,7 +4849,10 @@ export default {
           trayCode: String(virtualId),
           virtualId: virtualId,
           trayTime: timeStr,
-          sendTo: String(destination), // 灭菌柜目的地（计划）
+          sendTo: String(destination), // 预热房编号（上货口→预热房的目的地）
+          sterilDestination: runningOrder.destination
+            ? String(runningOrder.destination)
+            : '', // 灭菌柜目的地（订单设定，编号19~33，用于明细展示与后续流转）
           state: 'loaded',
           sequenceNumber: String(this.queues[0].trayInfo.length + 1),
           orderId: runningOrder.orderId || '',
@@ -4700,6 +4862,10 @@ export default {
           unit: runningOrder.unit || '',
           batchNo: runningOrder.batchNo || '',
           processName: runningOrder.processName || '',
+          preheatTime:
+            runningOrder.preheatTime != null
+              ? Number(Number(runningOrder.preheatTime).toFixed(1))
+              : null, // 预热周期（小时，一位小数）
           analysisTime:
             runningOrder.analysisTime != null
               ? Number(Number(runningOrder.analysisTime).toFixed(1))
@@ -4741,7 +4907,7 @@ export default {
           });
 
         this.addLog(
-          `上货请求处理完成：虚拟ID=${virtualId}，订单=${runningOrder.orderId}，目的地=${destination}，已上货${newLoadedQty}/${runningOrder.orderQuantity}`
+          `上货请求处理完成：虚拟ID=${virtualId}，订单=${runningOrder.orderId}，目的地(预热房)=${destination}，已上货${newLoadedQty}/${runningOrder.orderQuantity}`
         );
         // 上货数量达上限：脉冲写 DBW70=0
         if (newLoadedQty >= runningOrder.orderQuantity) {
@@ -4842,6 +5008,13 @@ export default {
     },
     updateSterilizationIncompleteQuantity(cabinetNo, change) {
       const key = `floor1Sterilization${cabinetNo}Incomplete`;
+      this[key] = Math.max(0, parseInt(this[key] || 0) + change);
+    },
+    getPreheatQuantity(preheatNo) {
+      return this[`floor1Preheat${preheatNo}Qty`] || 0;
+    },
+    updatePreheatQuantity(preheatNo, change) {
+      const key = `floor1Preheat${preheatNo}Qty`;
       this[key] = Math.max(0, parseInt(this[key] || 0) + change);
     },
     getAnalysisRoomQuantity(roomNo) {
@@ -4979,6 +5152,10 @@ export default {
     getSterilIncompleteQueueIndex(cabinetNo) {
       return cabinetNo - 18;
     },
+    // 预热房队列索引（预热1-12）：id 50-61
+    getPreheatQueueIndex(preheatNo) {
+      return 48 + preheatNo;
+    },
     // 出货源队列索引：19-30 为已灭菌(id 37-48)，31-33 为原灭菌队列(id 14-16)
     getSterilQueueIndex(cabinetNo) {
       if (cabinetNo >= 19 && cabinetNo <= 30) {
@@ -5030,6 +5207,44 @@ export default {
       const queue = this.queues[queueIndex];
       if (!queue || !Array.isArray(queue.trayInfo)) return false;
       return queue.trayInfo.some((tray) => this.isTrayAnalysisComplete(tray));
+    },
+    // 预热完成判定：与解析房同构（进入预热房时间 + 预热周期），复用 analysisClockTick 心跳
+    isTrayPreheatComplete(tray) {
+      void this.analysisClockTick;
+      if (!tray || !tray.inPreheatRoomTime || tray.preheatTime == null) {
+        return false;
+      }
+      const hours = Number(tray.preheatTime);
+      if (Number.isNaN(hours) || hours < 0) return false;
+      const due = moment(tray.inPreheatRoomTime).add(hours, 'hours');
+      return moment().isSameOrAfter(due);
+    },
+    getTrayPreheatRemainingText(tray) {
+      void this.analysisClockTick;
+      if (!tray || !tray.inPreheatRoomTime || tray.preheatTime == null) {
+        return '--';
+      }
+      const hours = Number(tray.preheatTime);
+      if (Number.isNaN(hours) || hours < 0) return '--';
+      if (this.isTrayPreheatComplete(tray)) {
+        return '已完成';
+      }
+      const due = moment(tray.inPreheatRoomTime).add(hours, 'hours');
+      const remainHours = Math.max(0, due.diff(moment(), 'minutes', true) / 60);
+      return remainHours.toFixed(1) + 'h';
+    },
+    // 预热房全部托盘预热完成（空房不显示绿勾）
+    isPreheatRoomAllComplete(preheatNo) {
+      void this.analysisClockTick;
+      const queue = this.queues[this.getPreheatQueueIndex(preheatNo)];
+      if (
+        !queue ||
+        !Array.isArray(queue.trayInfo) ||
+        queue.trayInfo.length === 0
+      ) {
+        return false;
+      }
+      return queue.trayInfo.every((tray) => this.isTrayPreheatComplete(tray));
     },
     getAnalysisQueueHead(roomNo) {
       const queueIndex = this.getAnalysisQueueIndex(roomNo);
@@ -5130,10 +5345,10 @@ export default {
         this.writePlcPulse('W_DBW30', destination);
       }
     },
-    handleSterilizationIncompleteQuantityChange(cabinetNo, newVal, oldVal) {
+    handlePreheatRoomQuantityChange(preheatNo, newVal, oldVal) {
       if (!this.isDataReady) return;
       if (newVal > oldVal) {
-        this.handleSterilizationIncompleteIncrease(cabinetNo, newVal, oldVal);
+        this.handlePreheatRoomQuantityIncrease(preheatNo, newVal, oldVal);
       }
     },
     handleSterilizationCompleteQuantityChange(cabinetNo, newVal, oldVal) {
@@ -5288,18 +5503,14 @@ export default {
         this.checkAnalysisQtyConsistency(roomNo, 'queue');
       }
     },
-    // 19-30：DBW70-92 增加 → 上货区 → 未灭菌队列
-    handleSterilizationIncompleteIncrease(cabinetNo, newVal, oldVal) {
+    // 预热1-12：DBW154-176 增加 → 上货区 → 预热房队列
+    handlePreheatRoomQuantityIncrease(preheatNo, newVal, oldVal) {
       const increaseCount = newVal - oldVal;
-      const destStr = String(cabinetNo);
+      const destStr = String(preheatNo);
       const sourceQueue = this.queues[0];
-      const targetQueue =
-        this.queues[this.getSterilIncompleteQueueIndex(cabinetNo)];
+      const targetQueue = this.queues[this.getPreheatQueueIndex(preheatNo)];
       if (!sourceQueue || !targetQueue) {
-        this.addLog(
-          `灭菌柜${cabinetNo}未完成数量增加，找不到对应队列`,
-          'alarm'
-        );
+        this.addLog(`预热房${preheatNo}数量增加，找不到对应队列`, 'alarm');
         return;
       }
 
@@ -5315,24 +5526,24 @@ export default {
 
         const tray = sourceQueue.trayInfo[trayIndex];
         const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        // 流转追加：实际进入的灭菌柜 + 进入时间（匹配 sendTo）
-        tray.sterilizationRoom = destStr;
-        tray.inSterilizationRoomTime = currentTime;
+        // 流转追加：实际进入的预热房 + 进入时间（匹配 sendTo），此刻开始预热计时
+        tray.preheatRoom = destStr;
+        tray.inPreheatRoomTime = currentTime;
         targetQueue.trayInfo.push(tray);
         sourceQueue.trayInfo.splice(trayIndex, 1);
         movedCount++;
         this.addLog(
-          `托盘 ${tray.trayCode} 从上货区进入未灭菌${cabinetNo}，时间：${currentTime}`
+          `托盘 ${tray.trayCode} 从上货区进入预热房${preheatNo}，时间：${currentTime}`
         );
       }
 
       if (movedCount > 0) {
-        this.addLog(`从上货区移动${movedCount}个托盘到未灭菌${cabinetNo}队列`);
+        this.addLog(`从上货区移动${movedCount}个托盘到预热房${preheatNo}队列`);
       }
 
       if (movedCount < increaseCount) {
         this.addLog(
-          `灭菌柜${cabinetNo}未完成数量增加${increaseCount}，上货区目的地为${cabinetNo}的托盘不足，仅移动${movedCount}个托盘`
+          `预热房${preheatNo}数量增加${increaseCount}，上货区目的地为${preheatNo}的托盘不足，仅移动${movedCount}个托盘`
         );
       }
     },
@@ -6122,6 +6333,8 @@ export default {
             productName: tray.productName || '',
             unit: tray.unit || '',
             batchNo: tray.batchNo || '',
+            preheatTime: tray.preheatTime ?? null,
+            inPreheatRoomTime: tray.inPreheatRoomTime || '',
             analysisTime: tray.analysisTime ?? null,
             inAnalysisRoomTime: tray.inAnalysisRoomTime || '',
             remark: tray.remark || ''
@@ -6420,6 +6633,9 @@ export default {
         // 解析队列（id 18-36）：默认进入解析时间为当前时间
         const isAnalysisQueue =
           this.selectedQueue.id >= 18 && this.selectedQueue.id <= 36;
+        // 预热队列（id 50-61）：默认进入预热时间为当前时间
+        const isPreheatQueue =
+          this.selectedQueue.id >= 50 && this.selectedQueue.id <= 61;
         // 仅 1015/输送线队列需要解析房目的地
         const analysisDestination = this.needAnalysisDestination
           ? String(this.newTrayForm.analysisDestination)
@@ -6454,6 +6670,7 @@ export default {
             orderId: this.newTrayForm.orderId || '',
             productName: this.newTrayForm.productName || '',
             batchNo: this.newTrayForm.batchNo || '',
+            preheatTime: 0, // 手动添加不填预热信息：预热周期0，进预热房即为预热完成
             analysisTime: analysisTimeVal,
             remark: `${this.selectedQueue.queueName}手动添加`
           };
@@ -6464,6 +6681,10 @@ export default {
           // 解析队列：默认进入解析时间为当前时间
           if (isAnalysisQueue) {
             newTray.inAnalysisRoomTime = currentTime;
+          }
+          // 预热队列：默认进入预热时间为当前时间
+          if (isPreheatQueue) {
+            newTray.inPreheatRoomTime = currentTime;
           }
           this.selectedQueue.trayInfo.push(newTray);
           addedCodes.push(newTray.trayCode);
