@@ -924,11 +924,13 @@
                 <div
                   class="preheating-room-marker"
                   data-x="1650"
-                  data-y="850"
+                  data-y="700"
                   style="width: 160px"
                 >
                   <div class="preheating-room-content">
-                    <div class="preheating-room-header">解析房出货选择</div>
+                    <div class="preheating-room-header">
+                      解析房出货选择（1-14）
+                    </div>
                     <div class="preheating-room-body">
                       <el-select
                         v-model="analysisOutRoom"
@@ -937,7 +939,7 @@
                         style="width: 100%"
                       >
                         <el-option
-                          v-for="i in 19"
+                          v-for="i in 14"
                           :key="'analysis-out-' + i"
                           :label="String(i)"
                           :value="String(i)"
@@ -970,6 +972,63 @@
                             color: greenyellow;
                           "
                           >执行中：{{ analysisOutTrayCode || '--' }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 二期解析房出货执行（15-19） -->
+                <div
+                  class="preheating-room-marker"
+                  data-x="2100"
+                  data-y="700"
+                  style="width: 160px"
+                >
+                  <div class="preheating-room-content">
+                    <div class="preheating-room-header">
+                      解析房出货选择（15-19）
+                    </div>
+                    <div class="preheating-room-body">
+                      <el-select
+                        v-model="analysisOutRoom2"
+                        placeholder="解析房"
+                        size="small"
+                        style="width: 100%"
+                      >
+                        <el-option
+                          v-for="i in 5"
+                          :key="'analysis-out2-' + i"
+                          :label="String(i + 14)"
+                          :value="String(i + 14)"
+                        />
+                      </el-select>
+                      <el-button
+                        type="primary"
+                        size="small"
+                        @click="executeAnalysisOut2"
+                        :loading="analysisOutLoading2"
+                        style="width: 100%"
+                        >执行</el-button
+                      >
+                      <el-button
+                        v-if="analysisOutExecuting2"
+                        type="danger"
+                        size="small"
+                        @click="cancelAnalysisOut2"
+                        style="width: 100%; margin-left: 0px"
+                        >取消</el-button
+                      >
+                      <div
+                        style="display: flex; align-items: center"
+                        v-if="analysisOutExecuting2"
+                      >
+                        <span
+                          style="
+                            font-size: 12px;
+                            color: #fff;
+                            color: greenyellow;
+                          "
+                          >执行中：{{ analysisOutTrayCode2 || '--' }}</span
                         >
                       </div>
                     </div>
@@ -1303,12 +1362,12 @@
               </button>
             </div>
           </div>
-          <!-- 解析目的地请求信号模拟（仅 1，只有 bit0 有监听） -->
+          <!-- 解析目的地请求信号模拟（1期 bit0 / 2期 bit1） -->
           <div class="test-section">
-            <span class="test-label">解析目的地请求信号测试(1):</span>
+            <span class="test-label">解析目的地请求信号测试(1期/2期):</span>
             <div class="steril-complete-status-test-grid">
               <button
-                v-for="roomNo in 1"
+                v-for="roomNo in 2"
                 :key="'analysis-out-req-' + roomNo"
                 class="steril-complete-status-btn"
                 :class="{
@@ -1317,7 +1376,7 @@
                 }"
                 @click="manualTriggerAnalysisOutRequest(roomNo)"
               >
-                {{ roomNo }} ({{
+                {{ roomNo === 1 ? '1期' : '2期' }} ({{
                   floor2AnalysisOutTrayRequest['bit' + (roomNo - 1)]
                 }})
               </button>
@@ -1466,7 +1525,7 @@
             <span class="test-label">解析房数量测试:</span>
             <div class="steril-quantity-test-grid">
               <div
-                v-for="roomNo in 17"
+                v-for="roomNo in 19"
                 :key="'analysis-qty-' + roomNo"
                 class="steril-quantity-item"
               >
@@ -2278,8 +2337,8 @@ export default {
       floor2AnalysisRoom15Qty: 0, // DBW144 二期解析备用
       floor2AnalysisRoom16Qty: 0, // DBW146 二期解析备用
       floor2AnalysisRoom17Qty: 0, // DBW148 二期解析备用
-      floor2SpareDBW150: 0, // DBW150 备用
-      floor2SpareDBW152: 0, // DBW152 备用
+      floor2AnalysisRoom18Qty: 0, // DBW150 解析18内实际数量
+      floor2AnalysisRoom19Qty: 0, // DBW152 解析19内实际数量
       floor2SpareDBW154: 0, // DBW154 备用
       floor2SpareDBW156: 0, // DBW156 备用
       floor2SpareDBW158: 0, // DBW158 备用
@@ -3806,11 +3865,17 @@ export default {
       sterToAnalysisTrayCode: '', // 当前处理托盘展示
       isHandlingSterilOutRequest: false,
       // ========== 解析房出货执行 ==========
-      analysisOutRoom: '', // 出货解析房编号（1~19）
+      analysisOutRoom: '', // 出货解析房编号（1~14）
       analysisOutLoading: false,
       analysisOutExecuting: false,
       analysisOutTrayCode: '', // 当前处理托盘展示
       isHandlingAnalysisOutRequest: false,
+      // ========== 二期解析房出货执行（15-19）==========
+      analysisOutRoom2: '', // 二期出货解析房编号（15~19）
+      analysisOutLoading2: false,
+      analysisOutExecuting2: false,
+      analysisOutTrayCode2: '', // 当前处理托盘展示
+      isHandlingAnalysisOutRequest2: false,
       // 解析/预热完成状态共用心跳时钟（驱动剩余时间/完成标志刷新）
       analysisClockTick: 0,
       blockAnalysisRoom7: false // 屏蔽7号解析房开关
@@ -4156,8 +4221,8 @@ export default {
       this.floor2AnalysisRoom17Qty = Number(values.DBW148 ?? 0);
 
       // 二楼备用
-      this.floor2SpareDBW150 = Number(values.DBW150 ?? 0);
-      this.floor2SpareDBW152 = Number(values.DBW152 ?? 0);
+      this.floor2AnalysisRoom18Qty = Number(values.DBW150 ?? 0);
+      this.floor2AnalysisRoom19Qty = Number(values.DBW152 ?? 0);
       this.floor2SpareDBW154 = Number(values.DBW154 ?? 0);
       this.floor2SpareDBW156 = Number(values.DBW156 ?? 0);
       this.floor2SpareDBW158 = Number(values.DBW158 ?? 0);
@@ -4579,11 +4644,24 @@ export default {
     floor2AnalysisRoom17Qty(newVal, oldVal) {
       this.handleAnalysisRoomQuantityChange(17, newVal, oldVal);
     },
+    floor2AnalysisRoom18Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(18, newVal, oldVal);
+    },
+    floor2AnalysisRoom19Qty(newVal, oldVal) {
+      this.handleAnalysisRoomQuantityChange(19, newVal, oldVal);
+    },
     // 监听解析房出货请求 DB1000.DBW30 bit0（DBX30.0）上升沿（货到出口→出队）
     'floor2AnalysisOutTrayRequest.bit0'(newVal, oldVal) {
       if (!this.isDataReady) return;
       if (newVal === '1' && oldVal === '0') {
         this.handleAnalysisOutTrayRequest();
+      }
+    },
+    // 监听二期解析房出货请求 DB1000.DBW30 bit1（DBX30.1）上升沿（货到出口→出队）
+    'floor2AnalysisOutTrayRequest.bit1'(newVal, oldVal) {
+      if (!this.isDataReady) return;
+      if (newVal === '1' && oldVal === '0') {
+        this.handleAnalysisOutTrayRequest2();
       }
     }
   },
@@ -5248,13 +5326,15 @@ export default {
       }
       return `W_DBW74_BIT${bitIndex}`;
     },
-    // 解析数量对比异常：DB1001.DBW76 BIT0-13 → 解析1-14（二楼）
+    // 解析数量对比异常：1期 DB1001.DBW76 BIT0-13 → 解析1-14；2期 DB1001.DBW94 BIT0-4 → 解析15-19（二楼）
     getAnalysisCompareMismatchTag(roomNo) {
-      const bitIndex = roomNo - 1;
-      if (bitIndex < 0 || bitIndex > 13) {
-        return null;
+      if (roomNo >= 1 && roomNo <= 14) {
+        return `W_DBW76_BIT${roomNo - 1}`;
       }
-      return `W_DBW76_BIT${bitIndex}`;
+      if (roomNo >= 15 && roomNo <= 19) {
+        return `W_DBW94_BIT${roomNo - 15}`;
+      }
+      return null;
     },
     // 已灭菌队列长度（19-30 已灭菌；31-33 灭菌队列）
     getSterilWcsQueueCount(cabinetNo) {
@@ -5339,7 +5419,7 @@ export default {
      */
     checkAnalysisQtyConsistency(roomNo, source) {
       if (!this.isDataReady) return;
-      if (roomNo < 1 || roomNo > 14) return;
+      if (roomNo < 1 || roomNo > 19) return;
       const tag = this.getAnalysisCompareMismatchTag(roomNo);
       if (!tag) return;
       const wcsCount = this.getAnalysisRoomCount(roomNo);
@@ -5362,18 +5442,23 @@ export default {
       }
     },
     getAnalysisOutPlcTag(roomNo) {
-      const bitIndex = roomNo - 1;
-      if (bitIndex < 0 || bitIndex > 15) {
-        return null;
+      if (roomNo >= 1 && roomNo <= 14) {
+        return `W_DBW6_BIT${roomNo - 1}`;
       }
-      return `W_DBW6_BIT${bitIndex}`;
+      if (roomNo >= 15 && roomNo <= 19) {
+        return `W_DBW80_BIT${roomNo - 15}`;
+      }
+      return null;
     },
-    // 解析出货后柜内剩余托盘信号：解析1~14 对应 DB1001.DBW42~DBW68（一柜一信号）
+    // 解析出货后柜内剩余托盘信号：1期 解析1~14 → DB1001.DBW42~DBW68；2期 解析15~19 → DB1001.DBW84~DBW92（一柜一信号）
     getAnalysisRemainingPlcTag(roomNo) {
-      if (roomNo < 1 || roomNo > 14) {
-        return null;
+      if (roomNo >= 1 && roomNo <= 14) {
+        return `W_DBW${42 + (roomNo - 1) * 2}`;
       }
-      return `W_DBW${42 + (roomNo - 1) * 2}`;
+      if (roomNo >= 15 && roomNo <= 19) {
+        return `W_DBW${84 + (roomNo - 15) * 2}`;
+      }
+      return null;
     },
     // 解析出货执行中持续写 DB1001.DBW6 对应位=1
     startAnalysisOutPlcSignal(roomNo) {
@@ -5550,23 +5635,30 @@ export default {
       }
       return count;
     },
+    // 解析房容量：1期（1-14）每条线15托盘，2期（15-19）每条线35托盘
+    getAnalysisRoomCapacity(roomNo) {
+      return roomNo >= 15 ? 35 : 15;
+    },
     pickAvailableAnalysisRoom() {
       for (let i = 1; i <= 19; i++) {
         // 屏蔽7号时，自动分配跳过7号解析房
         if (this.blockAnalysisRoom7 && i === 7) continue;
-        if (this.getAnalysisRoomEffectiveLoad(i) < 15) {
+        if (
+          this.getAnalysisRoomEffectiveLoad(i) < this.getAnalysisRoomCapacity(i)
+        ) {
           return i;
         }
       }
       return null;
     },
     resolveAnalysisDestination() {
-      // 指定解析房：按容量15判断，满则无法再分配（屏蔽7号时跳过容量检查）
+      // 指定解析房：按容量判断（1期15/2期35），满则无法再分配（屏蔽7号时跳过容量检查）
       if (this.sterToAnalysisTo) {
         const room = Number(this.sterToAnalysisTo);
         if (
           !(this.blockAnalysisRoom7 && room === 7) &&
-          this.getAnalysisRoomEffectiveLoad(room) >= 15
+          this.getAnalysisRoomEffectiveLoad(room) >=
+            this.getAnalysisRoomCapacity(room)
         ) {
           return null;
         }
@@ -5680,8 +5772,8 @@ export default {
       if (newVal > oldVal) {
         this.handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal);
       }
-      // PLC数量变化：与解析队列一致则发0；不一致不发（仅1-14）
-      if (newVal !== oldVal && roomNo >= 1 && roomNo <= 14) {
+      // PLC数量变化：与解析队列一致则发0；不一致不发（1-19）
+      if (newVal !== oldVal && roomNo >= 1 && roomNo <= 19) {
         this.checkAnalysisQtyConsistency(roomNo, 'plc');
       }
     },
@@ -5759,6 +5851,84 @@ export default {
         this.checkAnalysisOutComplete(roomNo);
       } finally {
         this.isHandlingAnalysisOutRequest = false;
+      }
+    },
+    // ========== 二期解析房出货（15-19）：逻辑同一期，点位走二期 ==========
+    checkAnalysisOutComplete2(roomNo) {
+      if (!this.analysisOutExecuting2) return;
+      if (roomNo !== Number(this.analysisOutRoom2)) return;
+
+      // 无可出货的解析完成托盘（队列空、无完成托盘、或队首未完成）→ 停止
+      if (!this.canShipAnalysisQueueHead(roomNo)) {
+        // 解析出货完成且柜内仍有剩余托盘：按解析房写对应信号（一柜一信号，写 1，脉冲两秒）
+        if (this.getAnalysisRoomCount(roomNo) > 0) {
+          const remainTag = this.getAnalysisRemainingPlcTag(roomNo);
+          if (remainTag) {
+            this.writePlcPulse(remainTag, 1, 1);
+            this.addLog(
+              `解析房${roomNo}出货完成，柜内仍有剩余托盘，写入二楼${remainTag}=1（2秒）`
+            );
+          }
+        }
+        this.cancelAnalysisOut2();
+        this.addLog(
+          `解析房${roomNo}出货执行完成，已无解析完成托盘，已自动停止执行`
+        );
+        return;
+      }
+
+      const nextTray = this.getAnalysisQueueHead(roomNo);
+      this.analysisOutTrayCode2 = nextTray?.trayCode || nextTray?.id || '';
+    },
+    // 二期解析房出货请求（DB1000.DBW30 bit1 上升沿）
+    handleAnalysisOutTrayRequest2() {
+      if (!this.analysisOutExecuting2) return;
+      if (this.isHandlingAnalysisOutRequest2) return;
+
+      const roomNo = Number(this.analysisOutRoom2);
+      if (!roomNo) return;
+
+      this.isHandlingAnalysisOutRequest2 = true;
+      try {
+        const queueIndex = this.getAnalysisQueueIndex(roomNo);
+        const targetQueue = this.queues[queueIndex];
+        if (!targetQueue || targetQueue.trayInfo.length === 0) {
+          this.addLog(`解析房${roomNo}出货请求：队列空，无法出库`, 'alarm');
+          this.cancelAnalysisOut2();
+          return;
+        }
+
+        const tray = targetQueue.trayInfo[0];
+        if (!this.isTrayAnalysisComplete(tray)) {
+          this.addLog(
+            `解析房${roomNo}出货请求：队首托盘 ${
+              tray.trayCode || tray.id
+            } 解析未完成，已停止执行`,
+            'alarm'
+          );
+          this.cancelAnalysisOut2();
+          return;
+        }
+
+        const currentTime = moment().format('YYYY-MM-DD HH:mm:ss');
+        // 流转追加：解析房出库离开时间，随后从队列移除
+        tray.outAnalysisRoomTime = currentTime;
+        this.addLog(
+          `解析房${roomNo}出货请求(DBW30.1)：托盘 ${
+            tray.trayCode || tray.id
+          } 离开解析房，时间：${currentTime}`
+        );
+        targetQueue.trayInfo.shift();
+        // WCS下发解析出货目的地（2期）：DB1001.DBW82=1，脉冲2秒后取消（PLC自己清0）
+        this.writePlcPulse('W_DBW82', 1, 1);
+        this.addLog(
+          `解析房${roomNo}出货请求：WCS下发解析出货目的地 DB1001.DBW82=1（2秒）`
+        );
+        // 解析队列出货导致长度变化，比对 WCS 与 PLC 数量（不一致发异常信号）
+        this.checkAnalysisQtyConsistency(roomNo, 'queue');
+        this.checkAnalysisOutComplete2(roomNo);
+      } finally {
+        this.isHandlingAnalysisOutRequest2 = false;
       }
     },
     handleAnalysisRoomQuantityIncrease(roomNo, newVal, oldVal) {
@@ -6125,7 +6295,11 @@ export default {
             capacityFull = true;
             if (this.sterToAnalysisTo) {
               this.addLog(
-                `解析房${this.sterToAnalysisTo}容量已满（15），托盘入1015后无法再分配目的地，已取消执行`,
+                `解析房${
+                  this.sterToAnalysisTo
+                }容量已满（${this.getAnalysisRoomCapacity(
+                  Number(this.sterToAnalysisTo)
+                )}），托盘入1015后无法再分配目的地，已取消执行`,
                 'alarm'
               );
             } else {
@@ -6161,17 +6335,22 @@ export default {
         this.checkSterilQtyConsistency(cabinetNo, 'queue');
       }
 
-      // 指定解析房：入1015后有效占用满15则停止，阻止柜内剩余托盘继续出（屏蔽7号时跳过）
+      // 指定解析房：入1015后有效占用满容量则停止，阻止柜内剩余托盘继续出（屏蔽7号时跳过）
       if (
         !capacityFull &&
         this.sterToAnalysisExecuting &&
         this.sterToAnalysisTo &&
         !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
-        this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >= 15
+        this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >=
+          this.getAnalysisRoomCapacity(Number(this.sterToAnalysisTo))
       ) {
         this.cancelSterToAnalysis();
         this.addLog(
-          `灭菌柜到解析房执行完成，解析房${this.sterToAnalysisTo}容量已满（15），已自动停止执行`
+          `灭菌柜到解析房执行完成，解析房${
+            this.sterToAnalysisTo
+          }容量已满（${this.getAnalysisRoomCapacity(
+            Number(this.sterToAnalysisTo)
+          )}），已自动停止执行`
         );
         return;
       }
@@ -6235,7 +6414,11 @@ export default {
           if (dest === null) {
             if (this.sterToAnalysisTo) {
               this.addLog(
-                `解析房${this.sterToAnalysisTo}容量已满（15），无法分配目的地，已取消执行`,
+                `解析房${
+                  this.sterToAnalysisTo
+                }容量已满（${this.getAnalysisRoomCapacity(
+                  Number(this.sterToAnalysisTo)
+                )}），无法分配目的地，已取消执行`,
                 'alarm'
               );
             } else {
@@ -6279,15 +6462,20 @@ export default {
             : `灭菌柜${cabinetNo}出货请求：托盘 ${this.sterToAnalysisTrayCode} 离开灭菌柜进入输送线，解析房目的地=${dest}，虚拟ID=${virtualId}，时间：${currentTime}`
         );
 
-        // 指定解析房：该房有效占用满15则停止；未指定时满了由下次请求自动切下一房（屏蔽7号时跳过）
+        // 指定解析房：该房有效占用满容量则停止；未指定时满了由下次请求自动切下一房（屏蔽7号时跳过）
         if (
           this.sterToAnalysisTo &&
           !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
-          this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >= 15
+          this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >=
+            this.getAnalysisRoomCapacity(Number(this.sterToAnalysisTo))
         ) {
           this.cancelSterToAnalysis();
           this.addLog(
-            `灭菌柜到解析房执行完成，解析房${this.sterToAnalysisTo}容量已满（15），已自动停止执行`
+            `灭菌柜到解析房执行完成，解析房${
+              this.sterToAnalysisTo
+            }容量已满（${this.getAnalysisRoomCapacity(
+              Number(this.sterToAnalysisTo)
+            )}），已自动停止执行`
           );
           return;
         }
@@ -7433,7 +7621,8 @@ export default {
 
       if (
         !(this.blockAnalysisRoom7 && analysisRoomNo === 7) &&
-        this.getAnalysisRoomEffectiveLoad(analysisRoomNo) >= 15
+        this.getAnalysisRoomEffectiveLoad(analysisRoomNo) >=
+          this.getAnalysisRoomCapacity(analysisRoomNo)
       ) {
         this.$message.warning(`解析房${analysisRoomNo}已满，无法执行`);
         return;
@@ -7606,6 +7795,79 @@ export default {
         );
       } else {
         this.addLog('解析房出货选择已取消，切换为不执行状态');
+      }
+    },
+    // ========== 二期解析房出货执行（15-19）==========
+    executeAnalysisOut2() {
+      if (!this.analysisOutRoom2) {
+        this.$message.warning('请先选择出货解析房');
+        return;
+      }
+
+      const roomNo = Number(this.analysisOutRoom2);
+      const queueIndex = this.getAnalysisQueueIndex(roomNo);
+      const targetQueue = this.queues[queueIndex];
+      const systemQueueCount = targetQueue?.trayInfo?.length || 0;
+      const plcCount = this.getAnalysisRoomQuantity(roomNo);
+
+      if (systemQueueCount <= 0 || plcCount <= 0) {
+        this.$message.warning(
+          `解析房${roomNo}中没有可用的托盘，请检查起始地数量`
+        );
+        return;
+      }
+
+      if (!this.hasAnalysisCompleteTray(roomNo)) {
+        this.$message.warning(`解析房${roomNo}中没有解析完成的托盘，无法出货`);
+        return;
+      }
+
+      if (!this.canShipAnalysisQueueHead(roomNo)) {
+        this.$message.warning(
+          `解析房${roomNo}队首托盘解析未完成，无法出货（仅可出解析完成托盘）`
+        );
+        return;
+      }
+
+      this.$confirm(`确认执行解析房${roomNo}出货命令？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          this.analysisOutLoading2 = true;
+          this.analysisOutExecuting2 = true;
+          this.startAnalysisOutPlcSignal(roomNo);
+          this.analysisOutTrayCode2 =
+            targetQueue.trayInfo[0]?.trayCode ||
+            targetQueue.trayInfo[0]?.id ||
+            '';
+          this.addLog(
+            `执行解析房${roomNo}出货命令（DB1001.DBW80 BIT${
+              roomNo - 15
+            }=1，持续下发）`
+          );
+          this.$message.success(`已发送解析房${roomNo}出货执行命令`);
+        })
+        .catch(() => {
+          // 用户取消操作
+        });
+    },
+    cancelAnalysisOut2() {
+      const wasExecuting = this.analysisOutExecuting2;
+      const roomNo = Number(this.analysisOutRoom2);
+      this.analysisOutLoading2 = false;
+      this.analysisOutExecuting2 = false;
+      this.analysisOutTrayCode2 = '';
+      if (wasExecuting && roomNo) {
+        this.stopAnalysisOutPlcSignal(roomNo);
+        this.addLog(
+          `二期解析房出货选择已取消，已发送DB1001.DBW80 BIT${
+            roomNo - 15
+          }=0，切换为不执行状态`
+        );
+      } else {
+        this.addLog('二期解析房出货选择已取消，切换为不执行状态');
       }
     },
     // 切换到报警日志时清除未读状态
