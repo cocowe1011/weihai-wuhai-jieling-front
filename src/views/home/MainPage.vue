@@ -1589,7 +1589,7 @@
             <span class="test-label">小车位置测试:</span>
             <div class="cart-position-test-container">
               <div
-                v-for="cartId in 8"
+                v-for="cartId in 10"
                 :key="'cart-slider-' + cartId"
                 class="cart-position-group"
               >
@@ -2118,18 +2118,18 @@ export default {
         { id: 47, name: '(已)\n灭菌29', queueId: 47, x: 195, y: 660 },
         { id: 48, name: '(已)\n灭菌30', queueId: 48, x: 95, y: 660 },
         { id: 49, name: '1015', queueId: 49, x: 700, y: 650 },
-        { id: 50, name: '预热1', queueId: 50, x: 640, y: 1550 },
-        { id: 51, name: '预热2', queueId: 51, x: 705, y: 1550 },
-        { id: 52, name: '预热3', queueId: 52, x: 770, y: 1550 },
-        { id: 53, name: '预热4', queueId: 53, x: 835, y: 1550 },
-        { id: 54, name: '预热5', queueId: 54, x: 900, y: 1550 },
-        { id: 55, name: '预热6', queueId: 55, x: 965, y: 1550 },
-        { id: 56, name: '预热7', queueId: 56, x: 1030, y: 1550 },
-        { id: 57, name: '预热8', queueId: 57, x: 1095, y: 1550 },
-        { id: 58, name: '预热9', queueId: 58, x: 1160, y: 1550 },
-        { id: 59, name: '预热10', queueId: 59, x: 1225, y: 1550 },
-        { id: 60, name: '预热11', queueId: 60, x: 1290, y: 1550 },
-        { id: 61, name: '预热12', queueId: 61, x: 1355, y: 1550 }
+        { id: 50, name: '预热1', queueId: 50, x: 1355, y: 1550 },
+        { id: 51, name: '预热2', queueId: 51, x: 1290, y: 1550 },
+        { id: 52, name: '预热3', queueId: 52, x: 1225, y: 1550 },
+        { id: 53, name: '预热4', queueId: 53, x: 1160, y: 1550 },
+        { id: 54, name: '预热5', queueId: 54, x: 1095, y: 1550 },
+        { id: 55, name: '预热6', queueId: 55, x: 1030, y: 1550 },
+        { id: 56, name: '预热7', queueId: 56, x: 965, y: 1550 },
+        { id: 57, name: '预热8', queueId: 57, x: 900, y: 1550 },
+        { id: 58, name: '预热9', queueId: 58, x: 835, y: 1550 },
+        { id: 59, name: '预热10', queueId: 59, x: 770, y: 1550 },
+        { id: 60, name: '预热11', queueId: 60, x: 705, y: 1550 },
+        { id: 61, name: '预热12', queueId: 61, x: 640, y: 1550 }
       ],
       logId: 1000, // 添加一个日志ID计数器
       // 数据准备就绪标志位
@@ -2235,6 +2235,8 @@ export default {
       floor1Preheat10Qty: 0, // DBW172 10号预热内托盘数量
       floor1Preheat11Qty: 0, // DBW174 11号预热内托盘数量
       floor1Preheat12Qty: 0, // DBW176 12号预热内托盘数量
+      floor1PreheatCartInPos: 0, // DBW150 预热进口小车位置信息（0-3000）
+      floor1PreheatCartOutPos: 0, // DBW152 预热出口小车位置信息（0-3000）
       // 灭菌完成状态（DBW124~138 BIT6/BIT14）
       sterilizationCompleteWord124: {
         bit6: '0', // 19
@@ -3731,10 +3733,26 @@ export default {
           y: 1785,
           width: 100,
           image: require('@/assets/changzhou-img/cart1.png')
+        },
+        {
+          id: 9,
+          name: '预热进口小车',
+          x: 1345, // 右侧原点
+          y: 1275,
+          width: 100,
+          image: require('@/assets/changzhou-img/cart1.png')
+        },
+        {
+          id: 10,
+          name: '预热出口小车',
+          x: 1345, // 右侧原点
+          y: 1805,
+          width: 100,
+          image: require('@/assets/changzhou-img/cart1.png')
         }
       ],
       // 小车位置数值-读取PLC
-      // 一楼 cart1/2/3/6：DBW14/16/18/20；二楼 cart4/5/7/8：DBW22/24/26/28
+      // 一楼 cart1/2/3/6：DBW14/16/18/20；一楼 cart9/10：DBW150/152（预热进/出口）；二楼 cart4/5/7/8：DBW22/24/26/28
       cartPositionValues: {
         cart1: 0,
         cart2: 0,
@@ -3743,7 +3761,9 @@ export default {
         cart5: 0,
         cart6: 0,
         cart7: 0,
-        cart8: 0
+        cart8: 0,
+        cart9: 0,
+        cart10: 0
       },
       // 小车 x 轴行走范围（地图坐标；max=右侧原点，min=左侧终点）
       cartXRanges: {
@@ -3754,7 +3774,9 @@ export default {
         cart5: { min: 1493, max: 2317 },
         cart6: { min: 100, max: 605 },
         cart7: { min: 2520, max: 2830 },
-        cart8: { min: 2520, max: 2830 }
+        cart8: { min: 2520, max: 2830 },
+        cart9: { min: 650, max: 1345 },
+        cart10: { min: 650, max: 1345 }
       },
       // 小车 PLC 数值范围配置（右侧原点对应 min）
       cartPlcRanges: {
@@ -3765,7 +3787,9 @@ export default {
         cart5: { min: 100, max: 2478 },
         cart6: { min: 100, max: 1899 },
         cart7: { min: 100, max: 3000 }, // 暂无，后续对照
-        cart8: { min: 100, max: 3000 } // 暂无，后续对照
+        cart8: { min: 100, max: 3000 }, // 暂无，后续对照
+        cart9: { min: 100, max: 3000 }, // 预热进口小车，暂无，后续对照
+        cart10: { min: 100, max: 3000 } // 预热出口小车，暂无，后续对照
       },
       // ========== 订单管理相关 ==========
       ordersList: [],
@@ -3989,7 +4013,7 @@ export default {
       this.floor1AreaEstop.bit4 = getBit(word6, 12);
       this.floor1AreaEstop.bit5 = getBit(word6, 13);
 
-      // 一楼小车位置：cart1=DBW14、cart2=DBW16、cart3=DBW18、cart6=DBW20
+      // 一楼小车位置：cart1=DBW14、cart2=DBW16、cart3=DBW18、cart6=DBW20；cart9=DBW150（预热进口）、cart10=DBW152（预热出口）
       this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
       this.floor1CartBeforeSteril2Pos = Number(values.DBW16 ?? 0);
       this.floor1CartAfterSterilPos = Number(values.DBW18 ?? 0);
@@ -3998,6 +4022,10 @@ export default {
       this.cartPositionValues.cart2 = Number(values.DBW16 ?? 0);
       this.cartPositionValues.cart3 = Number(values.DBW18 ?? 0);
       this.cartPositionValues.cart6 = Number(values.DBW20 ?? 0);
+      this.floor1PreheatCartInPos = Number(values.DBW150 ?? 0);
+      this.floor1PreheatCartOutPos = Number(values.DBW152 ?? 0);
+      this.cartPositionValues.cart9 = Number(values.DBW150 ?? 0);
+      this.cartPositionValues.cart10 = Number(values.DBW152 ?? 0);
 
       // 一楼上货请求托盘指定ID和目的地 DBW22
       let word22 = this.convertToWord(values.DBW22 ?? 0);
@@ -4305,6 +4333,12 @@ export default {
     },
     'cartPositionValues.cart8'(newVal) {
       this.updateCartPositionByValue(8, newVal);
+    },
+    'cartPositionValues.cart9'(newVal) {
+      this.updateCartPositionByValue(9, newVal);
+    },
+    'cartPositionValues.cart10'(newVal) {
+      this.updateCartPositionByValue(10, newVal);
     },
     // 监听上货请求信号 DB1000.DBW22.BIT0 的上升沿
     'floor1UploadTrayRequest.bit0'(newVal, oldVal) {
