@@ -2687,6 +2687,488 @@ export default {
           motorName: '1015',
           motorAddr: { db: 'DBW10', bit: 0 }
         },
+        // ===== 二期预热房电机（一楼 DBW140/142），占位坐标，需现场调整 =====
+        M_F1_1201: {
+          name: '1201',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1000,
+          y: 1900,
+          motorStatus: false,
+          motorName: '1201',
+          motorAddr: { db: 'DBW140', bit: 0 }
+        },
+        M_F1_1203: {
+          name: '1203',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1000,
+          y: 1850,
+          motorStatus: false,
+          motorName: '1203',
+          motorAddr: { db: 'DBW140', bit: 1 }
+        },
+        // M_F1_1204: {
+        //   name: '1204',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1120,
+        //   y: 1650,
+        //   motorStatus: false,
+        //   motorName: '1204',
+        //   motorAddr: { db: 'DBW140', bit: 2 }
+        // },
+        // M_F1_1205: {
+        //   name: '1205',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1180,
+        //   y: 1650,
+        //   motorStatus: false,
+        //   motorName: '1205',
+        //   motorAddr: { db: 'DBW140', bit: 3 }
+        // },
+        M_F1_1206: {
+          name: '1206',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 650,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1206',
+          motorAddr: { db: 'DBW140', bit: 4 }
+        },
+        M_F1_1207: {
+          name: '1207',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 715,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1207',
+          motorAddr: { db: 'DBW140', bit: 5 }
+        },
+        M_F1_1208: {
+          name: '1208',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 770,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1208',
+          motorAddr: { db: 'DBW140', bit: 6 }
+        },
+        M_F1_1209: {
+          name: '1209',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 830,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1209',
+          motorAddr: { db: 'DBW140', bit: 7 }
+        },
+        M_F1_1210: {
+          name: '1210',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 910,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1210',
+          motorAddr: { db: 'DBW140', bit: 8 }
+        },
+        M_F1_1211: {
+          name: '1211',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 970,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1211',
+          motorAddr: { db: 'DBW140', bit: 9 }
+        },
+        M_F1_1212: {
+          name: '1212',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1025,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1212',
+          motorAddr: { db: 'DBW140', bit: 10 }
+        },
+        M_F1_1213: {
+          name: '1213',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1085,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1213',
+          motorAddr: { db: 'DBW140', bit: 11 }
+        },
+        M_F1_1214: {
+          name: '1214',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1170,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1214',
+          motorAddr: { db: 'DBW140', bit: 12 }
+        },
+        M_F1_1215: {
+          name: '1215',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1232,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1215',
+          motorAddr: { db: 'DBW140', bit: 13 }
+        },
+        M_F1_1216: {
+          name: '1216',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1288,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1216',
+          motorAddr: { db: 'DBW140', bit: 14 }
+        },
+        M_F1_1217: {
+          name: '1217',
+          nodeType: 'motor',
+          plcChannel: 0,
+          x: 1345,
+          y: 1430,
+          motorStatus: false,
+          motorName: '1217',
+          motorAddr: { db: 'DBW140', bit: 15 }
+        },
+        // M_F1_1218: {
+        //   name: '1218',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1360,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '1218',
+        //   motorAddr: { db: 'DBW142', bit: 0 }
+        // },
+        // M_F1_1219: {
+        //   name: '1219',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1420,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '1219',
+        //   motorAddr: { db: 'DBW142', bit: 1 }
+        // },
+        // M_F1_1220: {
+        //   name: '1220',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1480,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '1220',
+        //   motorAddr: { db: 'DBW142', bit: 2 }
+        // },
+        // M_F1_1221: {
+        //   name: '1221',
+        //   nodeType: 'motor',
+        //   plcChannel: 0,
+        //   x: 1540,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '1221',
+        //   motorAddr: { db: 'DBW142', bit: 3 }
+        // },
+        // ===== 二期预热房光电（一楼 DBW144/146），占位坐标，需现场调整 =====
+        S_F1_1201_1: {
+          name: '光电1201-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 960,
+          y: 1860,
+          sensorStatus: false,
+          sensorName: '光电1201-1',
+          sensorAddr: { db: 'DBW144', bit: 0 }
+        },
+        S_F1_1201_2: {
+          name: '光电1201-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 960,
+          y: 1910,
+          sensorStatus: false,
+          sensorName: '光电1201-2',
+          sensorAddr: { db: 'DBW144', bit: 1 }
+        },
+        // S_F1_1204_2: {
+        //   name: '光电1204-2',
+        //   nodeType: 'sensor',
+        //   plcChannel: 0,
+        //   x: 1120,
+        //   y: 1780,
+        //   sensorStatus: false,
+        //   sensorName: '光电1204-2',
+        //   sensorAddr: { db: 'DBW144', bit: 2 }
+        // },
+        S_F1_1206_1: {
+          name: '光电1206-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 650,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1206-1',
+          sensorAddr: { db: 'DBW144', bit: 3 }
+        },
+        S_F1_1206_2: {
+          name: '光电1206-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 650,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1206-2',
+          sensorAddr: { db: 'DBW144', bit: 4 }
+        },
+        S_F1_1207_1: {
+          name: '光电1207-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 715,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1207-1',
+          sensorAddr: { db: 'DBW144', bit: 5 }
+        },
+        S_F1_1207_2: {
+          name: '光电1207-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 715,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1207-2',
+          sensorAddr: { db: 'DBW144', bit: 6 }
+        },
+        S_F1_1208_1: {
+          name: '光电1208-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 770,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1208-1',
+          sensorAddr: { db: 'DBW144', bit: 7 }
+        },
+        S_F1_1208_2: {
+          name: '光电1208-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 770,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1208-2',
+          sensorAddr: { db: 'DBW144', bit: 8 }
+        },
+        S_F1_1209_1: {
+          name: '光电1209-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 830,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1209-1',
+          sensorAddr: { db: 'DBW144', bit: 9 }
+        },
+        S_F1_1209_2: {
+          name: '光电1209-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 830,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1209-2',
+          sensorAddr: { db: 'DBW144', bit: 10 }
+        },
+        S_F1_1210_1: {
+          name: '光电1210-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 910,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1210-1',
+          sensorAddr: { db: 'DBW144', bit: 11 }
+        },
+        S_F1_1210_2: {
+          name: '光电1210-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 910,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1210-2',
+          sensorAddr: { db: 'DBW144', bit: 12 }
+        },
+        S_F1_1211_1: {
+          name: '光电1211-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 970,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1211-1',
+          sensorAddr: { db: 'DBW144', bit: 13 }
+        },
+        S_F1_1211_2: {
+          name: '光电1211-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 970,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1211-2',
+          sensorAddr: { db: 'DBW144', bit: 14 }
+        },
+        S_F1_1212_1: {
+          name: '光电1212-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1025,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1212-1',
+          sensorAddr: { db: 'DBW144', bit: 15 }
+        },
+        S_F1_1212_2: {
+          name: '光电1212-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1025,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1212-2',
+          sensorAddr: { db: 'DBW146', bit: 0 }
+        },
+        S_F1_1213_1: {
+          name: '光电1213-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1085,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1213-1',
+          sensorAddr: { db: 'DBW146', bit: 1 }
+        },
+        S_F1_1213_2: {
+          name: '光电1213-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1085,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1213-2',
+          sensorAddr: { db: 'DBW146', bit: 2 }
+        },
+        S_F1_1214_1: {
+          name: '光电1214-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1170,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1214-1',
+          sensorAddr: { db: 'DBW146', bit: 3 }
+        },
+        S_F1_1214_2: {
+          name: '光电1214-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1170,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1214-2',
+          sensorAddr: { db: 'DBW146', bit: 4 }
+        },
+        S_F1_1215_1: {
+          name: '光电1215-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1232,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1215-1',
+          sensorAddr: { db: 'DBW146', bit: 5 }
+        },
+        S_F1_1215_2: {
+          name: '光电1215-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1232,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1215-2',
+          sensorAddr: { db: 'DBW146', bit: 6 }
+        },
+        S_F1_1216_1: {
+          name: '光电1216-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1288,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1216-1',
+          sensorAddr: { db: 'DBW146', bit: 7 }
+        },
+        S_F1_1216_2: {
+          name: '光电1216-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1288,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1216-2',
+          sensorAddr: { db: 'DBW146', bit: 8 }
+        },
+        S_F1_1217_1: {
+          name: '光电1217-1',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1345,
+          y: 1330,
+          sensorStatus: false,
+          sensorName: '光电1217-1',
+          sensorAddr: { db: 'DBW146', bit: 9 }
+        },
+        S_F1_1217_2: {
+          name: '光电1217-2',
+          nodeType: 'sensor',
+          plcChannel: 0,
+          x: 1345,
+          y: 1750,
+          sensorStatus: false,
+          sensorName: '光电1217-2',
+          sensorAddr: { db: 'DBW146', bit: 10 }
+        },
+        // S_F1_1219_2: {
+        //   name: '光电1219-2',
+        //   nodeType: 'sensor',
+        //   plcChannel: 0,
+        //   x: 1780,
+        //   y: 1840,
+        //   sensorStatus: false,
+        //   sensorName: '光电1219-2',
+        //   sensorAddr: { db: 'DBW146', bit: 11 }
+        // },
         // M_F1_1016: {
         //   name: '1016',
         //   nodeType: 'motor',
@@ -3657,6 +4139,478 @@ export default {
           motorAddr: { db: 'DBW12', bit: 9 },
           trayIdAddr: 'DBW72',
           destinationAddr: 'DBW114'
+        },
+        // ===== 二期解析房电机（二楼 DBW154/156），占位坐标，需现场调整 =====
+        M_F2_2201: {
+          name: '2201',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2900,
+          y: 270,
+          motorStatus: false,
+          motorName: '2201',
+          motorAddr: { db: 'DBW154', bit: 0 }
+        },
+        // M_F2_2202: {
+        //   name: '2202',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 2110,
+        //   y: 1650,
+        //   motorStatus: false,
+        //   motorName: '2202',
+        //   motorAddr: { db: 'DBW154', bit: 1 }
+        // },
+        // M_F2_2203: {
+        //   name: '2203',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 2170,
+        //   y: 1650,
+        //   motorStatus: false,
+        //   motorName: '2203',
+        //   motorAddr: { db: 'DBW154', bit: 2 }
+        // },
+        M_F2_2204: {
+          name: '2204',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2518,
+          y: 630,
+          motorStatus: false,
+          motorName: '2204',
+          motorAddr: { db: 'DBW154', bit: 3 }
+        },
+        M_F2_2205: {
+          name: '2205',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2518,
+          y: 930,
+          motorStatus: false,
+          motorName: '2205',
+          motorAddr: { db: 'DBW154', bit: 4 }
+        },
+        M_F2_2206: {
+          name: '2206',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2518,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2206',
+          motorAddr: { db: 'DBW154', bit: 5 }
+        },
+        M_F2_2207: {
+          name: '2207',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2590,
+          y: 630,
+          motorStatus: false,
+          motorName: '2207',
+          motorAddr: { db: 'DBW154', bit: 6 }
+        },
+        M_F2_2208: {
+          name: '2208',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2590,
+          y: 930,
+          motorStatus: false,
+          motorName: '2208',
+          motorAddr: { db: 'DBW154', bit: 7 }
+        },
+        M_F2_2209: {
+          name: '2209',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2590,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2209',
+          motorAddr: { db: 'DBW154', bit: 8 }
+        },
+        M_F2_2210: {
+          name: '2210',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2665,
+          y: 630,
+          motorStatus: false,
+          motorName: '2210',
+          motorAddr: { db: 'DBW154', bit: 9 }
+        },
+        M_F2_2211: {
+          name: '2211',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2665,
+          y: 930,
+          motorStatus: false,
+          motorName: '2211',
+          motorAddr: { db: 'DBW154', bit: 10 }
+        },
+        M_F2_2212: {
+          name: '2212',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2665,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2212',
+          motorAddr: { db: 'DBW154', bit: 11 }
+        },
+        M_F2_2213: {
+          name: '2213',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2745,
+          y: 630,
+          motorStatus: false,
+          motorName: '2213',
+          motorAddr: { db: 'DBW154', bit: 12 }
+        },
+        M_F2_2214: {
+          name: '2214',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2745,
+          y: 930,
+          motorStatus: false,
+          motorName: '2214',
+          motorAddr: { db: 'DBW154', bit: 13 }
+        },
+        M_F2_2215: {
+          name: '2215',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2745,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2215',
+          motorAddr: { db: 'DBW154', bit: 14 }
+        },
+        M_F2_2216: {
+          name: '2216',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2825,
+          y: 630,
+          motorStatus: false,
+          motorName: '2216',
+          motorAddr: { db: 'DBW154', bit: 15 }
+        },
+        M_F2_2217: {
+          name: '2217',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2825,
+          y: 930,
+          motorStatus: false,
+          motorName: '2217',
+          motorAddr: { db: 'DBW156', bit: 0 }
+        },
+        M_F2_2218: {
+          name: '2218',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2825,
+          y: 1330,
+          motorStatus: false,
+          motorName: '2218',
+          motorAddr: { db: 'DBW156', bit: 1 }
+        },
+        // M_F2_2219: {
+        //   name: '2219',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 2410,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '2219',
+        //   motorAddr: { db: 'DBW156', bit: 2 }
+        // },
+        // M_F2_2220: {
+        //   name: '2220',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 2470,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '2220',
+        //   motorAddr: { db: 'DBW156', bit: 3 }
+        // },
+        M_F2_2221: {
+          name: '2221',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2560,
+          y: 1840,
+          motorStatus: false,
+          motorName: '2221',
+          motorAddr: { db: 'DBW156', bit: 4 }
+        },
+        // M_F2_2222: {
+        //   name: '2222',
+        //   nodeType: 'motor',
+        //   plcChannel: 1,
+        //   x: 2590,
+        //   y: 1710,
+        //   motorStatus: false,
+        //   motorName: '2222',
+        //   motorAddr: { db: 'DBW156', bit: 5 }
+        // },
+        M_F2_2223: {
+          name: '2223',
+          nodeType: 'motor',
+          plcChannel: 1,
+          x: 2560,
+          y: 1880,
+          motorStatus: false,
+          motorName: '2223',
+          motorAddr: { db: 'DBW156', bit: 6 }
+        },
+        // ===== 二期解析房光电（二楼 DBW158/160），占位坐标，需现场调整 =====
+        // S_F2_2202_2: {
+        //   name: '光电2202-2',
+        //   nodeType: 'sensor',
+        //   plcChannel: 1,
+        //   x: 2560,
+        //   y: 1900,
+        //   sensorStatus: false,
+        //   sensorName: '光电2202-2',
+        //   sensorAddr: { db: 'DBW158', bit: 0 }
+        // },
+        S_F2_2204_1: {
+          name: '光电2204-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2518,
+          y: 350,
+          sensorStatus: false,
+          sensorName: '光电2204-1',
+          sensorAddr: { db: 'DBW158', bit: 1 }
+        },
+        S_F2_2204_2: {
+          name: '光电2204-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2518,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电2204-2',
+          sensorAddr: { db: 'DBW158', bit: 2 }
+        },
+        S_F2_2204_3: {
+          name: '光电2204-3',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2518,
+          y: 1680,
+          sensorStatus: false,
+          sensorName: '光电2204-3',
+          sensorAddr: { db: 'DBW158', bit: 3 }
+        },
+        S_F2_2204_4: {
+          name: '光电2204-4',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2518,
+          y: 1720,
+          sensorStatus: false,
+          sensorName: '光电2204-4',
+          sensorAddr: { db: 'DBW158', bit: 4 }
+        },
+        S_F2_2207_1: {
+          name: '光电2207-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2590,
+          y: 350,
+          sensorStatus: false,
+          sensorName: '光电2207-1',
+          sensorAddr: { db: 'DBW158', bit: 5 }
+        },
+        S_F2_2207_2: {
+          name: '光电2207-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2590,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电2207-2',
+          sensorAddr: { db: 'DBW158', bit: 6 }
+        },
+        S_F2_2207_3: {
+          name: '光电2207-3',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2590,
+          y: 1680,
+          sensorStatus: false,
+          sensorName: '光电2207-3',
+          sensorAddr: { db: 'DBW158', bit: 7 }
+        },
+        S_F2_2207_4: {
+          name: '光电2207-4',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2590,
+          y: 1720,
+          sensorStatus: false,
+          sensorName: '光电2207-4',
+          sensorAddr: { db: 'DBW158', bit: 8 }
+        },
+        S_F2_2210_1: {
+          name: '光电2210-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2665,
+          y: 350,
+          sensorStatus: false,
+          sensorName: '光电2210-1',
+          sensorAddr: { db: 'DBW158', bit: 9 }
+        },
+        S_F2_2210_2: {
+          name: '光电2210-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2665,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电2210-2',
+          sensorAddr: { db: 'DBW158', bit: 10 }
+        },
+        S_F2_2210_3: {
+          name: '光电2210-3',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2665,
+          y: 1680,
+          sensorStatus: false,
+          sensorName: '光电2210-3',
+          sensorAddr: { db: 'DBW158', bit: 11 }
+        },
+        S_F2_2210_4: {
+          name: '光电2210-4',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2665,
+          y: 1720,
+          sensorStatus: false,
+          sensorName: '光电2210-4',
+          sensorAddr: { db: 'DBW158', bit: 12 }
+        },
+        S_F2_2213_1: {
+          name: '光电2213-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2745,
+          y: 350,
+          sensorStatus: false,
+          sensorName: '光电2213-1',
+          sensorAddr: { db: 'DBW158', bit: 13 }
+        },
+        S_F2_2213_2: {
+          name: '光电2213-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2745,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电2213-2',
+          sensorAddr: { db: 'DBW158', bit: 14 }
+        },
+        S_F2_2213_3: {
+          name: '光电2213-3',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2745,
+          y: 1680,
+          sensorStatus: false,
+          sensorName: '光电2213-3',
+          sensorAddr: { db: 'DBW158', bit: 15 }
+        },
+        S_F2_2213_4: {
+          name: '光电2213-4',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2745,
+          y: 1720,
+          sensorStatus: false,
+          sensorName: '光电2213-4',
+          sensorAddr: { db: 'DBW160', bit: 0 }
+        },
+        S_F2_2216_1: {
+          name: '光电2216-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2825,
+          y: 350,
+          sensorStatus: false,
+          sensorName: '光电2216-1',
+          sensorAddr: { db: 'DBW160', bit: 1 }
+        },
+        S_F2_2216_2: {
+          name: '光电2216-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2825,
+          y: 390,
+          sensorStatus: false,
+          sensorName: '光电2216-2',
+          sensorAddr: { db: 'DBW160', bit: 2 }
+        },
+        S_F2_2216_3: {
+          name: '光电2216-3',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2825,
+          y: 1680,
+          sensorStatus: false,
+          sensorName: '光电2216-3',
+          sensorAddr: { db: 'DBW160', bit: 3 }
+        },
+        S_F2_2216_4: {
+          name: '光电2216-4',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2825,
+          y: 1720,
+          sensorStatus: false,
+          sensorName: '光电2216-4',
+          sensorAddr: { db: 'DBW160', bit: 4 }
+        },
+        // S_F2_2219_2: {
+        //   name: '光电2219-2',
+        //   nodeType: 'sensor',
+        //   plcChannel: 1,
+        //   x: 2590,
+        //   y: 1840,
+        //   sensorStatus: false,
+        //   sensorName: '光电2219-2',
+        //   sensorAddr: { db: 'DBW160', bit: 5 }
+        // },
+        S_F2_2223_1: {
+          name: '光电2223-1',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2520,
+          y: 1845,
+          sensorStatus: false,
+          sensorName: '光电2223-1',
+          sensorAddr: { db: 'DBW160', bit: 6 }
+        },
+        S_F2_2223_2: {
+          name: '光电2223-2',
+          nodeType: 'sensor',
+          plcChannel: 1,
+          x: 2520,
+          y: 1880,
+          sensorStatus: false,
+          sensorName: '光电2223-2',
+          sensorAddr: { db: 'DBW160', bit: 7 }
         }
         // M_F2_2043: {
         //   name: '2043',
