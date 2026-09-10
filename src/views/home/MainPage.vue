@@ -721,8 +721,8 @@
                 <!-- 预热房到灭菌柜执行 -->
                 <div
                   class="preheating-room-marker"
-                  data-x="1000"
-                  data-y="250"
+                  data-x="790"
+                  data-y="160"
                   style="width: 160px"
                 >
                   <div class="preheating-room-content">
@@ -1058,6 +1058,98 @@
                   </div>
                 </div>
 
+                <!-- 安全门打开标记（收到信号显示，两行文字；坐标为平面图占位，需现场调整） -->
+                <!-- 一楼 DBW176 bit0：灭前1安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="1170"
+                  data-y="270"
+                  v-show="floor1SafetyDoorWord.bit0 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 一楼 DBW176 bit1：灭前2安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="1070"
+                  data-y="370"
+                  v-show="floor1SafetyDoorWord.bit1 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 一楼 DBW176 bit2：灭后1#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="830"
+                  data-y="370"
+                  v-show="floor1SafetyDoorWord.bit2 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 一楼 DBW176 bit3：灭后2#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="180"
+                  data-y="370"
+                  v-show="floor1SafetyDoorWord.bit3 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 一楼 DBW176 bit4：灭后3#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="50"
+                  data-y="1380"
+                  v-show="floor1SafetyDoorWord.bit4 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 一楼 DBW176 bit5：灭后4#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="500"
+                  data-y="1380"
+                  v-show="floor1SafetyDoorWord.bit5 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 二楼 DBW162 bit0：二楼1#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="2870"
+                  data-y="480"
+                  v-show="floor2SafetyDoorWord.bit0 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 二楼 DBW162 bit1：二楼2#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="2420"
+                  data-y="1190"
+                  v-show="floor2SafetyDoorWord.bit1 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+                <!-- 二楼 DBW162 bit2：二楼3#安全门 -->
+                <div
+                  class="safety-door-marker"
+                  data-x="1790"
+                  data-y="980"
+                  v-show="floor2SafetyDoorWord.bit2 === '1'"
+                >
+                  <span class="safety-door-line">安全门</span>
+                  <span class="safety-door-line">打开</span>
+                </div>
+
                 <transition name="fade-scale">
                   <div
                     v-if="popoverVisible && popoverData"
@@ -1221,10 +1313,10 @@
                         <span class="tray-detail"
                           >预热房：{{
                             tray.preheatRoom || tray.sendTo || '--'
+                          }}，订单灭菌柜：{{
+                            tray.sterilDestination || '--'
                           }}，灭菌柜：{{
-                            tray.sterilizationRoom ||
-                            tray.sterilDestination ||
-                            '--'
+                            tray.sterilizationRoom || '--'
                           }}，发往：{{
                             tray.analysisDestination
                               ? '解析房' + tray.analysisDestination
@@ -2395,6 +2487,20 @@ export default {
       popoverPosition: { top: 0, left: 0 },
       popoverDirection: 'up',
       currentSelectedNodeId: null,
+      // 安全门信号（bit=1 时显示“安全门/打开”两行文字标记）
+      floor1SafetyDoorWord: {
+        bit0: '0', // DBW176 BIT0 灭前1安全门
+        bit1: '0', // DBW176 BIT1 灭前2安全门
+        bit2: '0', // DBW176 BIT2 灭后1#安全门
+        bit3: '0', // DBW176 BIT3 灭后2#安全门
+        bit4: '0', // DBW176 BIT4 灭后3#安全门
+        bit5: '0' // DBW176 BIT5 灭后4#安全门
+      },
+      floor2SafetyDoorWord: {
+        bit0: '0', // DBW162 BIT0 二楼1#安全门
+        bit1: '0', // DBW162 BIT1 二楼2#安全门
+        bit2: '0' // DBW162 BIT2 二楼3#安全门
+      },
       deviceNodes: {
         S_F1_1001: {
           name: '光电1001',
@@ -4740,10 +4846,10 @@ export default {
         cart4: { min: 100, max: 2479 },
         cart5: { min: 100, max: 2478 },
         cart6: { min: 100, max: 1899 },
-        cart7: { min: 100, max: 3000 }, // 暂无，后续对照
-        cart8: { min: 100, max: 3000 }, // 暂无，后续对照
-        cart9: { min: 100, max: 3000 }, // 预热进口小车，暂无，后续对照
-        cart10: { min: 100, max: 3000 } // 预热出口小车，暂无，后续对照
+        cart7: { min: 5663, max: 8917 }, // 2#解析房进货小车（解析房前，DBW26）
+        cart8: { min: 5673, max: 8940 }, // 2#解析房出货小车（解析房后，DBW28）
+        cart9: { min: 5550, max: 14112 }, // 预热前小车（预热进口，DBW150）
+        cart10: { min: 5680, max: 14150 } // 预热后小车（预热出口，DBW152）
       },
       // ========== 订单管理相关 ==========
       ordersList: [],
@@ -5104,6 +5210,14 @@ export default {
       this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
       this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
+      // 一楼安全门信号 DBW176（bit0~5 对应灭前1/灭前2/灭后1#~4#安全门）
+      let word176 = this.convertToWord(values.DBW176 ?? 0);
+      this.floor1SafetyDoorWord.bit0 = getBit(word176, 8);
+      this.floor1SafetyDoorWord.bit1 = getBit(word176, 9);
+      this.floor1SafetyDoorWord.bit2 = getBit(word176, 10);
+      this.floor1SafetyDoorWord.bit3 = getBit(word176, 11);
+      this.floor1SafetyDoorWord.bit4 = getBit(word176, 12);
+      this.floor1SafetyDoorWord.bit5 = getBit(word176, 13);
       this.syncDeviceNodesFromPlc(values, 0);
     };
     this._plcMsgHandler_1 = (event, values, values2) => {
@@ -5255,6 +5369,11 @@ export default {
       this.floor2FaultInfo2041 = Number(values.DBW244 ?? 0);
       this.floor2FaultInfo2042 = Number(values.DBW246 ?? 0);
       this.floor2FaultInfo2043 = Number(values.DBW248 ?? 0);
+      // 二楼安全门 DBW162（bit0~2 对应二楼1#~3#安全门）
+      let word162 = this.convertToWord(values.DBW162 ?? 0);
+      this.floor2SafetyDoorWord.bit0 = getBit(word162, 8);
+      this.floor2SafetyDoorWord.bit1 = getBit(word162, 9);
+      this.floor2SafetyDoorWord.bit2 = getBit(word162, 10);
       this.syncDeviceNodesFromPlc(values, 1);
     };
     // 给PLC数据加载时间
@@ -6360,46 +6479,10 @@ export default {
         }
       }
     },
-    // 预热数量对比异常：DB1001.DBW76 BIT0-11 → 预热1-12（一楼）
-    getPreheatCompareMismatchTag(preheatNo) {
-      const bitIndex = preheatNo - 1;
-      if (bitIndex < 0 || bitIndex > 11) {
-        return null;
-      }
-      return `W_DBW76_BIT${bitIndex}`;
-    },
     // 预热房队列长度（预热1-12）
     getPreheatWcsQueueCount(preheatNo) {
       const queue = this.queues[this.getPreheatQueueIndex(preheatNo)];
       return queue && Array.isArray(queue.trayInfo) ? queue.trayInfo.length : 0;
-    },
-    /**
-     * 预热房队列 vs PLC预热数量一致性（与灭菌数量对比异常同构）
-     * source=queue：一致发0，不一致发1；source=plc：仅一致发0
-     */
-    checkPreheatQtyConsistency(preheatNo, source) {
-      if (!this.isDataReady) return;
-      if (preheatNo < 1 || preheatNo > 12) return;
-      const tag = this.getPreheatCompareMismatchTag(preheatNo);
-      if (!tag) return;
-      const wcsCount = this.getPreheatWcsQueueCount(preheatNo);
-      const plcCount = Number(this.getPreheatQuantity(preheatNo) || 0);
-      const matched = wcsCount === plcCount;
-      if (source === 'queue') {
-        this.writePlcPulse(tag, matched ? false : true, 0);
-        this.addLog(
-          `预热房${preheatNo}队列变化：WCS=${wcsCount} PLC=${plcCount}，对比异常BIT=${
-            matched ? 0 : 1
-          }（2秒）`
-        );
-      } else if (source === 'plc') {
-        if (matched) {
-          this.writePlcPulse(tag, false, 0);
-          this.addLog(
-            `预热房${preheatNo}PLC数量变化：WCS=${wcsCount} PLC=${plcCount}，一致发0（2秒）`
-          );
-        }
-      }
     },
     /**
      * 解析房队列 vs PLC数量一致性
@@ -6726,9 +6809,6 @@ export default {
             this.preheatToSterilizeTrayCode
           } 写预热出口虚拟ID=${virtualId}，目的地(灭菌柜)=${dest}（DBW78/DBW80），时间：${currentTime}`
         );
-
-        // 预热队列与PLC预热数量比对（不一致发异常信号）
-        this.checkPreheatQtyConsistency(preheatNo, 'queue');
       } finally {
         this.isHandlingPreheatOutRequest = false;
       }
@@ -6737,10 +6817,6 @@ export default {
       if (!this.isDataReady) return;
       if (newVal > oldVal) {
         this.handlePreheatRoomQuantityIncrease(preheatNo, newVal, oldVal);
-      }
-      // PLC预热数量变化：与预热队列一致则发0；不一致不发
-      if (newVal !== oldVal) {
-        this.checkPreheatQtyConsistency(preheatNo, 'plc');
       }
     },
     handleSterilizationCompleteQuantityChange(cabinetNo, newVal, oldVal) {
@@ -7016,11 +7092,6 @@ export default {
           `预热房${preheatNo}数量增加${increaseCount}，上货区目的地为${preheatNo}的托盘不足，仅移动${movedCount}个托盘`
         );
       }
-
-      // 预热队列长度变化（入房），比对 WCS 与 PLC 预热数量（不一致发异常信号）
-      if (movedCount > 0) {
-        this.checkPreheatQtyConsistency(preheatNo, 'queue');
-      }
     },
     // 未完成数量增加（DBW70-92，19-30）：选择的预热房 → 未灭菌队列
     handleSterilizationIncompleteQuantityChange(cabinetNo, newVal, oldVal) {
@@ -7098,11 +7169,6 @@ export default {
         this.addLog(
           `灭菌柜${cabinetNo}数量增加${increaseCount}，预热房${preheatNo}托盘不足，仅移动${movedCount}个托盘`
         );
-      }
-
-      // 预热队列长度变化（出货），比对 WCS 与 PLC 预热数量（不一致发异常信号）
-      if (movedCount > 0) {
-        this.checkPreheatQtyConsistency(preheatNo, 'queue');
       }
 
       // 选择的预热房托盘已全部移入灭菌柜 → 停止执行
@@ -7849,7 +7915,7 @@ export default {
         if (!image.naturalWidth || !image.naturalHeight) return;
 
         const markers = imageWrapper.querySelectorAll(
-          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker, .device-signal-node'
+          '.marker, .marker-with-panel, .marker-with-button, .queue-marker, .motor-marker, .preheating-room-marker, .analysis-status-marker, .device-signal-node, .safety-door-marker'
         );
         const carts = imageWrapper.querySelectorAll('.cart-container');
         const wrapperRect = imageWrapper.getBoundingClientRect();
@@ -10519,6 +10585,29 @@ export default {
                 background-color: #00cc44;
                 border: 1px solid #00aa33;
                 color: #ffffff;
+              }
+
+              /* 安全门打开标记（两行文字，红色警示） */
+              .safety-door-marker {
+                position: absolute;
+                transform: translate(-50%, -50%);
+                z-index: 20;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 2px 6px;
+                border-radius: 4px;
+                background: rgba(245, 34, 45, 0.92);
+                border: 1px solid #ff4d4f;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 600;
+                line-height: 1.25;
+                pointer-events: none;
+                .safety-door-line {
+                  white-space: nowrap;
+                }
               }
             }
           }
