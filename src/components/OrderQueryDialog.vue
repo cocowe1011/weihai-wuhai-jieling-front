@@ -113,11 +113,6 @@
           label="预热房"
           width="80"
         ></el-table-column>
-        <el-table-column
-          prop="destination"
-          label="灭菌柜"
-          width="80"
-        ></el-table-column>
         <el-table-column prop="preheatTime" label="预热时间" width="90">
           <template #default="scope">
             {{
@@ -483,7 +478,6 @@ export default {
         订单数量: row.orderQuantity != null ? row.orderQuantity : '',
         已上货: row.loadedQuantity != null ? row.loadedQuantity : '',
         预热房: row.preheatRoom || '',
-        灭菌柜: row.destination || '',
         预热时间: row.preheatTime != null ? row.preheatTime + 'h' : '',
         解析时间: row.analysisTime != null ? row.analysisTime + 'h' : '',
         状态: this.getStatusText(row.orderStatus),

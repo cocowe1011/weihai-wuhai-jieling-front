@@ -1313,8 +1313,6 @@
                         <span class="tray-detail"
                           >预热房：{{
                             tray.preheatRoom || tray.sendTo || '--'
-                          }}，订单灭菌柜：{{
-                            tray.sterilDestination || '--'
                           }}，灭菌柜：{{
                             tray.sterilizationRoom || '--'
                           }}，发往：{{
@@ -1812,20 +1810,6 @@
             style="width: calc(100% - 42px)"
           />
           <span style="margin-left: 8px; color: #909399">小时</span>
-        </el-form-item>
-        <el-form-item label="灭菌柜目的地" prop="destination">
-          <el-select
-            v-model="executeOrderForm.destination"
-            placeholder="请选择灭菌柜目的地"
-            style="width: 100%"
-          >
-            <el-option
-              v-for="i in 15"
-              :key="i"
-              :label="String(i + 18)"
-              :value="String(i + 18)"
-            />
-          </el-select>
         </el-form-item>
         <el-form-item label="解析时间" prop="analysisTime">
           <el-input-number
@@ -4781,7 +4765,7 @@ export default {
         {
           id: 7,
           name: '小车7',
-          x: 2830, // 右侧原点
+          x: 2520, // 左侧原点（2#解析房，从左往右）
           y: 295,
           width: 90,
           image: require('@/assets/changzhou-img/cart1.png')
@@ -4789,7 +4773,7 @@ export default {
         {
           id: 8,
           name: '小车8',
-          x: 2830, // 右侧原点
+          x: 2520, // 左侧原点（2#解析房，从左往右）
           y: 1785,
           width: 100,
           image: require('@/assets/changzhou-img/cart1.png')
@@ -4846,8 +4830,8 @@ export default {
         cart4: { min: 100, max: 2479 },
         cart5: { min: 100, max: 2478 },
         cart6: { min: 100, max: 1899 },
-        cart7: { min: 5663, max: 8917 }, // 2#解析房进货小车（解析房前，DBW26）
-        cart8: { min: 5673, max: 8940 }, // 2#解析房出货小车（解析房后，DBW28）
+        cart7: { min: 5663, max: 8917, reversed: true }, // 2#解析房进货小车（解析房前，DBW26）：左侧原点，从左往右
+        cart8: { min: 5673, max: 8940, reversed: true }, // 2#解析房出货小车（解析房后，DBW28）：左侧原点，从左往右
         cart9: { min: 5550, max: 14112 }, // 预热前小车（预热进口，DBW150）
         cart10: { min: 5680, max: 14150 } // 预热后小车（预热出口，DBW152）
       },
@@ -4908,15 +4892,11 @@ export default {
         id: null,
         orderId: '',
         orderName: '',
-        destination: '',
         analysisTime: 30,
         preheatRoom: '',
         preheatTime: 1
       },
       executeOrderRules: {
-        destination: [
-          { required: true, message: '请选择灭菌柜目的地', trigger: 'change' }
-        ],
         analysisTime: [
           { required: true, message: '请输入解析时间', trigger: 'blur' }
         ],
@@ -5969,7 +5949,6 @@ export default {
         id: order.id,
         orderId: order.orderId,
         orderName: order.orderName,
-        destination: '',
         analysisTime: 30,
         preheatRoom: '',
         preheatTime: 1
@@ -5990,7 +5969,6 @@ export default {
         }
         const param = {
           id: this.executeOrderForm.id,
-          destination: this.executeOrderForm.destination,
           analysisTime:
             this.executeOrderForm.analysisTime != null
               ? Number(Number(this.executeOrderForm.analysisTime).toFixed(1))
@@ -6008,7 +5986,7 @@ export default {
             if (res.code === '200' || res.data >= 1) {
               this.$message.success('订单已开始执行');
               this.addLog(
-                `订单 ${this.executeOrderForm.orderId} 开始执行，预热房：${this.executeOrderForm.preheatRoom}，预热时间：${this.executeOrderForm.preheatTime}小时，目的地：${this.executeOrderForm.destination}，解析时间：${this.executeOrderForm.analysisTime}小时`
+                `订单 ${this.executeOrderForm.orderId} 开始执行，预热房：${this.executeOrderForm.preheatRoom}，预热时间：${this.executeOrderForm.preheatTime}小时，解析时间：${this.executeOrderForm.analysisTime}小时`
               );
               // 上货信号：DBW70=1（上货订单开启）；DBW82=1（WCS执行预热进货命令）；DBW84=预热柜编号（均脉冲 2s）
               const preheatRoom = Number(this.executeOrderForm.preheatRoom);
@@ -6216,7 +6194,7 @@ export default {
         }, 2000);
 
         // 6. 生成托盘信息并加入上货区队列
-        // 创建时字段：trayCode/virtualId/trayTime/sendTo(预热房编号)/sterilDestination(灭菌柜目的地)/state/sequenceNumber/订单相关/preheatTime(预热周期)/analysisTime(解析周期)
+        // 创建时字段：trayCode/virtualId/trayTime/sendTo(预热房编号)/state/sequenceNumber/订单相关/preheatTime(预热周期)/analysisTime(解析周期)
         // 流转中动态追加（$set）：
         //   sterilizationRoom / inSterilizationRoomTime — 进入未灭菌或灭菌柜
         //   sterilizationCompleteTime — 未灭菌→已灭菌
@@ -6230,9 +6208,6 @@ export default {
           virtualId: virtualId,
           trayTime: timeStr,
           sendTo: String(destination), // 预热房编号（上货口→预热房的目的地）
-          sterilDestination: runningOrder.destination
-            ? String(runningOrder.destination)
-            : '', // 灭菌柜目的地（订单设定，编号19~33，用于明细展示与后续流转）
           state: 'loaded',
           sequenceNumber: String(this.queues[0].trayInfo.length + 1),
           orderId: runningOrder.orderId || '',
@@ -6801,7 +6776,6 @@ export default {
         // 流转追加：预热房出货时间与实际进货灭菌柜；托盘仍留在预热队列，
         // 待灭菌未完成数量增加后再移入灭菌队列
         tray.outPreheatRoomTime = currentTime;
-        tray.sterilDestination = String(dest);
         this.preheatToSterilizeSentCount++;
         this.preheatToSterilizeTrayCode = tray.trayCode || tray.id || '';
         this.addLog(
@@ -8453,9 +8427,12 @@ export default {
       if (!xRange || !plcRange) return;
       if (value < plcRange.min) value = plcRange.min;
       if (value > plcRange.max) value = plcRange.max;
-      // 右侧为原点：PLC min → x max（右），PLC max → x min（左），从右往左滑动
       const ratio = (value - plcRange.min) / (plcRange.max - plcRange.min);
-      const nextX = Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
+      // 默认右侧原点：PLC min → x max（右），PLC max → x min（左），从右往左滑动
+      // reversed（2#解析房 cart7/cart8）左侧原点：PLC min → x min（左），PLC max → x max（右），从左往右滑动
+      const nextX = plcRange.reversed
+        ? Math.round(xRange.min + (xRange.max - xRange.min) * ratio)
+        : Math.round(xRange.max - (xRange.max - xRange.min) * ratio);
       if (cart.x === nextX) return;
       cart.x = nextX;
       // 直接更新 DOM 位置，无需 $nextTick（函数直接读取 Vue data 并操作 style，不依赖渲染周期）
