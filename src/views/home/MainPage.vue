@@ -1948,6 +1948,18 @@
               clearable
             />
           </el-form-item>
+          <el-form-item label="预热时间" prop="preheatTime">
+            <el-input-number
+              v-model="newTrayForm.preheatTime"
+              :min="0.1"
+              :max="720"
+              :precision="1"
+              :step="0.1"
+              placeholder="请输入预热时间"
+              style="width: calc(100% - 42px)"
+            />
+            <span style="margin-left: 8px; color: #909399">小时</span>
+          </el-form-item>
           <el-form-item label="解析时间" prop="analysisTime">
             <el-input-number
               v-model="newTrayForm.analysisTime"
@@ -2096,6 +2108,7 @@ export default {
         orderId: '',
         batchNo: '',
         productName: '洁伶',
+        preheatTime: 5,
         analysisTime: 30,
         analysisDestination: ''
       },
@@ -2120,6 +2133,9 @@ export default {
         batchNo: [{ required: true, message: '请输入批号', trigger: 'blur' }],
         productName: [
           { required: true, message: '请输入产品名称', trigger: 'blur' }
+        ],
+        preheatTime: [
+          { required: true, message: '请输入预热时间', trigger: 'blur' }
         ],
         analysisTime: [
           { required: true, message: '请输入解析时间', trigger: 'blur' }
@@ -4981,7 +4997,7 @@ export default {
         orderName: '',
         analysisTime: 30,
         preheatRoom: '',
-        preheatTime: 1
+        preheatTime: 5
       },
       executeOrderRules: {
         analysisTime: [
@@ -6075,7 +6091,7 @@ export default {
         orderName: order.orderName,
         analysisTime: 30,
         preheatRoom: '',
-        preheatTime: 1
+        preheatTime: 5
       };
       this.executeOrderDialogVisible = true;
     },
@@ -8084,6 +8100,7 @@ export default {
             time: tray.trayTime || '',
             // 发往动态：进灭菌前=sendTo(灭菌柜)；出灭菌后=analysisDestination(解析房)
             sendTo: tray.sendTo || '',
+            preheatRoom: tray.preheatRoom || '',
             sterilizationRoom: tray.sterilizationRoom || '',
             analysisDestination: tray.analysisDestination || '',
             state: tray.state || '',
@@ -8373,6 +8390,7 @@ export default {
         orderId: `DD${stamp}${rand}`,
         batchNo: `PH${stamp}${rand}`,
         productName: '洁伶',
+        preheatTime: 5,
         analysisTime: 30,
         analysisDestination: ''
       };
@@ -8400,10 +8418,19 @@ export default {
         const analysisDestination = this.needAnalysisDestination
           ? String(this.newTrayForm.analysisDestination)
           : '';
+        const preheatTimeVal =
+          this.newTrayForm.preheatTime != null
+            ? Number(Number(this.newTrayForm.preheatTime).toFixed(1))
+            : null; // 预热周期（小时，一位小数）
         const analysisTimeVal =
           this.newTrayForm.analysisTime != null
             ? Number(Number(this.newTrayForm.analysisTime).toFixed(1))
             : null; // 解析周期（小时，一位小数）
+        // 当前添加到哪个预热房，目的地就是哪个（预热1-12 → 1-12）
+        const preheatDest =
+          isPreheatQueue && this.selectedQueue.id
+            ? String(this.selectedQueue.id - 49)
+            : '';
 
         if (!Array.isArray(this.selectedQueue.trayInfo)) {
           this.selectedQueue.trayInfo = [];
@@ -8430,7 +8457,7 @@ export default {
             orderId: this.newTrayForm.orderId || '',
             productName: this.newTrayForm.productName || '',
             batchNo: this.newTrayForm.batchNo || '',
-            preheatTime: 0, // 手动添加不填预热信息：预热周期0，进预热房即为预热完成
+            preheatTime: preheatTimeVal,
             analysisTime: analysisTimeVal,
             remark: `${this.selectedQueue.queueName}手动添加`
           };
@@ -8442,8 +8469,10 @@ export default {
           if (isAnalysisQueue) {
             newTray.inAnalysisRoomTime = currentTime;
           }
-          // 预热队列：默认进入预热时间为当前时间
+          // 预热队列：进入预热时间为当前时间，目的地为当前预热房
           if (isPreheatQueue) {
+            newTray.sendTo = preheatDest;
+            newTray.preheatRoom = preheatDest;
             newTray.inPreheatRoomTime = currentTime;
           }
           this.selectedQueue.trayInfo.push(newTray);
