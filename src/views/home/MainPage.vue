@@ -2021,6 +2021,68 @@ export default {
       activeLogType: 'running',
       runningLogs: [], // 修改为空数组
       alarmLogs: [], // 修改为空数组
+      alarmPoints: {
+        'floor1.DBW4': 0,
+        'floor1.DBW6': 0,
+        'floor2.DBW4': 0,
+        'floor2.DBW6': 0
+      },
+      alarmMapping: {
+        'floor1.DBW4': {
+          bit0: '一楼-预热上货处报警',
+          bit1: '一楼-预热房进口小车报警',
+          bit2: '一楼-预热房线体报警',
+          bit3: '一楼-预热房出口小车报警',
+          bit4: '一楼-预热房出口升降处报警',
+          bit5: '一楼-灭菌前1#小车报警',
+          bit6: '一楼-灭菌前2#小车报警',
+          bit7: '一楼-灭菌前3#小车报警',
+          bit8: '一楼-19-24#灭菌柜报警',
+          bit9: '一楼-25-30#灭菌柜报警',
+          bit10: '一楼-31#-33#灭菌柜报警',
+          bit11: '一楼-中间M1015区报警',
+          bit12: '一楼-灭菌后小车报警',
+          bit13: '一楼-提升机门前报警',
+          bit14: '一楼-提升机内报警'
+        },
+        'floor1.DBW6': {
+          bit0: '一楼-控制柜急停',
+          bit1: '一楼-预热上货口操作台急停',
+          bit2: '一楼-灭菌前分站急停',
+          bit3: '一楼-灭菌前小车1急停',
+          bit4: '一楼-灭菌前小车2急停',
+          bit5: '一楼-灭菌后小车急停',
+          bit6: '一楼-灭菌前小车3#急停',
+          bit7: '一楼-预热上货处急停',
+          bit8: '一楼-预热进货小车急停',
+          bit9: '一楼-预热出货小车急停',
+          bit10: '一楼-提升机门前急停'
+        },
+        'floor2.DBW4': {
+          bit0: '二楼-连廊前区报警',
+          bit1: '二楼-连廊后区报警',
+          bit2: '二楼-1#解析进口小车报警',
+          bit3: '二楼-1#解析内线体报警',
+          bit4: '二楼-1#解析出口小车报警',
+          bit5: '二楼-1#解析升降下货处报警',
+          bit6: '二楼-2#解析进口小车报警',
+          bit7: '二楼-2#解析内线体报警',
+          bit8: '二楼-2#解析出口小车报警',
+          bit9: '二楼-2#解析升降下货处报警',
+          bit10: '二楼-提升机出口报警'
+        },
+        'floor2.DBW6': {
+          bit0: '二楼-提升机一楼操作台急停',
+          bit1: '二楼-提升机控制柜急停',
+          bit2: '二楼-1#解析前就地急停',
+          bit3: '二楼-1#解析出货就地急停',
+          bit4: '二楼-1#解析进货小车急停',
+          bit5: '二楼-1#解析出货小车急停',
+          bit6: '二楼-2#解析进口小车急停',
+          bit7: '二楼-2#解析出口小车急停',
+          bit8: '二楼-2#解析出货升降处急停'
+        }
+      },
       nowTrays: [],
       draggedTray: null,
       dragSourceQueue: null,
@@ -2215,18 +2277,35 @@ export default {
       floor1ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
       floor1AreaAlarm: {
         // DBW4 区域报警
-        bit0: '0', // 上货区域报警
-        bit1: '0', // 灭菌前区域报警
-        bit2: '0' // 灭菌后区域报警
+        bit0: '0', // 预热上货处报警
+        bit1: '0', // 预热房进口小车报警
+        bit2: '0', // 预热房线体报警
+        bit3: '0', // 预热房出口小车报警
+        bit4: '0', // 预热房出口升降处报警
+        bit5: '0', // 灭菌前1#小车报警
+        bit6: '0', // 灭菌前2#小车报警
+        bit7: '0', // 灭菌前3#小车报警
+        bit8: '0', // 19-24#灭菌柜报警
+        bit9: '0', // 25-30#灭菌柜报警
+        bit10: '0', // 31#-33#灭菌柜报警
+        bit11: '0', // 中间M1015区报警
+        bit12: '0', // 灭菌后小车报警
+        bit13: '0', // 一楼提升机门前报警
+        bit14: '0' // 一楼提升机内报警
       },
       floor1AreaEstop: {
         // DBW6 区域急停
         bit0: '0', // 一楼控制柜急停
-        bit1: '0', // 上货口操作台急停
+        bit1: '0', // 预热上货口操作台急停
         bit2: '0', // 灭菌前分站急停
         bit3: '0', // 灭菌前小车1急停
         bit4: '0', // 灭菌前小车2急停
-        bit5: '0' // 灭菌后小车急停
+        bit5: '0', // 灭菌后小车急停
+        bit6: '0', // 灭菌前小车3#急停
+        bit7: '0', // 预热上货处急停
+        bit8: '0', // 预热进货小车急停
+        bit9: '0', // 预热出货小车急停
+        bit10: '0' // 一楼提升机门前急停
       },
       floor1CartBeforeSteril1Pos: 0, // DBW14 灭菌前小车1位置信息（0-3000）
       floor1CartBeforeSteril2Pos: 0, // DBW16 灭菌前小车2位置信息（0-3000）
@@ -2361,21 +2440,29 @@ export default {
       floor2ConveyorRunStatus: 0, // DBW2 输送线当前运行状态（01自动运行，02手动模式、03故障模式）
       floor2AreaAlarm: {
         // DBW4 区域报警
-        bit0: '0', // 提升机一楼输送线报警
-        bit1: '0', // 提升机报警
-        bit2: '0', // 提升机二楼输送线报警
-        bit3: '0', // 解析前区域报警
-        bit4: '0', // 解析房内报警
-        bit5: '0' // 解析出货报警
+        bit0: '0', // 二楼连廊前区报警
+        bit1: '0', // 二楼连廊后区报警
+        bit2: '0', // 二楼1#解析进口小车报警
+        bit3: '0', // 二楼1#解析内线体报警
+        bit4: '0', // 二楼1#解析出口小车报警
+        bit5: '0', // 二楼1#解析升降下货处报警
+        bit6: '0', // 二楼2#解析进口小车报警
+        bit7: '0', // 二楼2#解析内线体报警
+        bit8: '0', // 二楼2#解析出口小车报警
+        bit9: '0', // 二楼2#解析升降下货处报警
+        bit10: '0' // 二楼提升机出口报警
       },
       floor2AreaEstop: {
         // DBW6 区域急停
         bit0: '0', // 提升机一楼操作台急停
         bit1: '0', // 提升机控制柜急停
-        bit2: '0', // 解析前分站急停
-        bit3: '0', // 解析出货分站急停
-        bit4: '0', // 解析进货小车急停
-        bit5: '0' // 解析出货小车急停
+        bit2: '0', // 1#解析前就地急停
+        bit3: '0', // 1#解析出货就地急停
+        bit4: '0', // 1#解析进货小车急停
+        bit5: '0', // 1#解析出货小车急停
+        bit6: '0', // 2#解析进口小车急停
+        bit7: '0', // 2#解析出口小车急停
+        bit8: '0' // 2#解析出货升降处急停
       },
       floor2CartAnalysisInPos: 0, // DBW22 解析进货小车位置信息（0-3000）
       floor2CartAnalysisOutPos: 0, // DBW24 解析出货小车位置信息（0-3000）
@@ -5043,6 +5130,18 @@ export default {
       this.floor1AreaAlarm.bit0 = getBit(word4, 8);
       this.floor1AreaAlarm.bit1 = getBit(word4, 9);
       this.floor1AreaAlarm.bit2 = getBit(word4, 10);
+      this.floor1AreaAlarm.bit3 = getBit(word4, 11);
+      this.floor1AreaAlarm.bit4 = getBit(word4, 12);
+      this.floor1AreaAlarm.bit5 = getBit(word4, 13);
+      this.floor1AreaAlarm.bit6 = getBit(word4, 14);
+      this.floor1AreaAlarm.bit7 = getBit(word4, 15);
+      this.floor1AreaAlarm.bit8 = getBit(word4, 0);
+      this.floor1AreaAlarm.bit9 = getBit(word4, 1);
+      this.floor1AreaAlarm.bit10 = getBit(word4, 2);
+      this.floor1AreaAlarm.bit11 = getBit(word4, 3);
+      this.floor1AreaAlarm.bit12 = getBit(word4, 4);
+      this.floor1AreaAlarm.bit13 = getBit(word4, 5);
+      this.floor1AreaAlarm.bit14 = getBit(word4, 6);
 
       // 一楼区域急停 DBW6
       let word6 = this.convertToWord(values.DBW6 ?? 0);
@@ -5052,6 +5151,17 @@ export default {
       this.floor1AreaEstop.bit3 = getBit(word6, 11);
       this.floor1AreaEstop.bit4 = getBit(word6, 12);
       this.floor1AreaEstop.bit5 = getBit(word6, 13);
+      this.floor1AreaEstop.bit6 = getBit(word6, 14);
+      this.floor1AreaEstop.bit7 = getBit(word6, 15);
+      this.floor1AreaEstop.bit8 = getBit(word6, 0);
+      this.floor1AreaEstop.bit9 = getBit(word6, 1);
+      this.floor1AreaEstop.bit10 = getBit(word6, 2);
+
+      // ---- 一楼故障报警点位更新与检测（DB1000.DBW4 / DB1000.DBW6） ----
+      const oldAlarmPoints0 = { ...this.alarmPoints };
+      this.alarmPoints['floor1.DBW4'] = word4;
+      this.alarmPoints['floor1.DBW6'] = word6;
+      this.checkAlarmPoints(oldAlarmPoints0);
 
       // 一楼小车位置：cart1=DBW14、cart2=DBW16、cart3=DBW18、cart6=DBW20；cart9=DBW150（预热进口）、cart10=DBW152（预热出口）
       this.floor1CartBeforeSteril1Pos = Number(values.DBW14 ?? 0);
@@ -5242,6 +5352,11 @@ export default {
       this.floor2AreaAlarm.bit3 = getBit(word4, 11);
       this.floor2AreaAlarm.bit4 = getBit(word4, 12);
       this.floor2AreaAlarm.bit5 = getBit(word4, 13);
+      this.floor2AreaAlarm.bit6 = getBit(word4, 14);
+      this.floor2AreaAlarm.bit7 = getBit(word4, 15);
+      this.floor2AreaAlarm.bit8 = getBit(word4, 0);
+      this.floor2AreaAlarm.bit9 = getBit(word4, 1);
+      this.floor2AreaAlarm.bit10 = getBit(word4, 2);
 
       let word6 = this.convertToWord(values.DBW6 ?? 0);
       this.floor2AreaEstop.bit0 = getBit(word6, 8);
@@ -5250,6 +5365,15 @@ export default {
       this.floor2AreaEstop.bit3 = getBit(word6, 11);
       this.floor2AreaEstop.bit4 = getBit(word6, 12);
       this.floor2AreaEstop.bit5 = getBit(word6, 13);
+      this.floor2AreaEstop.bit6 = getBit(word6, 14);
+      this.floor2AreaEstop.bit7 = getBit(word6, 15);
+      this.floor2AreaEstop.bit8 = getBit(word6, 0);
+
+      // ---- 二楼故障报警点位更新与检测（DB1000.DBW4 / DB1000.DBW6） ----
+      const oldAlarmPoints1 = { ...this.alarmPoints };
+      this.alarmPoints['floor2.DBW4'] = word4;
+      this.alarmPoints['floor2.DBW6'] = word6;
+      this.checkAlarmPoints(oldAlarmPoints1);
 
       // 二楼小车位置：cart4=DBW22、cart5=DBW24、cart7=DBW26、cart8=DBW28
       this.floor2CartAnalysisInPos = Number(values.DBW22 ?? 0);
@@ -8397,6 +8521,36 @@ export default {
       const logTypeText = type === 'running' ? '运行日志' : '报警日志';
       const logMessage = `[${logTypeText}] ${message}`;
       ipcRenderer.send('writeLogToLocal', logMessage);
+    },
+
+    // 检查报警点位变化并触发报警（0→1 上升沿）
+    checkAlarmPoints(oldAlarmPoints) {
+      if (!this.isDataReady) return;
+
+      const getBit = (word, bitIndex) => ((word >> bitIndex) & 1).toString();
+
+      Object.keys(this.alarmPoints).forEach((address) => {
+        const newValue = this.alarmPoints[address];
+        const oldValue = oldAlarmPoints[address];
+
+        if (newValue !== oldValue) {
+          for (let logicalBit = 0; logicalBit < 16; logicalBit++) {
+            // S7大端序：逻辑bit0→word.bit8, bit7→word.bit15, bit8→word.bit0, bit15→word.bit7
+            const actualBit = logicalBit < 8 ? logicalBit + 8 : logicalBit - 8;
+            const newBit = getBit(newValue, actualBit);
+            const oldBit = getBit(oldValue, actualBit);
+
+            if (oldBit === '0' && newBit === '1') {
+              const bitKey = `bit${logicalBit}`;
+              const alarmMessage = this.alarmMapping[address]?.[bitKey];
+
+              if (alarmMessage && alarmMessage.trim() !== '') {
+                this.addLog(`报警: ${alarmMessage}`, 'alarm');
+              }
+            }
+          }
+        }
+      });
     },
     toggleBitValue(obj, bit) {
       obj[bit] = obj[bit] === '1' ? '0' : '1';
