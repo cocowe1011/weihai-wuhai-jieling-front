@@ -1065,7 +1065,7 @@
                 </div>
 
                 <!-- 安全门打开标记（收到信号显示，两行文字；坐标为平面图占位，需现场调整） -->
-                <!-- 一楼 DBW176 bit0：灭前1安全门 -->
+                <!-- 一楼 DBW178 bit0：灭前1安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="1170"
@@ -1075,7 +1075,7 @@
                   <span class="safety-door-line">安全门</span>
                   <span class="safety-door-line">打开</span>
                 </div>
-                <!-- 一楼 DBW176 bit1：灭前2安全门 -->
+                <!-- 一楼 DBW178 bit1：灭前2安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="1070"
@@ -1085,7 +1085,7 @@
                   <span class="safety-door-line">安全门</span>
                   <span class="safety-door-line">打开</span>
                 </div>
-                <!-- 一楼 DBW176 bit2：灭后1#安全门 -->
+                <!-- 一楼 DBW178 bit2：灭后1#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="830"
@@ -1095,7 +1095,7 @@
                   <span class="safety-door-line">安全门</span>
                   <span class="safety-door-line">打开</span>
                 </div>
-                <!-- 一楼 DBW176 bit3：灭后2#安全门 -->
+                <!-- 一楼 DBW178 bit3：灭后2#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="180"
@@ -1105,7 +1105,7 @@
                   <span class="safety-door-line">安全门</span>
                   <span class="safety-door-line">打开</span>
                 </div>
-                <!-- 一楼 DBW176 bit4：灭后3#安全门 -->
+                <!-- 一楼 DBW178 bit4：灭后3#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="50"
@@ -1115,7 +1115,7 @@
                   <span class="safety-door-line">安全门</span>
                   <span class="safety-door-line">打开</span>
                 </div>
-                <!-- 一楼 DBW176 bit5：灭后4#安全门 -->
+                <!-- 一楼 DBW178 bit5：灭后4#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="500"
@@ -2582,12 +2582,12 @@ export default {
       currentSelectedNodeId: null,
       // 安全门信号（bit=1 时显示“安全门/打开”两行文字标记）
       floor1SafetyDoorWord: {
-        bit0: '0', // DBW176 BIT0 灭前1安全门
-        bit1: '0', // DBW176 BIT1 灭前2安全门
-        bit2: '0', // DBW176 BIT2 灭后1#安全门
-        bit3: '0', // DBW176 BIT3 灭后2#安全门
-        bit4: '0', // DBW176 BIT4 灭后3#安全门
-        bit5: '0' // DBW176 BIT5 灭后4#安全门
+        bit0: '0', // DBW178 BIT0 灭前1安全门
+        bit1: '0', // DBW178 BIT1 灭前2安全门
+        bit2: '0', // DBW178 BIT2 灭后1#安全门
+        bit3: '0', // DBW178 BIT3 灭后2#安全门
+        bit4: '0', // DBW178 BIT4 灭后3#安全门
+        bit5: '0' // DBW178 BIT5 灭后4#安全门
       },
       floor2SafetyDoorWord: {
         bit0: '0', // DBW162 BIT0 二楼1#安全门
@@ -5322,14 +5322,14 @@ export default {
       this.floor1FaultInfo1017 = Number(values.DBW156 ?? 0);
       this.floor1FaultInfospare1 = Number(values.DBW158 ?? 0);
       this.floor1FaultInfospare2 = Number(values.DBW160 ?? 0);
-      // 一楼安全门信号 DBW176（bit0~5 对应灭前1/灭前2/灭后1#~4#安全门）
-      let word176 = this.convertToWord(values.DBW176 ?? 0);
-      this.floor1SafetyDoorWord.bit0 = getBit(word176, 8);
-      this.floor1SafetyDoorWord.bit1 = getBit(word176, 9);
-      this.floor1SafetyDoorWord.bit2 = getBit(word176, 10);
-      this.floor1SafetyDoorWord.bit3 = getBit(word176, 11);
-      this.floor1SafetyDoorWord.bit4 = getBit(word176, 12);
-      this.floor1SafetyDoorWord.bit5 = getBit(word176, 13);
+      // 一楼安全门信号 DBW178（bit0~5 对应灭前1/灭前2/灭后1#~4#安全门）
+      let word178 = this.convertToWord(values.DBW178 ?? 0);
+      this.floor1SafetyDoorWord.bit0 = getBit(word178, 8);
+      this.floor1SafetyDoorWord.bit1 = getBit(word178, 9);
+      this.floor1SafetyDoorWord.bit2 = getBit(word178, 10);
+      this.floor1SafetyDoorWord.bit3 = getBit(word178, 11);
+      this.floor1SafetyDoorWord.bit4 = getBit(word178, 12);
+      this.floor1SafetyDoorWord.bit5 = getBit(word178, 13);
       this.syncDeviceNodesFromPlc(values, 0);
     };
     this._plcMsgHandler_1 = (event, values, values2) => {
@@ -8539,17 +8539,15 @@ export default {
         unread: type === 'alarm'
       };
 
-      // 只要是日志就往运行日志中添加
-      this.runningLogs.unshift(log);
-      // 保持日志数量在合理范围内
-      if (this.runningLogs.length > 100) {
-        this.runningLogs.pop();
-      }
-
       if (type === 'alarm') {
         this.alarmLogs.unshift(log);
         if (this.alarmLogs.length > 100) {
           this.alarmLogs.pop();
+        }
+      } else {
+        this.runningLogs.unshift(log);
+        if (this.runningLogs.length > 100) {
+          this.runningLogs.pop();
         }
       }
       // 同时写入本地文件
