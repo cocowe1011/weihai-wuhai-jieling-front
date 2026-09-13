@@ -1065,95 +1065,95 @@
                 </div>
 
                 <!-- 安全门打开标记（收到信号显示，两行文字；坐标为平面图占位，需现场调整） -->
-                <!-- 一楼 DBW178 bit0：灭前1安全门 -->
+                <!-- 一楼 DBW178 bit0：1#安全门（灭前1） -->
                 <div
                   class="safety-door-marker"
                   data-x="1170"
                   data-y="270"
                   v-show="floor1SafetyDoorWord.bit0 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">1#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 一楼 DBW178 bit1：灭前2安全门 -->
+                <!-- 一楼 DBW178 bit1：2#安全门（灭前2） -->
                 <div
                   class="safety-door-marker"
                   data-x="1070"
                   data-y="370"
                   v-show="floor1SafetyDoorWord.bit1 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">2#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 一楼 DBW178 bit2：灭后1#安全门 -->
+                <!-- 一楼 DBW178 bit2：3#安全门（灭后1#） -->
                 <div
                   class="safety-door-marker"
                   data-x="830"
                   data-y="370"
                   v-show="floor1SafetyDoorWord.bit2 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">3#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 一楼 DBW178 bit3：灭后2#安全门 -->
+                <!-- 一楼 DBW178 bit3：4#安全门（灭后2#） -->
                 <div
                   class="safety-door-marker"
                   data-x="180"
                   data-y="370"
                   v-show="floor1SafetyDoorWord.bit3 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">4#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 一楼 DBW178 bit4：灭后3#安全门 -->
+                <!-- 一楼 DBW178 bit4：5#安全门（灭后3#） -->
                 <div
                   class="safety-door-marker"
-                  data-x="50"
+                  data-x="55"
                   data-y="1380"
                   v-show="floor1SafetyDoorWord.bit4 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">5#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 一楼 DBW178 bit5：灭后4#安全门 -->
+                <!-- 一楼 DBW178 bit5：6#安全门（灭后4#） -->
                 <div
                   class="safety-door-marker"
                   data-x="500"
                   data-y="1380"
                   v-show="floor1SafetyDoorWord.bit5 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">6#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 二楼 DBW162 bit0：二楼1#安全门 -->
+                <!-- 二楼 DBW162 bit0：1#安全门 -->
                 <div
                   class="safety-door-marker"
-                  data-x="2870"
+                  data-x="2855"
                   data-y="480"
                   v-show="floor2SafetyDoorWord.bit0 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">1#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 二楼 DBW162 bit1：二楼2#安全门 -->
+                <!-- 二楼 DBW162 bit1：2#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="2420"
                   data-y="1190"
                   v-show="floor2SafetyDoorWord.bit1 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">2#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
-                <!-- 二楼 DBW162 bit2：二楼3#安全门 -->
+                <!-- 二楼 DBW162 bit2：3#安全门 -->
                 <div
                   class="safety-door-marker"
                   data-x="1790"
                   data-y="980"
                   v-show="floor2SafetyDoorWord.bit2 === '1'"
                 >
-                  <span class="safety-door-line">安全门</span>
-                  <span class="safety-door-line">打开</span>
+                  <span class="safety-door-line">3#安全</span>
+                  <span class="safety-door-line">门开</span>
                 </div>
 
                 <transition name="fade-scale">
@@ -10770,6 +10770,9 @@ export default {
                 line-height: 1.25;
                 pointer-events: none;
                 .safety-door-line {
+                  display: block;
+                  width: 4em;
+                  text-align: center;
                   white-space: nowrap;
                 }
               }
