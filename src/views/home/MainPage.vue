@@ -740,6 +740,7 @@
                           v-model="preheatToSterilizeFrom"
                           placeholder="预热"
                           size="small"
+                          :disabled="preheatToSterilizeExecuting"
                         >
                           <el-option
                             v-for="i in 12"
@@ -756,6 +757,7 @@
                           v-model="preheatToSterilizeTo"
                           placeholder="灭菌"
                           size="small"
+                          :disabled="preheatToSterilizeExecuting"
                         >
                           <el-option
                             v-for="i in 15"
@@ -829,6 +831,7 @@
                           v-model="sterToAnalysisFrom"
                           placeholder="灭菌"
                           size="small"
+                          :disabled="sterToAnalysisExecuting"
                         >
                           <el-option
                             v-for="i in 15"
@@ -846,6 +849,7 @@
                           placeholder="解析"
                           size="small"
                           clearable
+                          :disabled="sterToAnalysisExecuting"
                         >
                           <el-option label="自动" value="" />
                           <el-option
@@ -937,6 +941,7 @@
                         placeholder="解析房"
                         size="small"
                         style="width: 100%"
+                        :disabled="analysisOutExecuting"
                       >
                         <el-option
                           v-for="i in 14"
@@ -994,6 +999,7 @@
                         placeholder="解析房"
                         size="small"
                         style="width: 100%"
+                        :disabled="analysisOutExecuting2"
                       >
                         <el-option
                           v-for="i in 5"
