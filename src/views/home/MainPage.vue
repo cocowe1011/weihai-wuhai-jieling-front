@@ -848,10 +848,9 @@
                           v-model="sterToAnalysisTo"
                           placeholder="解析"
                           size="small"
-                          clearable
                           :disabled="sterToAnalysisExecuting"
                         >
-                          <el-option label="自动" value="" />
+                          <el-option label="自动" value="auto" />
                           <el-option
                             v-for="i in 19"
                             :key="'analysis-' + i"
@@ -5030,7 +5029,7 @@ export default {
       isHandlingPreheatOutRequest: false,
       // ========== 灭菌柜到解析房执行 ==========
       sterToAnalysisFrom: '', // 出货灭菌柜编号（19~33）
-      sterToAnalysisTo: '', // 解析房编号（1~19），空=自动
+      sterToAnalysisTo: 'auto', // 解析房编号（1~19），auto=自动
       sterToAnalysisLoading: false,
       sterToAnalysisExecuting: false,
       sterToAnalysisResolvedTo: '', // 本次执行实际使用的解析房编号
@@ -6843,9 +6842,13 @@ export default {
       }
       return null;
     },
+    isSpecifiedAnalysisRoom() {
+      const to = this.sterToAnalysisTo;
+      return !!to && to !== 'auto';
+    },
     resolveAnalysisDestination() {
       // 指定解析房：按容量判断（1期15/2期35），满则无法再分配（屏蔽7号时跳过容量检查）
-      if (this.sterToAnalysisTo) {
+      if (this.isSpecifiedAnalysisRoom()) {
         const room = Number(this.sterToAnalysisTo);
         if (
           !(this.blockAnalysisRoom7 && room === 7) &&
@@ -7467,7 +7470,7 @@ export default {
           const dest = this.resolveAnalysisDestination();
           if (dest === null) {
             capacityFull = true;
-            if (this.sterToAnalysisTo) {
+            if (this.isSpecifiedAnalysisRoom()) {
               this.addLog(
                 `解析房${
                   this.sterToAnalysisTo
@@ -7513,7 +7516,7 @@ export default {
       if (
         !capacityFull &&
         this.sterToAnalysisExecuting &&
-        this.sterToAnalysisTo &&
+        this.isSpecifiedAnalysisRoom() &&
         !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
         this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >=
           this.getAnalysisRoomCapacity(Number(this.sterToAnalysisTo))
@@ -7586,7 +7589,7 @@ export default {
         if (!tray.analysisDestination) {
           const dest = this.resolveAnalysisDestination();
           if (dest === null) {
-            if (this.sterToAnalysisTo) {
+            if (this.isSpecifiedAnalysisRoom()) {
               this.addLog(
                 `解析房${
                   this.sterToAnalysisTo
@@ -7638,7 +7641,7 @@ export default {
 
         // 指定解析房：该房有效占用满容量则停止；未指定时满了由下次请求自动切下一房（屏蔽7号时跳过）
         if (
-          this.sterToAnalysisTo &&
+          this.isSpecifiedAnalysisRoom() &&
           !(this.blockAnalysisRoom7 && Number(this.sterToAnalysisTo) === 7) &&
           this.getAnalysisRoomEffectiveLoad(Number(this.sterToAnalysisTo)) >=
             this.getAnalysisRoomCapacity(Number(this.sterToAnalysisTo))
@@ -8826,7 +8829,7 @@ export default {
       }
 
       let analysisRoomNo;
-      if (this.sterToAnalysisTo) {
+      if (this.isSpecifiedAnalysisRoom()) {
         analysisRoomNo = Number(this.sterToAnalysisTo);
         this.sterToAnalysisResolvedTo = String(analysisRoomNo);
       } else {
